@@ -54,10 +54,24 @@ const Hero = () => {
       {/* MASSIVE BACKGROUND TEXT */}
       <div className="absolute inset-0 flex items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[30vh] md:pt-[40vh]">
         <motion.h1
-          className="text-[20vw] md:text-[28vw] font-bold text-gray-100 leading-none tracking-tighter"
+          className="text-[20vw] md:text-[28vw] font-bold text-gray-100 leading-none tracking-tighter flex"
           style={{ y: textY, willChange: "transform" }}
         >
-          Naveen
+          {Array.from("Naveen").map((letter, i) => (
+            <motion.span
+              key={i}
+              className="inline-block"
+              animate={{ y: [0, -20, 0] }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.15,
+              }}
+            >
+              {letter}
+            </motion.span>
+          ))}
         </motion.h1>
       </div>
 
