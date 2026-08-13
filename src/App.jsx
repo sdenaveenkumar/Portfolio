@@ -9,6 +9,7 @@ import Experience from './components/Experience';
 import Resume from './components/Resume';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import { Analytics } from '@vercel/analytics/react';
 function App() {
   const [showResume, setShowResume] = useState(false);
 
@@ -37,6 +38,8 @@ function App() {
       <AnimatePresence>
         {showResume && <Resume onClose={() => setShowResume(false)} />}
       </AnimatePresence>
+      
+      <Analytics />
     </div>
   );
 }
