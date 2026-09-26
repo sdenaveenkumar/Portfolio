@@ -21,10 +21,10 @@ const Hero = () => {
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: delayOffset }}
         style={{ willChange: "transform" }}
-        className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100"
+        className="flex items-center gap-1.5 sm:gap-2 bg-white px-2.5 sm:px-4 py-1 sm:py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100"
       >
         <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-        <span className="text-[10px] font-bold tracking-widest text-gray-800">{text}</span>
+        <span className="text-[9px] sm:text-[10px] font-bold tracking-widest text-gray-800">{text}</span>
       </motion.div>
     </motion.div>
   );
@@ -43,7 +43,8 @@ const Hero = () => {
   };
 
   return (
-    <motion.section 
+    <motion.section
+      id="hero"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
@@ -76,21 +77,21 @@ const Hero = () => {
       </div>
 
       {/* THREE COLUMN FOREGROUND */}
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 items-center h-full pb-20">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12 items-center h-full pb-16 md:pb-20">
 
         {/* LEFT COLUMN */}
-        <div className="flex flex-col justify-center items-start pt-10 md:pt-0 z-20 pointer-events-auto">
+        <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left pt-6 md:pt-0 z-20 pointer-events-auto">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ type: "spring", stiffness: 100, delay: 0.1 }}
           >
 
-            <motion.h2 
+            <motion.h2
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="text-[2.5rem] md:text-[4rem] font-black leading-[0.9] text-gray-900 tracking-tighter"
+              className="text-[2.5rem] sm:text-[3.2rem] md:text-[4rem] font-black leading-[0.9] text-gray-900 tracking-tighter"
             >
               {"Fullstack".split("").map((char, index) => (
                 <motion.span key={`char-1-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
@@ -110,29 +111,31 @@ const Hero = () => {
         </div>
 
         {/* CENTER COLUMN (IMAGE & BADGES) */}
-        <div className="relative flex justify-center items-end h-[50vh] md:h-[60vh] lg:h-[80vh] w-full md:w-[400px] lg:w-[500px] mx-auto">
+        <div className="relative flex justify-center items-end h-[45vh] sm:h-[50vh] md:h-[60vh] lg:h-[80vh] w-full max-w-[320px] sm:max-w-[380px] md:max-w-none md:w-[400px] lg:w-[500px] mx-auto">
           <motion.img
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
-            src="/image.png"
-            alt="Naveen"
-            className="w-full h-full object-contain object-bottom relative z-10 filter contrast-[1.05] drop-shadow-2xl rounded-b-none rounded-t-[40px] scale-[1.35] md:scale-[1.5] lg:scale-[1.75] origin-bottom translate-y-12 md:translate-y-16 lg:translate-y-24 -translate-x-4 md:-translate-x-8 lg:-translate-x-12"
+            src="/image.webp"
+            alt="Naveen - Fullstack Software Engineer"
+            loading="eager"
+            fetchPriority="high"
+            className="w-full h-full object-contain object-bottom relative z-10 filter contrast-[1.05] drop-shadow-2xl rounded-b-none rounded-t-[40px] scale-[1.25] sm:scale-[1.35] md:scale-[1.5] lg:scale-[1.75] origin-bottom translate-y-8 sm:translate-y-12 md:translate-y-16 lg:translate-y-24 md:-translate-x-6 lg:-translate-x-10"
           />
 
           {/* Floating Badges */}
-          {floatingBadge("NODE.JS", "top-[10%]", "left-[-10%]", "auto", "auto", 0)}
-          {floatingBadge("REACT.JS", "top-[40%]", "auto", "right-[-15%]", "auto", 1)}
-          {floatingBadge("GSAP", "auto", "left-[-5%]", "auto", "bottom-[30%]", 2)}
+          {floatingBadge("NODE.JS", "top-[10%]", "left-2 md:left-[-10%]", "auto", "auto", 0)}
+          {floatingBadge("REACT.JS", "top-[40%]", "auto", "right-2 md:right-[-15%]", "auto", 1)}
+          {floatingBadge("GSAP", "auto", "left-2 sm:left-3 md:left-[-5%]", "auto", "bottom-[28%]", 2)}
         </div>
 
         {/* RIGHT COLUMN */}
-        <div className="flex flex-col justify-center items-start md:items-end text-left md:text-right pt-10 md:pt-0 -mt-12 md:-mt-24">
+        <div className="flex flex-col justify-center items-center md:items-end text-center md:text-right pt-4 md:pt-0 -mt-2 md:-mt-24 z-20">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-[14px] md:text-[15px] leading-relaxed text-gray-600 max-w-[280px] mb-8"
+            className="text-[14px] md:text-[15px] leading-relaxed text-gray-600 max-w-[280px] mb-6 md:mb-8"
           >
             Hi, I'm Naveen — a Fullstack Engineer dedicated to building high-performance applications with clean code and bold design.
           </motion.p>
@@ -142,7 +145,7 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
-            className="flex items-center gap-3 bg-[#111111] text-white px-6 py-3.5 rounded-full font-semibold text-[13px] hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 bg-[#111111] text-white px-6 py-3.5 rounded-full font-semibold text-[13px] hover:opacity-80 transition-opacity cursor-pointer shadow-md"
           >
             See my works
             <span className="flex items-center justify-center bg-white text-black w-6 h-6 rounded-full">

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 
 const Resume = ({ onClose }) => {
@@ -19,7 +19,7 @@ const Resume = ({ onClose }) => {
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 220, mass: 0.8 }}
-        className="fixed top-0 right-0 w-full md:w-[80vw] max-w-[1000px] h-screen bg-white/40 backdrop-blur-3xl border-l border-white/50 shadow-[-30px_0_80px_rgba(0,0,0,0.15)] z-[101] flex flex-col rounded-l-3xl overflow-hidden"
+        className="fixed top-0 right-0 w-full md:w-[80vw] max-w-[1000px] h-screen bg-white/40 backdrop-blur-3xl border-l border-white/50 shadow-[-30px_0_80px_rgba(0,0,0,0.15)] z-[101] flex flex-col rounded-none sm:rounded-l-3xl overflow-hidden"
       >
 
         {/* Top Bar */}
@@ -27,14 +27,14 @@ const Resume = ({ onClose }) => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="h-16 bg-white/30 backdrop-blur-md border-b border-white/50 flex items-center justify-between px-6 shrink-0 z-10"
+          className="h-14 sm:h-16 bg-white/30 backdrop-blur-md border-b border-white/50 flex items-center justify-between px-3 sm:px-6 shrink-0 z-10"
         >
-          <div className="flex gap-2">
-            <button onClick={onClose} className="w-3.5 h-3.5 rounded-full bg-red-400 hover:bg-red-500 shadow-sm cursor-pointer transition-colors" title="Close" />
-            <div className="w-3.5 h-3.5 rounded-full bg-yellow-400 shadow-sm" />
-            <div className="w-3.5 h-3.5 rounded-full bg-green-400 shadow-sm" />
+          <div className="flex gap-1.5 sm:gap-2">
+            <button onClick={onClose} className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-red-400 hover:bg-red-500 shadow-sm cursor-pointer transition-colors" title="Close" />
+            <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-yellow-400 shadow-sm" />
+            <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-green-400 shadow-sm" />
           </div>
-          <div className="text-xs font-bold text-gray-600 uppercase tracking-widest bg-white/50 backdrop-blur-sm px-4 py-1.5 rounded-md shadow-sm border border-white/40">
+          <div className="text-[10px] sm:text-xs font-bold text-gray-600 uppercase tracking-widest bg-white/50 backdrop-blur-sm px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-md shadow-sm border border-white/40">
             resume.pdf
           </div>
           <div className="flex justify-end">
@@ -42,11 +42,11 @@ const Resume = ({ onClose }) => {
               href="/resume.pdf"
               download="NaveenKumar_Resume.pdf"
               title="Download PDF"
-              className="group relative flex items-center gap-2 px-5 py-2 bg-[#111111] text-white rounded-full font-black text-xs uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              className="group relative flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 bg-[#111111] text-white rounded-full font-black text-[10px] sm:text-xs uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
               <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-700 to-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <span className="relative z-10">Download</span>
-              <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
             </a>

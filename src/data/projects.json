@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1332834700,
+    "name": "Portfolio",
+    "description": "Personal Portfolio Website",
+    "html_url": "https://github.com/sdenaveenkumar/Portfolio",
+    "language": "JavaScript",
+    "stargazers_count": 0
+  },
+  {
+    "id": 1353951730,
+    "name": "personal-api",
+    "description": "Production-grade, extensible RESTful Personal API. Built with Node.js, Express",
+    "html_url": "https://github.com/sdenaveenkumar/personal-api",
+    "language": "JavaScript",
+    "stargazers_count": 0
+  },
+  {
+    "id": 1115575462,
+    "name": "SdeNaveenKumar",
+    "description": "GitHub profile configuration and portfolio highlights.",
+    "html_url": "https://github.com/sdenaveenkumar/SdeNaveenKumar",
+    "language": null,
+    "stargazers_count": 0
+  },
+  {
+    "id": 1229515448,
+    "name": "lofi-cli",
+    "description": "A minimalist, background Lofi radio player straight from the terminal. 🎧 Your simple, zero-distraction command-line tool for playing Lofi beats while you code. ☕",
+    "html_url": "https://github.com/sdenaveenkumar/lofi-cli",
+    "language": "Shell",
+    "stargazers_count": 1
+  },
+  {
+    "id": 1249800053,
+    "name": "Markdown",
+    "description": "A personal knowledge base for Markdown notes, documentation, and developer writing.",
+    "html_url": "https://github.com/sdenaveenkumar/Markdown",
+    "language": null,
+    "stargazers_count": 0
+  },
+  {
+    "id": 1214865866,
+    "name": "dolphin",
+    "description": "Dolphin 🐬 - A versatile, local-first LLM interface. Available as a dynamic web app, an installable PWA, and a native Android APK for seamless offline AI interactions.",
+    "html_url": "https://github.com/sdenaveenkumar/dolphin",
+    "language": "JavaScript",
+    "stargazers_count": 0
+  },
+  {
+    "id": 1202646971,
+    "name": "Lofi-Radio-VsCode",
+    "description": "🎧 Stay in the flow. A lightweight lo-fi music player for VS Code.",
+    "html_url": "https://github.com/sdenaveenkumar/Lofi-Radio-VsCode",
+    "language": "JavaScript",
+    "stargazers_count": 0
+  }
+]

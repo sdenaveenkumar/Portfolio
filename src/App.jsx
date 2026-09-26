@@ -6,10 +6,13 @@ import Skills from './components/Skills';
 import Projects from './components/Projects';
 import Education from './components/Education';
 import Experience from './components/Experience';
-import Resume from './components/Resume';
+import CallToAction from './components/CallToAction';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { Analytics } from '@vercel/analytics/react';
+
+const Resume = React.lazy(() => import('./components/Resume'));
+
 function App() {
   const [showResume, setShowResume] = useState(false);
 
@@ -28,6 +31,7 @@ function App() {
           <Projects />
           <Education />
           <Experience />
+          <CallToAction />
           <Contact />
       </main>
 
@@ -36,7 +40,11 @@ function App() {
 
       {/* Slide-in Resume Drawer */}
       <AnimatePresence>
-        {showResume && <Resume onClose={() => setShowResume(false)} />}
+        {showResume && (
+          <React.Suspense fallback={null}>
+            <Resume onClose={() => setShowResume(false)} />
+          </React.Suspense>
+        )}
       </AnimatePresence>
       
       <Analytics />
