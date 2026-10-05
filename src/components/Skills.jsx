@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
+import ModelIcon3D from './ModelIcon3D';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,21 +21,21 @@ const Skills = () => {
     // Roughly 10:00
     { name: 'React', category: 'UI Library', icon: 'https://skillicons.dev/icons?i=react', top: '25%', left: '20%', mTop: '22%', mLeft: '14%', size: 'w-11 h-11 md:w-20 md:h-20', delay: 0.90, floatDuration: 3.2 },
     // Roughly 1:30
-    { name: 'Node.js', category: 'Backend Runtime', icon: 'https://skillicons.dev/icons?i=nodejs', top: '15%', left: '70%', mTop: '16%', mLeft: '72%', size: 'w-12 h-12 md:w-24 md:h-24', delay: 0.18, floatDuration: 3.5 },
+    { name: 'Node.js', category: 'Backend Runtime', icon: 'https://skillicons.dev/icons?i=nodejs', modelKey: 'nodejs', glowColor: 'rgba(65,168,67,0.3)', top: '15%', left: '70%', mTop: '16%', mLeft: '72%', size: 'w-16 h-16 md:w-32 md:h-32', delay: 0.18, floatDuration: 3.5 },
     // Roughly 8:00
     { name: 'MongoDB', category: 'NoSQL Database', icon: 'https://skillicons.dev/icons?i=mongodb', top: '65%', left: '15%', mTop: '64%', mLeft: '12%', size: 'w-12 h-12 md:w-24 md:h-24', delay: 0.74, floatDuration: 4.1 },
     // Roughly 6:00
     { name: 'MySQL', category: 'Relational DB', icon: 'https://skillicons.dev/icons?i=mysql', top: '80%', left: '45%', mTop: '82%', mLeft: '46%', size: 'w-11 h-11 md:w-20 md:h-20', delay: 0.58, floatDuration: 3.8 },
     // Roughly 4:30
-    { name: 'Express', category: 'REST APIs', icon: 'https://skillicons.dev/icons?i=express', top: '60%', left: '80%', mTop: '65%', mLeft: '76%', size: 'w-11 h-11 md:w-20 md:h-20', delay: 0.42, floatDuration: 3.3 },
+    { name: 'Express', category: 'REST APIs', icon: 'https://skillicons.dev/icons?i=express', modelKey: 'express', glowColor: 'rgba(100,100,100,0.25)', top: '60%', left: '80%', mTop: '65%', mLeft: '76%', size: 'w-16 h-16 md:w-28 md:h-28', delay: 0.42, floatDuration: 3.3 },
     // Roughly 9:00
     { name: 'Tailwind', category: 'Styling Engine', icon: 'https://skillicons.dev/icons?i=tailwind', top: '40%', left: '10%', mTop: '42%', mLeft: '10%', size: 'w-10 h-10 md:w-16 md:h-16', delay: 0.82, floatDuration: 4.5 },
     // Roughly 2:30
     { name: 'AWS', category: 'Cloud Infrastructure', icon: 'https://skillicons.dev/icons?i=aws', top: '35%', left: '85%', mTop: '32%', mLeft: '78%', size: 'w-12 h-12 md:w-28 md:h-28', delay: 0.26, floatDuration: 4.0 },
     // Roughly 5:00
-    { name: 'Docker', category: 'Containers', icon: 'https://skillicons.dev/icons?i=docker', top: '85%', left: '75%', mTop: '80%', mLeft: '72%', size: 'w-11 h-11 md:w-20 md:h-20', delay: 0.50, floatDuration: 3.6 },
+    { name: 'Docker', category: 'Containers', icon: 'https://skillicons.dev/icons?i=docker', modelKey: 'docker', glowColor: 'rgba(37,157,247,0.3)', top: '85%', left: '75%', mTop: '80%', mLeft: '72%', size: 'w-16 h-16 md:w-28 md:h-28', delay: 0.50, floatDuration: 3.6 },
     // Roughly 12:00
-    { name: 'TypeScript', category: 'Type Safety', icon: 'https://skillicons.dev/icons?i=ts', top: '12%', left: '45%', mTop: '12%', mLeft: '46%', size: 'w-10 h-10 md:w-16 md:h-16', delay: 0.10, floatDuration: 3.9 },
+    { name: 'TypeScript', category: 'Type Safety', icon: 'https://skillicons.dev/icons?i=ts', modelKey: 'typescript', glowColor: 'rgba(6,89,153,0.3)', top: '12%', left: '45%', mTop: '12%', mLeft: '46%', size: 'w-16 h-16 md:w-28 md:h-28', delay: 0.10, floatDuration: 3.9 },
     // Roughly 3:00
     { name: 'Figma', category: 'UI/UX Design', icon: 'https://skillicons.dev/icons?i=figma', top: '50%', left: '90%', mTop: '50%', mLeft: '80%', size: 'w-10 h-10 md:w-16 md:h-16', delay: 0.34, floatDuration: 4.2 },
     // Roughly 7:00
@@ -176,22 +177,37 @@ const Skills = () => {
             style={{ opacity: 0 }}
           >
             <div
-              className="relative w-full h-full rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center cursor-pointer skill-float group"
+              className={`relative w-full h-full ${
+                skill.modelKey
+                  ? 'flex items-center justify-center cursor-pointer skill-float group transition-transform duration-200 hover:scale-115'
+                  : 'rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center cursor-pointer skill-float group transition-transform duration-200 hover:scale-110'
+              }`}
               onMouseEnter={() => setHoveredSkill(skill.name)}
               onMouseLeave={() => setHoveredSkill(null)}
             >
-              <img 
-                src={skill.icon} 
-                alt={skill.name} 
-                loading="lazy" 
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  if (e.currentTarget.nextElementSibling) {
-                    e.currentTarget.nextElementSibling.style.display = 'flex';
-                  }
-                }}
-                className="w-full h-full object-contain drop-shadow-md rounded-[22px] transition-transform duration-200 group-hover:scale-110" 
-              />
+              {skill.modelKey ? (
+                <div className="w-full h-full flex items-center justify-center filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.15)]">
+                  <ModelIcon3D
+                    modelKey={skill.modelKey}
+                    fallbackIcon={skill.icon}
+                    glowColor={skill.glowColor}
+                    className="w-full h-full"
+                  />
+                </div>
+              ) : (
+                <img 
+                  src={skill.icon} 
+                  alt={skill.name} 
+                  loading="lazy" 
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    if (e.currentTarget.nextElementSibling) {
+                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                    }
+                  }}
+                  className="w-full h-full object-contain drop-shadow-md rounded-[22px] transition-transform duration-200" 
+                />
+              )}
               
               {/* Fallback Badge */}
               <div 
@@ -203,12 +219,17 @@ const Skills = () => {
 
               {/* Interactive Tooltip Pill */}
               <div 
-                className={`absolute left-1/2 -bottom-9 -translate-x-1/2 px-2.5 py-1 bg-black text-white text-[10px] font-bold rounded-lg shadow-xl whitespace-nowrap pointer-events-none transition-all duration-200 z-30 ${
+                className={`absolute left-1/2 -bottom-9 -translate-x-1/2 px-2.5 py-1 bg-black text-white text-[10px] font-bold rounded-lg shadow-xl whitespace-nowrap pointer-events-none transition-all duration-200 z-30 flex items-center gap-1.5 ${
                   hoveredSkill === skill.name ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1 scale-95'
                 }`}
               >
                 <span>{skill.name}</span>
-                <span className="text-gray-400 font-normal ml-1">· {skill.category}</span>
+                <span className="text-gray-400 font-normal">· {skill.category}</span>
+                {skill.modelKey && (
+                  <span className="px-1.5 py-0.5 rounded text-[8px] font-extrabold bg-blue-500/30 text-blue-300 border border-blue-400/40">
+                    3D
+                  </span>
+                )}
               </div>
 
             </div>

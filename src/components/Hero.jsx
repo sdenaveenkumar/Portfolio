@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import ModelIcon3D from './ModelIcon3D';
 
 const Hero = () => {
   const marqueeItems = [
@@ -10,7 +11,7 @@ const Hero = () => {
   const { scrollY } = useScroll();
   const textY = useTransform(scrollY, [0, 500], [0, 250]);
 
-  const floatingBadge = (text, top, left, right, bottom, delayOffset = 0) => (
+  const floatingBadge = (text, top, left, right, bottom, delayOffset = 0, modelKey = null) => (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -21,9 +22,15 @@ const Hero = () => {
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: delayOffset }}
         style={{ willChange: "transform" }}
-        className="flex items-center gap-1.5 sm:gap-2 bg-white px-2.5 sm:px-4 py-1 sm:py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100"
+        className="flex items-center gap-1.5 sm:gap-2 bg-white/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 hover:shadow-lg transition-shadow"
       >
-        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+        {modelKey ? (
+          <div className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 flex items-center justify-center">
+            <ModelIcon3D modelKey={modelKey} interactive={false} autoRotateSpeed={1.4} />
+          </div>
+        ) : (
+          <span className="w-1.5 h-1.5 bg-red-500 rounded-full shrink-0"></span>
+        )}
         <span className="text-[9px] sm:text-[10px] font-bold tracking-widest text-gray-800">{text}</span>
       </motion.div>
     </motion.div>
@@ -124,9 +131,9 @@ const Hero = () => {
           />
 
           {/* Floating Badges */}
-          {floatingBadge("NODE.JS", "top-[10%]", "left-2 md:left-[-10%]", "auto", "auto", 0)}
-          {floatingBadge("REACT.JS", "top-[40%]", "auto", "right-2 md:right-[-15%]", "auto", 1)}
-          {floatingBadge("GSAP", "auto", "left-2 sm:left-3 md:left-[-5%]", "auto", "bottom-[28%]", 2)}
+          {floatingBadge("NODE.JS", "top-[10%]", "left-2 md:left-[-10%]", "auto", "auto", 0, "nodejs")}
+          {floatingBadge("DOCKER", "top-[40%]", "auto", "right-2 md:right-[-15%]", "auto", 1, "docker")}
+          {floatingBadge("TYPESCRIPT", "auto", "left-2 sm:left-3 md:left-[-5%]", "auto", "bottom-[28%]", 2, "typescript")}
         </div>
 
         {/* RIGHT COLUMN */}
