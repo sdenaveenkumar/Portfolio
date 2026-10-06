@@ -27,7 +27,7 @@ function App() {
       <RabbitCompanion />
       
       {/* Main content layer that sits on top of the footer and slides up to reveal it */}
-      <main className="flex-1 relative w-full bg-white z-10 mb-0 md:mb-[75vh] rounded-b-none md:rounded-b-[40px] md:shadow-[0_30px_60px_rgba(0,0,0,0.4)]">
+      <main className="flex-1 relative w-full bg-white z-10 mb-0 md:mb-[80vh] rounded-b-[36px] sm:rounded-b-[48px] md:rounded-b-[60px] md:shadow-[0_30px_60px_rgba(0,0,0,0.4)]">
           <Hero />
           <Skills />
           <Projects />

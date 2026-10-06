@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -10,6 +10,17 @@ const Skills = () => {
   const containerRef = useRef(null);
   const textStackRef = useRef([]);
   const [hoveredSkill, setHoveredSkill] = useState(null);
+
+  // Allow rabbit companion to trigger hover/inspection tooltips on skill items
+  useEffect(() => {
+    const handleRabbitPerch = (e) => {
+      if (e.detail?.skillName !== undefined) {
+        setHoveredSkill(e.detail.skillName);
+      }
+    };
+    window.addEventListener('rabbit-skill-hover', handleRabbitPerch);
+    return () => window.removeEventListener('rabbit-skill-hover', handleRabbitPerch);
+  }, []);
 
   const stackItems = [
     { text: "By building 7+ projects", tag: "Engineering Depth" },
@@ -131,7 +142,7 @@ const Skills = () => {
     <div 
       id="skills" 
       ref={containerRef} 
-      className="relative w-full h-[500vh] border-t border-gray-100 bg-[#FCFCFD]"
+      className="relative w-full h-[500vh] border-t border-gray-100 bg-[#F7F7F8]"
     >
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex items-center justify-center">
         
@@ -146,12 +157,12 @@ const Skills = () => {
 
         {/* Central Text Stack */}
         <div className="text-center z-10 px-4 max-w-3xl pointer-events-none select-none">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-gray-200 shadow-sm text-gray-700 text-[11px] font-bold tracking-widest uppercase mb-4 md:mb-6">
+          <div data-skill-target="pill" data-skill-bounce="pill" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-gray-200 shadow-sm text-gray-700 text-[11px] font-bold tracking-widest uppercase mb-4 md:mb-6 pointer-events-auto cursor-pointer transform-gpu" style={{ transformOrigin: 'center bottom' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
             Stack & Technologies
           </div>
 
-          <h2 className="text-[20px] sm:text-[28px] md:text-[40px] font-black text-[#111111] tracking-tight leading-tight mb-3 md:mb-6">
+          <h2 data-skill-target="heading" data-skill-bounce="heading" className="text-[20px] sm:text-[28px] md:text-[40px] font-black text-[#111111] tracking-tight leading-tight mb-3 md:mb-6 pointer-events-auto cursor-pointer transform-gpu" style={{ transformOrigin: 'center bottom' }}>
             A growing library of skills
           </h2>
           
@@ -160,8 +171,10 @@ const Skills = () => {
               <div
                 key={index}
                 ref={el => textStackRef.current[index] = el}
-                style={{ opacity: 0 }}
-                className="flex items-center gap-3 text-gray-800 font-extrabold text-[18px] sm:text-[28px] md:text-[44px] tracking-tight will-change-transform whitespace-nowrap"
+                data-skill-target={`stack-${index}`}
+                data-skill-bounce={`stack-${index}`}
+                style={{ opacity: 0, transformOrigin: 'center bottom' }}
+                className="flex items-center gap-3 text-gray-800 font-extrabold text-[18px] sm:text-[28px] md:text-[44px] tracking-tight will-change-transform whitespace-nowrap pointer-events-auto cursor-pointer transform-gpu"
               >
                 <span>{item.text}</span>
               </div>
@@ -173,65 +186,76 @@ const Skills = () => {
         {skills.map((skill) => (
           <div
             key={skill.name}
+            data-skill-card={skill.name}
             className={`absolute ${skill.size} z-20 skill-icon`}
             style={{ opacity: 0 }}
           >
+            {/* Dedicated Physics Bounce Cushion Layer */}
             <div
-              className={`relative w-full h-full ${
-                skill.modelKey
-                  ? 'flex items-center justify-center cursor-pointer skill-float group transition-transform duration-200 hover:scale-115'
-                  : 'rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center cursor-pointer skill-float group transition-transform duration-200 hover:scale-110'
-              }`}
-              onMouseEnter={() => setHoveredSkill(skill.name)}
-              onMouseLeave={() => setHoveredSkill(null)}
+              data-skill-bounce={skill.name}
+              className="w-full h-full transform-gpu"
+              style={{ transformOrigin: 'center bottom' }}
             >
-              {skill.modelKey ? (
-                <div className="w-full h-full flex items-center justify-center filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.15)]">
-                  <ModelIcon3D
-                    modelKey={skill.modelKey}
-                    fallbackIcon={skill.icon}
-                    glowColor={skill.glowColor}
-                    className="w-full h-full"
-                  />
-                </div>
-              ) : (
-                <img 
-                  src={skill.icon} 
-                  alt={skill.name} 
-                  loading="lazy" 
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    if (e.currentTarget.nextElementSibling) {
-                      e.currentTarget.nextElementSibling.style.display = 'flex';
-                    }
-                  }}
-                  className="w-full h-full object-contain drop-shadow-md rounded-[22px] transition-transform duration-200" 
-                />
-              )}
-              
-              {/* Fallback Badge */}
-              <div 
-                style={{ display: 'none' }}
-                className="w-full h-full rounded-[22px] bg-gray-900 text-white font-bold text-xs items-center justify-center p-1 text-center shadow-inner"
-              >
-                {skill.name}
-              </div>
-
-              {/* Interactive Tooltip Pill */}
-              <div 
-                className={`absolute left-1/2 -bottom-9 -translate-x-1/2 px-2.5 py-1 bg-black text-white text-[10px] font-bold rounded-lg shadow-xl whitespace-nowrap pointer-events-none transition-all duration-200 z-30 flex items-center gap-1.5 ${
-                  hoveredSkill === skill.name ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1 scale-95'
+              <div
+                data-skill-interactive={skill.name}
+                className={`relative w-full h-full ${
+                  skill.modelKey
+                    ? 'flex items-center justify-center cursor-pointer skill-float group transition-transform duration-200 hover:scale-115'
+                    : 'rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center cursor-pointer skill-float group transition-transform duration-200 hover:scale-110'
                 }`}
+                onMouseEnter={() => setHoveredSkill(skill.name)}
+                onMouseLeave={() => setHoveredSkill(null)}
               >
-                <span>{skill.name}</span>
-                <span className="text-gray-400 font-normal">· {skill.category}</span>
-                {skill.modelKey && (
-                  <span className="px-1.5 py-0.5 rounded text-[8px] font-extrabold bg-blue-500/30 text-blue-300 border border-blue-400/40">
-                    3D
-                  </span>
+                {skill.modelKey ? (
+                  <div className="w-full h-full flex items-center justify-center filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.15)]">
+                    <ModelIcon3D
+                      modelKey={skill.modelKey}
+                      fallbackIcon={skill.icon}
+                      glowColor={skill.glowColor}
+                      className="w-full h-full"
+                    />
+                  </div>
+                ) : (
+                  <img 
+                    src={skill.icon} 
+                    alt={skill.name} 
+                    loading="lazy" 
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      if (e.currentTarget.nextElementSibling) {
+                        e.currentTarget.nextElementSibling.style.display = 'flex';
+                      }
+                    }}
+                    className="w-full h-full object-contain drop-shadow-md rounded-[22px] transition-transform duration-200" 
+                  />
                 )}
-              </div>
+                
+                {/* Fallback Badge */}
+                <div 
+                  style={{ display: 'none' }}
+                  className="w-full h-full rounded-[22px] bg-gray-900 text-white font-bold text-xs items-center justify-center p-1 text-center shadow-inner"
+                >
+                  {skill.name}
+                </div>
 
+                {/* Interactive Tooltip Pill with smooth glide in and glide shut transitions */}
+                <div 
+                  className={`absolute left-1/2 -bottom-9 -translate-x-1/2 px-2.5 py-1 bg-black text-white text-[10px] font-bold rounded-lg shadow-xl whitespace-nowrap transition-all duration-300 ease-out z-30 flex items-center gap-1.5 ${
+                    hoveredSkill === skill.name
+                      ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
+                      : 'opacity-0 -translate-y-1.5 scale-90 pointer-events-none'
+                  }`}
+                >
+                  <span>{skill.name}</span>
+                  <span className="text-gray-400 font-normal">· {skill.category}</span>
+                  {skill.modelKey && (
+                    <span className="px-1.5 py-0.5 rounded text-[8px] font-extrabold bg-blue-500/30 text-blue-300 border border-blue-400/40">
+                      3D
+                    </span>
+                  )}
+                </div>
+
+              </div>
             </div>
           </div>
         ))}

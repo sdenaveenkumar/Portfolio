@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const Footer = () => {
   return (
-    <footer className="relative md:fixed bottom-0 left-0 w-full min-h-[50vh] md:h-[75vh] h-auto bg-black text-white pt-10 sm:pt-16 pb-8 md:pb-0 px-4 sm:px-8 md:px-16 overflow-hidden flex flex-col justify-between z-0">
+    <footer className="relative md:fixed bottom-0 left-0 w-full min-h-[50vh] md:h-[80vh] h-auto bg-black text-white pt-8 sm:pt-10 pb-6 md:pb-0 px-4 sm:px-8 md:px-16 overflow-hidden flex flex-col justify-between z-0">
       
       {/* Ambient glowing orbs in the background */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
@@ -11,10 +11,10 @@ const Footer = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-purple-900/30 to-transparent blur-[120px]" />
       </div>
 
-      <div className="w-full max-w-7xl mx-auto flex flex-col h-full relative z-10">
+      <div className="w-full max-w-7xl mx-auto flex flex-col h-full relative z-10 justify-between">
 
         {/* Top Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 sm:gap-8 mb-10 sm:mb-16 md:mb-20 border-b border-white/10 pb-8 sm:pb-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 sm:gap-8 mb-6 sm:mb-8 md:mb-8 border-b border-white/10 pb-5 sm:pb-6">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
             Let's build<br />something <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-500">amazing.</span>
           </h2>
@@ -33,10 +33,10 @@ const Footer = () => {
         </div>
 
         {/* 3-Column Grid Section */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-8 md:mb-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-4 sm:mb-6">
           {/* Navigation */}
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <h3 className="font-bold text-white text-sm sm:text-base mb-1 sm:mb-2">Navigation</h3>
+          <div className="flex flex-col gap-2.5 sm:gap-3">
+            <h3 className="font-bold text-white text-sm sm:text-base mb-1">Navigation</h3>
             <span onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Home</span>
             <span onClick={() => document.getElementById('skills')?.scrollIntoView({ behavior: 'smooth' })} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Skills</span>
             <span onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Projects</span>
@@ -44,15 +44,15 @@ const Footer = () => {
           </div>
 
           {/* Connect */}
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <h3 className="font-bold text-white text-sm sm:text-base mb-1 sm:mb-2">Connect</h3>
+          <div className="flex flex-col gap-2.5 sm:gap-3">
+            <h3 className="font-bold text-white text-sm sm:text-base mb-1">Connect</h3>
             <span onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Contact Me</span>
             <a href="/resume.pdf" download="sdenaveenkumar.pdf" className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Resume</a>
           </div>
 
           {/* Say hello! */}
-          <div className="flex flex-col gap-3 sm:gap-4 col-span-2 md:col-span-1">
-            <h3 className="font-bold text-white text-sm sm:text-base mb-1 sm:mb-2">Socials</h3>
+          <div className="flex flex-col gap-2.5 sm:gap-3 col-span-2 md:col-span-1">
+            <h3 className="font-bold text-white text-sm sm:text-base mb-1">Socials</h3>
             <div className="flex flex-row gap-3 sm:gap-4 items-start">
               <a href="https://github.com/sdenaveenkumar" target="_blank" rel="noopener noreferrer" className="bg-white/10 p-2.5 sm:p-3 rounded-full text-white hover:bg-white/20 hover:scale-110 transition-all cursor-pointer">
                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>
@@ -65,13 +65,13 @@ const Footer = () => {
         </div>
 
         {/* Massive Name */}
-        <div className="w-full flex justify-center mt-auto pb-12 sm:pb-20 md:pb-28 overflow-hidden select-none">
-          <div className="text-[14vw] sm:text-[17vw] md:text-[20vw] lg:text-[22vw] font-black leading-none tracking-tighter select-none mb-0 flex py-2 sm:py-4 justify-center">
+        <div className="w-full flex justify-center pb-2 sm:pb-4 md:pb-6 select-none relative [mask-image:linear-gradient(to_bottom,black_45%,transparent_100%)]">
+          <div className="text-[12vw] sm:text-[14vw] md:text-[16vw] lg:text-[17vw] font-black leading-none tracking-tighter select-none mb-0 flex py-1 sm:py-2 justify-center">
             {Array.from("naveen").map((letter, i) => (
               <motion.span
                 key={i}
-                className="text-transparent bg-clip-text bg-gradient-to-b from-white/20 to-white/0 inline-block"
-                animate={{ y: [0, -15, 0] }}
+                className="text-transparent bg-clip-text bg-gradient-to-b from-white/35 via-white/15 to-transparent inline-block"
+                animate={{ y: [0, -12, 0] }}
                 transition={{
                   duration: 2.5,
                   repeat: Infinity,

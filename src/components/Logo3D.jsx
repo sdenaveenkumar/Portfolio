@@ -35,6 +35,7 @@ const Logo3D = ({
     // Horizontal facing direction (+1 right, -1 left)
     facing: 1,
     targetFacing: 1,
+    facingAngle: 0,
 
     // Click jump
     jumpY: 0,
@@ -299,8 +300,10 @@ const Logo3D = ({
         }
       }
 
-      // Smooth facing lerp so rabbit turns around smoothly without snapping
+      // Smooth facing lerp so rabbit turns around smoothly in true 3D
       s.facing += (s.targetFacing - s.facing) * 0.22;
+      const targetAngle = s.targetFacing >= 0 ? 0 : Math.PI;
+      s.facingAngle = THREE.MathUtils.lerp(s.facingAngle || 0, targetAngle, 0.22);
 
       // Send living features to shader uniforms
       if (modelWrapper.userData.setRabbitFeature) {
@@ -326,17 +329,17 @@ const Logo3D = ({
 
       // 3D Rotations (clean Euler angles, no gimbal lock)
       // Z-axis: 2D plane pitch (leaning into hop, landing cushion)
-      modelWrapper.rotation.z = s.facing * hopPitchZ + twitchWiggle * 0.4;
+      modelWrapper.rotation.z = (s.targetFacing >= 0 ? 1 : -1) * hopPitchZ + twitchWiggle * 0.4;
 
-      // Y-axis: Inquisitive head turn toward cursor
-      modelWrapper.rotation.y = mouseRef.current.x * 0.32;
+      // Y-axis: 3D facing angle + inquisitive head turn toward cursor
+      modelWrapper.rotation.y = s.facingAngle + (s.targetFacing >= 0 ? 1 : -1) * mouseRef.current.x * 0.32;
 
       // X-axis: Subtle perspective tilt toward cursor
       modelWrapper.rotation.x = -mouseRef.current.y * 0.18;
 
-      // Scale (squash & stretch + horizontal facing flip)
+      // Scale (squash & stretch, always positive scale to keep normals and lighting pristine)
       modelWrapper.scale.set(
-        s.facing * hopSquashX * breathScale,
+        hopSquashX * breathScale,
         hopSquashY * breathScale,
         1.0
       );

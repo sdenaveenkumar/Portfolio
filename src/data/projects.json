@@ -1,26 +1,35 @@
 [
   {
-    "id": 1332834700,
-    "name": "Portfolio",
-    "description": "Personal Portfolio Website",
-    "html_url": "https://github.com/sdenaveenkumar/Portfolio",
+    "id": 1214865866,
+    "name": "dolphin",
+    "description": "Dolphin 🐬 - A versatile, local-first LLM interface. Available as a dynamic web app, an installable PWA, and a native Android APK for seamless offline AI interactions.",
+    "html_url": "https://github.com/sdenaveenkumar/dolphin",
     "language": "JavaScript",
     "stargazers_count": 0
   },
   {
     "id": 1353951730,
     "name": "personal-api",
-    "description": "Production-grade, extensible RESTful Personal API. Built with Node.js, Express",
+    "description": "Production-grade, extensible RESTful Personal API. Live at http://140.245.24.219 with interactive documentation and real-time endpoints.",
     "html_url": "https://github.com/sdenaveenkumar/personal-api",
+    "homepage": "http://140.245.24.219",
     "language": "JavaScript",
     "stargazers_count": 0
   },
   {
-    "id": 1115575462,
-    "name": "SdeNaveenKumar",
-    "description": "GitHub profile configuration and portfolio highlights.",
-    "html_url": "https://github.com/sdenaveenkumar/SdeNaveenKumar",
-    "language": null,
+    "id": 1202646971,
+    "name": "Lofi-Radio-VsCode",
+    "description": "🎧 Stay in the flow. A lightweight lo-fi music player for VS Code.",
+    "html_url": "https://github.com/sdenaveenkumar/Lofi-Radio-VsCode",
+    "language": "JavaScript",
+    "stargazers_count": 0
+  },
+  {
+    "id": 1332834700,
+    "name": "Portfolio",
+    "description": "Personal Portfolio Website",
+    "html_url": "https://github.com/sdenaveenkumar/Portfolio",
+    "language": "JavaScript",
     "stargazers_count": 0
   },
   {
@@ -40,19 +49,11 @@
     "stargazers_count": 0
   },
   {
-    "id": 1214865866,
-    "name": "dolphin",
-    "description": "Dolphin 🐬 - A versatile, local-first LLM interface. Available as a dynamic web app, an installable PWA, and a native Android APK for seamless offline AI interactions.",
-    "html_url": "https://github.com/sdenaveenkumar/dolphin",
-    "language": "JavaScript",
-    "stargazers_count": 0
-  },
-  {
-    "id": 1202646971,
-    "name": "Lofi-Radio-VsCode",
-    "description": "🎧 Stay in the flow. A lightweight lo-fi music player for VS Code.",
-    "html_url": "https://github.com/sdenaveenkumar/Lofi-Radio-VsCode",
-    "language": "JavaScript",
+    "id": 1115575462,
+    "name": "SdeNaveenKumar",
+    "description": "GitHub profile configuration and portfolio highlights.",
+    "html_url": "https://github.com/sdenaveenkumar/SdeNaveenKumar",
+    "language": null,
     "stargazers_count": 0
   }
 ]

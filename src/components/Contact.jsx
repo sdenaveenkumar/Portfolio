@@ -101,10 +101,12 @@ const Contact = () => {
     <div 
       id="contact" 
       ref={containerRef} 
-      className="relative w-full h-[200vh] bg-transparent text-gray-900"
+      className="relative z-30 w-full h-[220vh] -mt-[100vh] bg-[#fafafc] text-gray-900 rounded-[36px] sm:rounded-[48px] md:rounded-[60px] shadow-[0_-35px_100px_rgba(0,0,0,0.6),0_30px_70px_rgba(0,0,0,0.4)] border-y border-white/80"
     >
       {/* Sticky Fullscreen Viewport Stage */}
-      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col justify-center items-center py-6 sm:py-12 px-3 sm:px-6 [perspective:1000px]">
+      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden rounded-[36px] sm:rounded-[48px] md:rounded-[60px] flex flex-col justify-center items-center py-6 sm:py-12 px-3 sm:px-6 [perspective:1000px]">
+        {/* Overlap Sheet Top Accent Pill */}
+        <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-1.5 rounded-full bg-gray-300/80 z-20 pointer-events-none" />
         
         {/* Dynamic Ambient Background Glow */}
         <motion.div 
