@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import RabbitCompanion from './components/RabbitCompanion';
 import { AnimatePresence } from 'framer-motion';
@@ -10,24 +10,113 @@ import Experience from './components/Experience';
 import CallToAction from './components/CallToAction';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import LinkTree from './components/LinkTree';
+import RabbitTreeModal from './components/RabbitTreeModal';
 import { Analytics } from '@vercel/analytics/react';
+import { ArrowUpRight } from 'lucide-react';
 
 const Resume = React.lazy(() => import('./components/Resume'));
 
 function App() {
   const [showResume, setShowResume] = useState(false);
+  const [showRabbitTreeModal, setShowRabbitTreeModal] = useState(false);
+  const [isLinkTree, setIsLinkTree] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
+      const hash = window.location.hash.toLowerCase();
+      return path === '/link' || path === '/links' || path === '/linktree' || hash === '#/link' || hash === '#link';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
+      const hash = window.location.hash.toLowerCase();
+      setIsLinkTree(path === '/link' || path === '/links' || path === '/linktree' || hash === '#/link' || hash === '#link');
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
 
   const toggleResume = () => {
     setShowResume(prev => !prev);
   };
 
+  const toggleRabbitTreeModal = (e) => {
+    if (e) e.preventDefault();
+    setShowRabbitTreeModal(prev => !prev);
+  };
+
+  // Standalone /link Linktree View
+  if (isLinkTree) {
+    return (
+      <>
+        <LinkTree 
+          onBackToPortfolio={(targetUrl = '/') => {
+            window.history.pushState({}, '', targetUrl);
+            setIsLinkTree(false);
+            if (targetUrl.includes('#')) {
+              const hashId = targetUrl.split('#')[1];
+              setTimeout(() => {
+                document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth' });
+              }, 150);
+            }
+          }} 
+        />
+        <Analytics />
+      </>
+    );
+  }
+
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] text-gray-900 font-sans flex flex-col selection:bg-gray-200">
+      
+      {/* Top Right Corner Floating Button: Rabbit Tree */}
+      <button
+        data-rabbit-tree="true"
+        data-no-rabbit="true"
+        onClick={toggleRabbitTreeModal}
+        className={`fixed top-4 sm:top-6 md:top-7 right-3 sm:right-6 md:right-8 z-40 pointer-events-auto group flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full ${
+          showRabbitTreeModal 
+            ? 'bg-black text-white border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.5)]' 
+            : 'bg-white/85 hover:bg-white text-gray-900 border-white/60 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.2)]'
+        } backdrop-blur-xl border transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer select-none`}
+        title="Open Rabbit Tree Mobile Frame"
+        aria-label="Open Rabbit Tree"
+      >
+        <span className={`font-bold text-xs sm:text-sm tracking-tight ${showRabbitTreeModal ? 'text-white' : 'text-black'}`}>
+          Rabbit Tree
+        </span>
+        <ArrowUpRight className={`w-3.5 h-3.5 ${showRabbitTreeModal ? 'text-white rotate-45' : 'text-gray-400 group-hover:text-black'} group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all`} />
+      </button>
+
+      {/* Interactive Mobile Device Frame for Rabbit Tree */}
+      <RabbitTreeModal
+        isOpen={showRabbitTreeModal}
+        onClose={() => setShowRabbitTreeModal(false)}
+        onNavigate={(targetUrl) => {
+          if (targetUrl.includes('#')) {
+            const hashId = targetUrl.split('#')[1];
+            setTimeout(() => {
+              document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth' });
+            }, 200);
+          } else if (targetUrl !== '/') {
+            window.location.href = targetUrl;
+          }
+        }}
+      />
+
       <Navbar onResumeClick={toggleResume} />
-      <RabbitCompanion />
+      <RabbitCompanion isRabbitTreeOpen={showRabbitTreeModal} />
       
       {/* Main content layer that sits on top of the footer and slides up to reveal it */}
-      <main className="flex-1 relative w-full bg-white z-10 mb-0 md:mb-[80vh] rounded-b-[36px] sm:rounded-b-[48px] md:rounded-b-[60px] md:shadow-[0_30px_60px_rgba(0,0,0,0.4)]">
+      <main className="flex-1 relative w-full bg-[#fafafc] z-10 mb-0 md:mb-[80vh] rounded-b-[36px] sm:rounded-b-[48px] md:rounded-b-[60px] md:shadow-[0_30px_60px_rgba(0,0,0,0.4)]">
           <Hero />
           <Skills />
           <Projects />

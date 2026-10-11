@@ -5,41 +5,58 @@ const Navbar = ({ onResumeClick }) => {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
-  // Section scroll tracking
+  // Section scroll tracking with requestAnimationFrame throttle
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+    let currentScrolled = false;
+    let currentSection = 'home';
+
+    const updateScroll = () => {
+      ticking = false;
       const scrollY = window.scrollY || 0;
-      setScrolled(scrollY > 100);
-
-      const sections = [
-        { id: 'contact', offset: 260 },
-        { id: 'cta', offset: 260 },
-        { id: 'experience', offset: 260 },
-        { id: 'education', offset: 260 },
-        { id: 'projects', offset: 260 },
-        { id: 'skills', offset: 260 },
-      ];
-
-      if (scrollY < 180) {
-        setActiveSection('home');
-        return;
+      const isScrolled = scrollY > 100;
+      if (isScrolled !== currentScrolled) {
+        currentScrolled = isScrolled;
+        setScrolled(isScrolled);
       }
 
-      for (const sec of sections) {
-        const el = document.getElementById(sec.id);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= sec.offset && rect.bottom > 100) {
-            // Map contact & cta sections to experience in the navbar highlight
-            setActiveSection((sec.id === 'contact' || sec.id === 'cta') ? 'experience' : sec.id);
-            return;
+      let newSection = 'home';
+      if (scrollY >= 180) {
+        const sections = [
+          { id: 'contact', offset: 260 },
+          { id: 'cta', offset: 260 },
+          { id: 'experience', offset: 260 },
+          { id: 'education', offset: 260 },
+          { id: 'projects', offset: 260 },
+          { id: 'skills', offset: 260 },
+        ];
+        for (const sec of sections) {
+          const el = document.getElementById(sec.id);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= sec.offset && rect.bottom > 100) {
+              newSection = (sec.id === 'contact' || sec.id === 'cta') ? 'experience' : sec.id;
+              break;
+            }
           }
         }
+      }
+
+      if (newSection !== currentSection) {
+        currentSection = newSection;
+        setActiveSection(newSection);
+      }
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateScroll);
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
+    updateScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -53,7 +70,7 @@ const Navbar = ({ onResumeClick }) => {
   };
 
   return (
-    <div className="fixed top-7 sm:top-8 inset-x-0 z-50 flex justify-center w-full pointer-events-none px-2">
+    <div className="fixed top-16 sm:top-8 inset-x-0 z-40 flex justify-center w-full pointer-events-none px-2">
       <nav 
         className={`relative pointer-events-auto flex items-center justify-between px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 w-full max-w-[96vw] ${scrolled ? 'md:max-w-[700px] md:min-w-[620px]' : 'md:max-w-[520px] md:min-w-[480px]'} rounded-full bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] text-gray-900 mx-auto transition-all duration-500`}
       >
@@ -61,15 +78,10 @@ const Navbar = ({ onResumeClick }) => {
         <div data-nav-item="home" className="flex items-center pl-1 sm:pl-2 md:pl-3 pr-1 sm:pr-2 md:pr-3 shrink-0">
           <button 
             onClick={() => scrollToSection('home')} 
-            className="flex items-center gap-1.5 cursor-pointer group"
+            className="flex items-center cursor-pointer group"
             aria-label="RabbitFolio Home"
           >
-            {/* Home Dock — sleek launchpad with subtle resting nest */}
-            <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-black/[0.03] group-hover:bg-black/[0.07] border border-black/[0.04] transition-all">
-              <div className="w-4 h-4 rounded-full border border-black/15 flex items-center justify-center transition-opacity opacity-40 group-hover:opacity-75">
-                <div className="w-1.5 h-1.5 rounded-full bg-black/35" />
-              </div>
-            </div>
+            <div className="relative w-8 h-8 sm:w-9 sm:h-9" />
           </button>
         </div>
 

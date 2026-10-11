@@ -1,57 +1,174 @@
 import React, { useState, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { ArrowDown, Mail, Copy, Check } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+import { ArrowUpRight, Mail, Check } from 'lucide-react';
+
+gsap.registerPlugin(ScrollTrigger);
+
+const GithubIcon = ({ className = "w-4 h-4" }) => (
+  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+    <path d="M9 18c-4.51 2-5-2-7-2" />
+  </svg>
+);
+
+const LinkedinIcon = ({ className = "w-4 h-4" }) => (
+  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect width="4" height="12" x="2" y="9" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
 
 /**
- * CALL TO ACTION SECTION (Dark Mode Edition)
- * 
- * Features:
- * - Monochromatic dark canvas (#070709) with soft gray/zinc ambient glow.
- * - Dual Kinetic Typography Marquees running across the background driven by scroll physics.
- * - 3D Depth Bottom-Rising Card: On scroll down, the card ascends from the bottom of the viewport
- *   with camera rack-focus blur, 3D tilt (rotateX), scale expansion, and dimensional shadow depth.
- * - Minimalist content: "Have an Idea!" headline + "Get in Touch" & "Copy Email" action dock.
+ * Three-Slide Triptych Call To Action Section:
+ * - Left & Right slides are equal in width; Middle slide is narrower.
+ * - Sequence:
+ *   1. Middle slide drops down from the TOP of the viewport with text "an".
+ *   2. Once middle slide reaches position, Left slide sweeps in from the LEFT corner ("Have")
+ *      and Right slide sweeps in from the RIGHT corner ("Idea!") with physics, overshoot bounce & inertia!
+ *   3. Together they form: "Have an Idea!"
  */
-
 const CallToAction = () => {
   const containerRef = useRef(null);
+  const leftSlideRef = useRef(null);
+  const middleSlideRef = useRef(null);
+  const rightSlideRef = useRef(null);
+  const ctaBarRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
-  // Scroll Progression
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end']
-  });
+  useGSAP(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1.2 // Smooth 1:1 control with natural inertia, avoiding sudden speed bursts
+      }
+    });
 
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 70,
-    damping: 24,
-    restDelta: 0.001
-  });
+    // ==============================================================
+    // ACT 1: Middle section slide plunges from top with slow, graceful,
+    // wide spring oscillation (starts at 0s, settles at 2.8s)
+    // ==============================================================
+    tl.fromTo(middleSlideRef.current,
+      {
+        yPercent: -170,
+        opacity: 0,
+        scale: 0.82,
+        force3D: true
+      },
+      {
+        yPercent: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 2.8,
+        ease: "elastic.out(1.15, 0.65)" // Slower, wider, luxurious spring bounce
+      },
+      0
+    );
 
-  // --- Kinetic Typography Marquee Offsets ---
-  const marquee1X = useTransform(smoothProgress, [0, 1], ['-15%', '12%']);
-  const marquee2X = useTransform(smoothProgress, [0, 1], ['10%', '-20%']);
-  const marqueeOpacity = useTransform(smoothProgress, [0, 0.15, 0.85, 1], [0.65, 1, 0.95, 0.55]);
+    // Dedicated pause for the middle slide to be clearly seen resting at center
+    tl.to({}, { duration: 0.8 });
 
-  // --- 3D Depth & Bottom-Rising Card Transforms ---
-  // 1. Ascends & levels flat by 0.18 (75vh)
-  // 2. STICKS firmly in center from 0.18 to 0.76 (giving a huge 245vh track — user scrolls twice while stuck)
-  // 3. Contact Us page begins its overlap only after 0.76 (320vh)
-  const cardY = useTransform(smoothProgress, [0, 0.18, 0.76, 0.98], ['80vh', '0vh', '0vh', '-30px']);
-  const cardRotateX = useTransform(smoothProgress, [0, 0.18, 0.76, 0.98], [36, 0, 0, -3]);
-  const cardScale = useTransform(smoothProgress, [0, 0.18, 0.76, 0.98], [0.62, 1, 1, 0.93]);
-  const cardOpacity = useTransform(smoothProgress, [0, 0.05, 0.18, 0.76, 0.98], [0, 0.85, 1, 1, 0.6]);
-  const cardFilter = useTransform(smoothProgress, [0, 0.14], ['blur(14px)', 'blur(0px)']);
-  const cardPointerEvents = useTransform(smoothProgress, p => (p >= 0.12 && p <= 0.76 ? 'auto' : 'none'));
+    // ==============================================================
+    // ACT 2: Left and Right slides swoop in from corners slowly and
+    // deliberately with wide, cinematic spring bounce & inertia
+    // (starts at 3.6s, completes at 6.8s)
+    // ==============================================================
+    // Left slide from bottom-left corner:
+    tl.fromTo(leftSlideRef.current,
+      {
+        xPercent: -150,
+        yPercent: 45,
+        rotation: -25,
+        scale: 0.68,
+        opacity: 0,
+        transformOrigin: "bottom left",
+        force3D: true
+      },
+      {
+        xPercent: 0,
+        yPercent: 0,
+        rotation: 0,
+        scale: 1,
+        opacity: 1,
+        duration: 3.2,
+        ease: "elastic.out(1.2, 0.65)" // Slower, wider, graceful spring bounce
+      },
+      3.6
+    );
 
-  // Ambient depth pedestal glow under the card (fully bloomed by 0.18, stays stuck until 0.76)
-  const depthGlowScale = useTransform(smoothProgress, [0, 0.18], [0.5, 1]);
-  const depthGlowOpacity = useTransform(smoothProgress, [0, 0.10, 0.18, 0.76], [0, 0.35, 0.7, 0.4]);
+    // Right slide from bottom-right corner:
+    tl.fromTo(rightSlideRef.current,
+      {
+        xPercent: 150,
+        yPercent: 45,
+        rotation: 25,
+        scale: 0.68,
+        opacity: 0,
+        transformOrigin: "bottom right",
+        force3D: true
+      },
+      {
+        xPercent: 0,
+        yPercent: 0,
+        rotation: 0,
+        scale: 1,
+        opacity: 1,
+        duration: 3.2,
+        ease: "elastic.out(1.2, 0.65)" // Matching slow, graceful spring bounce
+      },
+      3.6
+    );
 
-  const handleCopyEmail = () => {
+    // Kinetic spring pulse on Middle slide as side slides land:
+    tl.fromTo(middleSlideRef.current,
+      { scaleX: 1, scaleY: 1 },
+      {
+        scaleX: 0.94,
+        scaleY: 1.04,
+        duration: 0.6,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.inOut"
+      },
+      5.2
+    );
+
+    // CTA interactive console reveals slowly with gentle spring bounce
+    if (ctaBarRef.current) {
+      tl.fromTo(ctaBarRef.current,
+        {
+          y: 45,
+          opacity: 0,
+          scale: 0.88
+        },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 1.6,
+          ease: "back.out(2.0)"
+        },
+        5.6
+      );
+    }
+
+    // ==============================================================
+    // ACT 3: Generous Showcase Holding Pause
+    // Holds the resting state so all floating slides remain in full view
+    // ==============================================================
+    tl.to({}, { duration: 4.8 });
+
+  }, { scope: containerRef });
+
+  const handleCopyEmail = (e) => {
+    e.stopPropagation();
     navigator.clipboard.writeText('sdenaveenkumar@gmail.com');
     setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
   };
 
   const scrollToContact = () => {
@@ -59,136 +176,251 @@ const CallToAction = () => {
   };
 
   return (
-    <section 
+    <section
       id="cta"
       ref={containerRef}
-      className="relative z-10 w-full h-[420vh] bg-[#070709] text-white select-none overflow-clip"
+      className="relative z-[45] w-full h-[480vh] -mt-[100vh] bg-transparent text-gray-900 select-none overflow-clip"
     >
-      {/* Sticky Presentation Viewport with 3D Perspective */}
-      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col justify-center items-center py-6 sm:py-8 px-4 sm:px-6 md:px-8 [perspective:1400px]">
-        
-        {/* Dynamic Multi-layered Ambient Plasma Backdrop (Monochrome Grays & Zinc) */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Subtle Cyber Grid */}
-          <div 
-            className="absolute inset-0 opacity-[0.16]" 
-            style={{
-              backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
-              backgroundSize: '36px 36px'
-            }} 
-          />
-          {/* Ambient Monochromatic Glow (Soft Grays & Zinc) */}
-          <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] bg-gradient-to-tr from-zinc-700/20 via-zinc-800/15 to-transparent rounded-full blur-[140px]" />
-          <div className="absolute -bottom-24 right-1/4 w-[620px] h-[620px] bg-gradient-to-bl from-neutral-600/20 via-zinc-700/15 to-transparent rounded-full blur-[140px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[750px] bg-zinc-900/40 rounded-full blur-[150px]" />
+      {/* Sticky Fullscreen Presentation Stage (Centered directly in viewport) */}
+      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col justify-center items-center px-3 sm:px-6 md:px-10 bg-[#fafafc] border-t border-black/[0.08] shadow-[0_-30px_90px_rgba(0,0,0,0.1)] [perspective:1200px]">
+
+        {/* Top Pull Tab Indicator */}
+        <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-1.5 rounded-full bg-black/10 z-30 pointer-events-none" />
+
+        {/* Ambient Glows from Contact Us Theme */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+          <div className="absolute w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-gradient-to-br from-purple-200/40 via-pink-200/25 to-transparent rounded-full blur-[80px] md:blur-[120px] -translate-x-1/3 -translate-y-1/4 opacity-75" />
+          <div className="absolute w-[450px] md:w-[700px] h-[450px] md:h-[700px] bg-gradient-to-tl from-cyan-200/40 via-blue-100/25 to-transparent rounded-full blur-[80px] md:blur-[120px] translate-x-1/3 translate-y-1/4 opacity-75" />
         </div>
 
-        {/* ─────────────────────────────────────────────────────────────
-            1. KINETIC TYPOGRAPHY PARALLAX RUNNERS (Scroll-Driven)
-           ───────────────────────────────────────────────────────────── */}
-        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between py-10 md:py-14 overflow-hidden z-0">
-          {/* Top Marquee Strip */}
-          <motion.div 
-            style={{ x: marquee1X, opacity: marqueeOpacity }}
-            className="whitespace-nowrap flex items-center gap-8 text-[48px] sm:text-[76px] md:text-[104px] font-black uppercase tracking-tighter text-white/[0.22] leading-none will-change-transform drop-shadow-[0_4px_24px_rgba(255,255,255,0.04)]"
-          >
-            <span>✦ ARCHITECT THE EXCEPTIONAL</span>
-            <span>✦ CRAFT WITH PRECISION</span>
-            <span>✦ FULL STACK MASTERY</span>
-            <span>✦ SEAMLESS EXPERIENCES</span>
-            <span>✦ ARCHITECT THE EXCEPTIONAL</span>
-          </motion.div>
+        {/* Subtle Background Radial Pattern */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-[0.035]"
+          style={{
+            backgroundImage: "radial-gradient(#111111 1px, transparent 1px)",
+            backgroundSize: "28px 28px"
+          }}
+        />
 
-          {/* Bottom Marquee Strip */}
-          <motion.div 
-            style={{ x: marquee2X, opacity: marqueeOpacity }}
-            className="whitespace-nowrap flex items-center gap-8 text-[48px] sm:text-[76px] md:text-[104px] font-black uppercase tracking-tighter text-white/[0.22] leading-none will-change-transform drop-shadow-[0_4px_24px_rgba(255,255,255,0.04)]"
-          >
-            <span>✦ NEXT-GEN WEB APPS</span>
-            <span>✦ PRODUCTION READY CODE</span>
-            <span>✦ FLUID 3D MOTION</span>
-            <span>✦ ACCELERATE YOUR VISION</span>
-            <span>✦ NEXT-GEN WEB APPS</span>
-          </motion.div>
-        </div>
+        {/* Ambient Floating Styles for Zero-Gravity Levitation */}
+        <style>{`
+          @keyframes ctaFloatLeft {
+            0%, 100% {
+              transform: translateY(0px) rotate(0deg);
+            }
+            33% {
+              transform: translateY(-10px) rotate(-1deg);
+            }
+            66% {
+              transform: translateY(4px) rotate(0.5deg);
+            }
+          }
 
-        {/* ─────────────────────────────────────────────────────────────
-            2. 3D BOTTOM-RISING DEPTH CARD
-           ───────────────────────────────────────────────────────────── */}
-        <div className="relative z-10 w-full max-w-3xl mx-auto flex flex-col items-center">
-          
-          {/* Ambient 3D Depth Floor Glow */}
-          <motion.div 
-            style={{ 
-              scale: depthGlowScale, 
-              opacity: depthGlowOpacity 
-            }}
-            className="absolute -bottom-12 w-4/5 h-24 bg-gradient-to-t from-white/10 via-zinc-400/5 to-transparent rounded-full blur-2xl pointer-events-none"
-          />
+          @keyframes ctaFloatMiddle {
+            0%, 100% {
+              transform: translateY(0px) rotate(0deg);
+            }
+            40% {
+              transform: translateY(11px) rotate(0.8deg);
+            }
+            75% {
+              transform: translateY(-6px) rotate(-0.5deg);
+            }
+          }
 
-          <motion.div 
-            style={{ 
-              y: cardY,
-              rotateX: cardRotateX,
-              scale: cardScale,
-              opacity: cardOpacity,
-              filter: cardFilter,
-              pointerEvents: cardPointerEvents,
-              transformStyle: 'preserve-3d'
-            }}
-            data-cta-landmark="corner-card"
-            className="relative w-full rounded-[32px] sm:rounded-[42px] bg-white/90 backdrop-blur-3xl border border-white/90 shadow-[0_45px_120px_-20px_rgba(0,0,0,0.4),0_15px_40px_-10px_rgba(0,0,0,0.22),inset_0_1px_2px_rgba(255,255,255,0.95)] p-8 sm:p-12 md:p-16 will-change-transform flex flex-col items-center text-center overflow-hidden"
-          >
-            {/* Subtle Top Rim Light */}
-            <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent" />
+          @keyframes ctaFloatRight {
+            0%, 100% {
+              transform: translateY(0px) rotate(0deg);
+            }
+            30% {
+              transform: translateY(-8px) rotate(1deg);
+            }
+            70% {
+              transform: translateY(6px) rotate(-0.7deg);
+            }
+          }
 
-            {/* Main Headline (Day Mode Obsidian) */}
-            <h2 
-              data-cta-landmark="card-title"
-              className="text-4xl sm:text-6xl md:text-7xl font-black text-[#111111] tracking-tight leading-none mb-8 sm:mb-10 text-center"
+          @keyframes ctaFloatBar {
+            0%, 100% {
+              transform: translateY(0px);
+            }
+            50% {
+              transform: translateY(-5px);
+            }
+          }
+
+          .cta-float-card-left {
+            animation: ctaFloatLeft 6.6s ease-in-out infinite;
+            will-change: transform;
+          }
+
+          .cta-float-card-middle {
+            animation: ctaFloatMiddle 5.8s ease-in-out infinite;
+            animation-delay: 0.6s;
+            will-change: transform;
+          }
+
+          .cta-float-card-right {
+            animation: ctaFloatRight 7.2s ease-in-out infinite;
+            animation-delay: 1.2s;
+            will-change: transform;
+          }
+
+          .cta-float-bar {
+            animation: ctaFloatBar 5.0s ease-in-out infinite;
+            animation-delay: 0.4s;
+            will-change: transform;
+          }
+        `}</style>
+
+        {/* ==============================================================
+            CENTERED HERO PRESENTATION UNIT
+            - Centered directly to viewport
+            - Left & Right slides are equal (flex-[1.25])
+            - Middle slide is narrower (flex-[0.85])
+           ============================================================== */}
+        <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center justify-center">
+
+          {/* THE THREE-SLIDE TRIPTYCH */}
+          <div className="w-full flex flex-row items-center justify-center gap-2 sm:gap-4 md:gap-6 h-[48vh] sm:h-[52vh] md:h-[56vh]">
+
+            {/* 1. LEFT SLIDE: "Have" (Continuous Spring Bounce on Scroll + Ambient Float) */}
+            <div
+              ref={leftSlideRef}
+              className="flex-[1.25] h-full will-change-transform"
             >
-              Have an Idea!
-            </h2>
+              <div className="w-full h-full rounded-[24px] sm:rounded-[36px] md:rounded-[44px] bg-white/80 backdrop-blur-xl border border-black/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] p-4 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-left transition-shadow duration-300 hover:shadow-[0_28px_60px_rgba(0,0,0,0.12)]">
+                {/* Core Word: "Have" */}
+                <span className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 tracking-tight leading-none select-none block">
+                  Have
+                </span>
+              </div>
+            </div>
 
-            {/* Action Buttons Dock */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 w-full max-w-md">
+            {/* 2. MIDDLE SLIDE: "an" (Continuous Spring Oscillation + Ambient Float) */}
+            <div
+              ref={middleSlideRef}
+              className="flex-[0.85] h-full will-change-transform"
+            >
+              <div className="w-full h-full rounded-[24px] sm:rounded-[36px] md:rounded-[44px] bg-[#111111] text-white border border-gray-800 shadow-[0_25px_60px_rgba(0,0,0,0.25)] p-4 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-middle transition-shadow duration-300 hover:shadow-[0_32px_70px_rgba(0,0,0,0.35)]">
+                {/* Subtle top glow */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-28 bg-gradient-to-b from-blue-500/20 to-transparent rounded-full blur-2xl pointer-events-none" />
+
+                {/* Core Word: "an" */}
+                <span className="relative z-10 text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif italic text-white tracking-tight leading-none select-none block">
+                  an
+                </span>
+              </div>
+            </div>
+
+            {/* 3. RIGHT SLIDE: "Idea!" (Continuous Spring Bounce on Scroll + Ambient Float) */}
+            <div
+              ref={rightSlideRef}
+              className="flex-[1.25] h-full will-change-transform"
+            >
+              <div className="w-full h-full rounded-[24px] sm:rounded-[36px] md:rounded-[44px] bg-white/80 backdrop-blur-xl border border-black/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] p-4 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-right transition-shadow duration-300 hover:shadow-[0_28px_60px_rgba(0,0,0,0.12)]">
+                {/* Core Word: "Idea!" (Each letter is an interactive stepping stone for the rabbit) */}
+                <span className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 tracking-tight leading-none select-none block">
+                  {['I', 'd', 'e', 'a', '!'].map((char, index) => (
+                    <span
+                      key={index}
+                      id={`cta-idea-letter-${index}`}
+                      data-cta-idea-letter={char}
+                      data-cta-idea-index={index}
+                      data-rabbit-target={`cta-idea-${char}`}
+                      data-skill-bounce={`cta-idea-${index}`}
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('rabbit-leap-to-letter', { detail: { index, char } }));
+                      }}
+                      className="inline-block relative cursor-pointer transform-gpu hover:scale-105 active:scale-95 transition-transform"
+                      style={{ transformOrigin: 'center bottom' }}
+                      title={`Rabbit perch on "${char}"`}
+                    >
+                      {char}
+                    </span>
+                  ))}
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ==============================================================
+              INTERACTIVE CALL TO ACTION CONTROL BAR
+              Docked cleanly below the 3 slides with subtle floating hover
+             ============================================================== */}
+          <div
+            ref={ctaBarRef}
+            className="mt-4 sm:mt-6 w-full max-w-xl mx-auto will-change-transform"
+          >
+            <div
+              data-cta-card
+              className="w-full flex items-center justify-between gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-white/90 backdrop-blur-xl border border-black/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.08)] cta-float-bar"
+            >
               {/* Primary Action Button */}
               <button
+                data-cta-button
                 onClick={scrollToContact}
-                data-cta-button="primary"
-                className="w-full sm:w-auto flex-1 group px-8 sm:px-10 py-4 sm:py-4.5 bg-[#111111] text-white hover:bg-black rounded-full font-bold text-base flex items-center justify-center gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.3)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+                className="px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-gray-900 hover:bg-black text-white font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer group shrink-0"
               >
-                <span>Get in Touch</span>
-                <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
+                <span>Start a Conversation</span>
+                <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </button>
 
-              {/* Direct Email Copy Capsule */}
-              <button
-                onClick={handleCopyEmail}
-                data-cta-button="copy-email"
-                className="w-full sm:w-auto px-7 py-4 sm:py-4.5 bg-gray-100 hover:bg-gray-200/90 text-gray-900 border border-gray-200/90 rounded-full font-bold text-base flex items-center justify-center gap-2.5 shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                title="Click to copy email address"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span className="text-emerald-700">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-4 h-4 text-gray-500" />
-                    <span>Copy Email</span>
-                    <Copy className="w-3.5 h-3.5 text-gray-400 ml-0.5" />
-                  </>
-                )}
-              </button>
-            </div>
-          </motion.div>
+          {/* Quick Actions & Socials */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Copy Email */}
+            <button
+              onClick={handleCopyEmail}
+              className="flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-full bg-black/[0.04] hover:bg-black/[0.08] border border-black/[0.04] text-gray-800 hover:text-black text-[11px] sm:text-xs font-mono font-medium transition-all active:scale-95 cursor-pointer"
+              title="Copy email to clipboard"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-emerald-700 font-bold hidden sm:inline">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Mail className="w-3.5 h-3.5 text-gray-500" />
+                  <span className="hidden sm:inline">Email</span>
+                </>
+              )}
+            </button>
+
+            {/* GitHub */}
+            <a
+              href="https://github.com/sdenaveenkumar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/[0.04] hover:bg-black/[0.08] border border-black/[0.04] text-gray-700 hover:text-black flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              title="GitHub Profile"
+              aria-label="GitHub Profile"
+            >
+              <GithubIcon />
+            </a>
+
+            {/* LinkedIn */}
+            <a
+              href="https://linkedin.com/in/sdenaveenkumar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/[0.04] hover:bg-black/[0.08] border border-black/[0.04] text-gray-700 hover:text-black flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              title="LinkedIn Profile"
+              aria-label="LinkedIn Profile"
+            >
+              <LinkedinIcon />
+            </a>
+          </div>
         </div>
 
       </div>
-    </section>
-  );
+
+    </div>
+
+  </div>
+</section>
+);
 };
 
 export default CallToAction;

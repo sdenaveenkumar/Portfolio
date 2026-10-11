@@ -242,7 +242,6 @@ export async function getModelInstance(modelKey) {
   for (let i = 0; i < posAttr.count; i += 3) {
     const r = colAttr.getX(i);
     const g = colAttr.getY(i);
-    const x = posAttr.getX(i);
 
     let isFg = false;
     if (modelKey === 'typescript' || modelKey === 'docker') {

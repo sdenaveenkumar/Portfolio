@@ -77,8 +77,8 @@ const Logo3D = ({
         canvas,
         alpha: true,
         antialias: true,
-        powerPreference: 'high-performance',
-        precision: 'highp',
+        powerPreference: 'low-power',
+        precision: 'mediump',
       });
     } catch {
       setLoadError(true);
@@ -109,16 +109,16 @@ const Logo3D = ({
     rimLight.position.set(-2, 3, -2.5);
     scene.add(rimLight);
 
-    // Sizing & Super-Sampling (Min 384px buffer)
+    // Sizing & Crisp Retina Buffer (Capped at 128px max buffer to eliminate 23x fillrate waste)
     const updateSize = () => {
       if (!container || !renderer || !canvas) return;
       const rect = container.getBoundingClientRect();
       const cssWidth = rect.width || container.offsetWidth || 40;
       const cssHeight = rect.height || container.offsetHeight || 40;
 
-      const currentDpr = Math.max(window.devicePixelRatio || 1, 2);
-      const renderWidth = Math.max(Math.round(cssWidth * currentDpr), 384);
-      const renderHeight = Math.max(Math.round(cssHeight * currentDpr), 384);
+      const currentDpr = Math.min(window.devicePixelRatio || 1, 2);
+      const renderWidth = Math.min(Math.round(cssWidth * currentDpr), 128);
+      const renderHeight = Math.min(Math.round(cssHeight * currentDpr), 128);
 
       camera.aspect = cssWidth / cssHeight;
       camera.updateProjectionMatrix();
@@ -135,7 +135,13 @@ const Logo3D = ({
     resizeObserver.observe(container);
     window.addEventListener('resize', updateSize);
 
-    // Global cursor tracking: Rabbit notices when user's cursor is nearby! (Optimized 60ms throttle)
+    // Pause WebGL rendering entirely when logo is scrolled out of viewport
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+    });
+    intersectionObserver.observe(container);
+
+    // Global cursor tracking: Rabbit notices when user's cursor is nearby! (Optimized 80ms throttle)
     let lastRectTime = 0;
     let cachedRect = null;
 
@@ -180,15 +186,23 @@ const Logo3D = ({
 
     // Animation Loop: Living Rabbit Engine
     const startTime = performance.now();
+    let lastRenderTime = 0;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
       if (!isVisible || !modelWrapper) return;
 
-      const elapsed = (performance.now() - startTime) * 0.001;
       const s = stateRef.current;
       const { isHopping: hopping, hopDirection: direction, hopProgress: progress } = propsRef.current;
+      const isInteracting = hopping || mouseRef.current.isNear || mouseRef.current.isHovered || Math.abs(s.jumpY) > 0.01;
+
+      const now = performance.now();
+      // Cap at 60 FPS when interacting/hopping, and 30 FPS when idle in the navbar to save GPU cycles & thermals
+      if (now - lastRenderTime < (isInteracting ? 16 : 33)) return;
+      lastRenderTime = now;
+
+      const elapsed = (now - startTime) * 0.001;
 
       // 1. Mouse Lerp for Head-Turn
       mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.12;
@@ -355,6 +369,7 @@ const Logo3D = ({
       window.removeEventListener('resize', updateSize);
       window.removeEventListener('pointermove', handleGlobalPointerMove);
       resizeObserver.disconnect();
+      intersectionObserver.disconnect();
 
       if (modelWrapper) {
         scene.remove(modelWrapper);

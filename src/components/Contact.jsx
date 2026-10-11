@@ -9,6 +9,7 @@ const questions = [
 
 const Contact = () => {
   const [step, setStep] = useState(0);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [error, setError] = useState(false);
   const inputRef = useRef(null);
@@ -36,16 +37,24 @@ const Contact = () => {
   const orbScale = useTransform(smoothProgress, [0, 0.45], [0.75, 1.25]);
   const orbOpacity = useTransform(smoothProgress, [0, 0.3], [0.35, 0.75]);
 
+  // Auto-focus and select the input field ONLY when transitioning to a new step card
   useEffect(() => {
-    // Focus input on step change, but avoid stealing focus on the initial step (step 0)
-    // This also avoids issues with React StrictMode running the effect twice on mount.
-    if (step > 0 && inputRef.current) {
-      inputRef.current.focus();
+    if (step > 0 || hasInteracted) {
+      const timer = setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus({ preventScroll: true });
+          if (typeof inputRef.current.select === 'function') {
+            inputRef.current.select();
+          }
+        }
+      }, 480);
+      return () => clearTimeout(timer);
     }
-  }, [step]);
+  }, [step, hasInteracted]);
 
   const handlePrev = () => {
     if (step > 0) {
+      setHasInteracted(true);
       setError(false);
       setStep(s => s - 1);
     }
@@ -77,6 +86,7 @@ const Contact = () => {
     }
 
     if (step < questions.length) {
+      setHasInteracted(true);
       setError(false);
       setStep(s => s + 1);
     }
@@ -101,7 +111,7 @@ const Contact = () => {
     <div 
       id="contact" 
       ref={containerRef} 
-      className="relative z-30 w-full h-[220vh] -mt-[100vh] bg-[#fafafc] text-gray-900 rounded-[36px] sm:rounded-[48px] md:rounded-[60px] shadow-[0_-35px_100px_rgba(0,0,0,0.6),0_30px_70px_rgba(0,0,0,0.4)] border-y border-white/80"
+      className="relative z-50 w-full h-[220vh] -mt-[100vh] bg-[#fafafc] text-gray-900 rounded-[36px] sm:rounded-[48px] md:rounded-[60px] shadow-[0_-35px_100px_rgba(0,0,0,0.6),0_30px_70px_rgba(0,0,0,0.4)] border-y border-white/80"
     >
       {/* Sticky Fullscreen Viewport Stage */}
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden rounded-[36px] sm:rounded-[48px] md:rounded-[60px] flex flex-col justify-center items-center py-6 sm:py-12 px-3 sm:px-6 [perspective:1000px]">
@@ -142,6 +152,14 @@ const Contact = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -80, opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
+              onAnimationComplete={() => {
+                if ((step > 0 || hasInteracted) && inputRef.current) {
+                  inputRef.current.focus({ preventScroll: true });
+                  if (typeof inputRef.current.select === 'function') {
+                    inputRef.current.select();
+                  }
+                }
+              }}
               className="flex flex-col gap-6 sm:gap-8"
             >
               {/* Progress Indicator */}
@@ -158,12 +176,12 @@ const Contact = () => {
                 <span>0{questions.length}</span>
               </div>
               
-              <h2 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 leading-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight text-gray-900 leading-tight">
                 {currentQuestion.title}
               </h2>
 
               <motion.div 
-                className="relative mt-4 sm:mt-8 md:mt-12"
+                className="relative mt-3 sm:mt-6 md:mt-8"
                 animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
                 transition={{ duration: 0.4 }}
               >
@@ -177,8 +195,8 @@ const Contact = () => {
                     }}
                     onKeyDown={handleKeyDown}
                     placeholder={currentQuestion.placeholder}
-                    rows="3"
-                    className={`w-full bg-transparent border-b-2 pb-2 sm:pb-4 text-xl sm:text-3xl md:text-5xl lg:text-6xl focus:outline-none transition-colors resize-none overflow-hidden ${
+                    rows="2"
+                    className={`w-full bg-transparent border-b-2 pb-2 sm:pb-3 text-lg sm:text-2xl md:text-3xl lg:text-4xl focus:outline-none transition-colors resize-none overflow-hidden ${
                       error ? 'border-red-500 text-red-500 placeholder:text-red-300 focus:border-red-500' : 'border-gray-200 text-gray-900 placeholder:text-gray-300 focus:border-gray-900'
                     }`}
                   />
@@ -200,7 +218,7 @@ const Contact = () => {
                 )}
               </motion.div>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 mt-6 sm:mt-8 md:mt-12">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 mt-5 sm:mt-7 md:mt-10">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <button 
                     onClick={handleNext}
@@ -247,7 +265,10 @@ const Contact = () => {
                 Thanks, {formData.name.split(' ')[0] || 'there'}!
               </h2>
               <p className="text-base sm:text-xl md:text-2xl text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">
-                I've received your message. I'll be in touch with you shortly at <span className="text-gray-900 font-bold border-b-2 border-gray-900 break-all">{formData.email || 'your email'}</span>.
+                I've received your message. I'll be in touch with you shortly at{' '}
+                <span className="text-gray-900 font-bold border-b-2 border-gray-900 inline-block max-w-full break-words align-baseline">
+                  {formData.email || 'your email'}
+                </span>.
               </p>
               <button 
                 onClick={() => {

@@ -222,11 +222,6 @@ const Projects = () => {
       }
     });
 
-    gsap.set(folderWrapperRef.current, { willChange: "transform" });
-    cardsRef.current.forEach(card => {
-      if (card) gsap.set(card, { willChange: "transform" });
-    });
-
     // PHASE 1: Cards fan out organically
     cardsRef.current.forEach((card, index) => {
       if (!card) return;
@@ -294,19 +289,25 @@ const Projects = () => {
   }, { scope: containerRef, dependencies: [displayRepos] });
 
   return (
-    <div id="projects" ref={containerRef} className="relative w-full" style={{ height: `${Math.max(300, displayRepos.length * 48)}vh` }}>
-      <div className="absolute inset-0 bg-[#F7F7F8] -z-10" />
-      
-      {/* Sticky Fullscreen Presentation Stage */}
-      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col items-center justify-center pt-14 sm:pt-20">
+    <div id="projects" ref={containerRef} className="relative w-full bg-[#fafafc]" style={{ height: `${Math.max(300, displayRepos.length * 48)}vh` }}>
+      <div className="absolute inset-0 bg-[#fafafc] -z-10" />
 
-        {/* Section Header - positioned safely below the floating navbar */}
-        <h2 className="absolute top-24 sm:top-28 md:top-32 text-[28px] sm:text-[42px] md:text-[54px] font-black text-[#1F1F1F] tracking-tighter uppercase z-10 pointer-events-none">
+      {/* Sticky Fullscreen Presentation Stage */}
+      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col items-center justify-center pt-14 sm:pt-20 bg-[#fafafc]">
+        
+        {/* Ambient Glows from Contact Us Theme */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+          <div className="absolute w-[600px] md:w-[800px] h-[600px] md:h-[800px] bg-gradient-to-br from-purple-200/40 via-pink-200/25 to-transparent rounded-full blur-[80px] md:blur-[120px] -translate-x-1/3 -translate-y-1/4 opacity-60" />
+          <div className="absolute w-[500px] md:w-[700px] h-[500px] md:h-[700px] bg-gradient-to-tl from-cyan-200/40 via-blue-100/25 to-transparent rounded-full blur-[80px] md:blur-[120px] translate-x-1/3 translate-y-1/4 opacity-60" />
+        </div>
+
+        {/* Section Header - positioned safely behind unstacking cards in the z-axis */}
+        <h2 className="absolute top-24 sm:top-28 md:top-32 text-[28px] sm:text-[42px] md:text-[54px] font-black text-[#1F1F1F] tracking-tighter uppercase z-0 pointer-events-none select-none">
           Projects
         </h2>
 
         {/* Folder Container Wrapper */}
-        <div ref={folderWrapperRef} className="relative w-[250px] sm:w-[290px] md:w-[450px] h-[175px] sm:h-[200px] md:h-[300px] mt-24 sm:mt-32 md:mt-40">
+        <div ref={folderWrapperRef} className="relative z-10 w-[250px] sm:w-[290px] md:w-[450px] h-[175px] sm:h-[200px] md:h-[300px] mt-24 sm:mt-32 md:mt-40">
 
           {/* Back of the Folder */}
           <div className="absolute bottom-0 left-0 w-full h-full bg-[#E5E5E7] rounded-3xl shadow-inner border border-gray-300/80">

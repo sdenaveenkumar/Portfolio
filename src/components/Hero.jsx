@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import ModelIcon3D from './ModelIcon3D';
 
 const Hero = () => {
   const marqueeItems = [
@@ -11,28 +10,19 @@ const Hero = () => {
   const { scrollY } = useScroll();
   const textY = useTransform(scrollY, [0, 500], [0, 250]);
 
-  const floatingBadge = (text, top, left, right, bottom, delayOffset = 0, modelKey = null) => (
+  const floatingBadge = (text, top, left, right, bottom, delayOffset = 0, color = "#10B981") => (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.5, type: "spring" }}
       className={`absolute z-20 ${top} ${left} ${right} ${bottom}`}
     >
-      <motion.div
-        animate={{ y: [0, -10, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: delayOffset }}
-        style={{ willChange: "transform" }}
-        className="flex items-center gap-1.5 sm:gap-2 bg-white/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 hover:shadow-lg transition-shadow"
+      <div
+        className="flex items-center gap-1.5 sm:gap-2 bg-white/95 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-gray-100 hover:shadow-md transition-shadow"
       >
-        {modelKey ? (
-          <div className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 flex items-center justify-center">
-            <ModelIcon3D modelKey={modelKey} interactive={false} autoRotateSpeed={1.4} />
-          </div>
-        ) : (
-          <span className="w-1.5 h-1.5 bg-red-500 rounded-full shrink-0"></span>
-        )}
+        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }}></span>
         <span className="text-[9px] sm:text-[10px] font-bold tracking-widest text-gray-800">{text}</span>
-      </motion.div>
+      </div>
     </motion.div>
   );
 
@@ -56,35 +46,21 @@ const Hero = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
       style={{ willChange: "opacity" }}
-      className="relative w-full min-h-[100vh] bg-white flex flex-col justify-center overflow-hidden pt-20"
+      className="relative w-full min-h-[100vh] bg-white flex flex-col justify-between overflow-hidden pt-16 sm:pt-20"
     >
 
       {/* MASSIVE BACKGROUND TEXT */}
       <div className="absolute inset-0 flex items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[30vh] md:pt-[40vh]">
         <motion.h1
           className="text-[20vw] md:text-[28vw] font-bold text-gray-100 leading-none tracking-tighter flex"
-          style={{ y: textY, willChange: "transform" }}
+          style={{ y: textY }}
         >
-          {Array.from("Naveen").map((letter, i) => (
-            <motion.span
-              key={i}
-              className="inline-block"
-              animate={{ y: [0, -20, 0] }}
-              transition={{
-                duration: 2.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.15,
-              }}
-            >
-              {letter}
-            </motion.span>
-          ))}
+          Naveen
         </motion.h1>
       </div>
 
       {/* THREE COLUMN FOREGROUND */}
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12 items-center h-full pb-16 md:pb-20">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12 items-center flex-1 my-auto py-6 sm:py-10">
 
         {/* LEFT COLUMN */}
         <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left pt-6 md:pt-0 z-20 pointer-events-auto">
@@ -131,9 +107,9 @@ const Hero = () => {
           />
 
           {/* Floating Badges */}
-          {floatingBadge("NODE.JS", "top-[10%]", "left-2 md:left-[-10%]", "auto", "auto", 0, "nodejs")}
-          {floatingBadge("DOCKER", "top-[40%]", "auto", "right-2 md:right-[-15%]", "auto", 1, "docker")}
-          {floatingBadge("TYPESCRIPT", "auto", "left-2 sm:left-3 md:left-[-5%]", "auto", "bottom-[28%]", 2, "typescript")}
+          {floatingBadge("NODE.JS", "top-[10%]", "left-2 md:left-[-10%]", "auto", "auto", 0, "#22c55e")}
+          {floatingBadge("DOCKER", "top-[40%]", "auto", "right-2 md:right-[-15%]", "auto", 1, "#0284c7")}
+          {floatingBadge("TYPESCRIPT", "auto", "left-2 sm:left-3 md:left-[-5%]", "auto", "bottom-[28%]", 2, "#3b82f6")}
         </div>
 
         {/* RIGHT COLUMN */}
@@ -163,14 +139,14 @@ const Hero = () => {
 
       </div>
 
-      {/* BOTTOM MARQUEE */}
-      <div className="absolute bottom-0 left-0 w-full border-t border-gray-200 bg-[#F9FAFB] py-4 overflow-hidden z-20">
+      {/* BOTTOM MARQUEE / TECH STACK BANNER */}
+      <div className="relative z-20 w-full mt-auto shrink-0 border-t border-b border-gray-200/80 bg-[#F9FAFB] py-3.5 sm:py-4 overflow-hidden">
         <div className="flex whitespace-nowrap">
           <motion.div
             animate={{ x: ["0%", "-100%"] }}
             transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
             style={{ willChange: "transform" }}
-            className="flex items-center space-x-12 px-6"
+            className="flex items-center space-x-12 px-6 shrink-0"
           >
             {marqueeItems.map((item, idx) => (
               <div key={`m1-${idx}`} className="flex items-center space-x-12">
@@ -183,7 +159,7 @@ const Hero = () => {
             animate={{ x: ["0%", "-100%"] }}
             transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
             style={{ willChange: "transform" }}
-            className="flex items-center space-x-12 px-6"
+            className="flex items-center space-x-12 px-6 shrink-0"
           >
             {marqueeItems.map((item, idx) => (
               <div key={`m2-${idx}`} className="flex items-center space-x-12">

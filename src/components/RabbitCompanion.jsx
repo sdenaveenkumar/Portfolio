@@ -22,7 +22,7 @@ import Logo3D from './Logo3D';
  * - Dynamic 3D Color Morph: Adapts between obsidian black and radiant white based on surface luminance.
  * - Home Navigation on Click: Clicking the rabbit from anywhere immediately returns to the homepage.
  */
-const RabbitCompanion = () => {
+const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   const [activeSection, setActiveSection] = useState('home');
   const [isRoaming, setIsRoaming] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -155,6 +155,7 @@ const RabbitCompanion = () => {
   // 2b. Trigger physics-based squash & spring bounce on landed elements
   const triggerElementBounce = (el) => {
     if (!el) return;
+    if (el.closest?.('[data-rabbit-tree]') || el.closest?.('[data-rabbit-tree-modal]') || el.closest?.('[data-no-rabbit]')) return;
 
     // Target the dedicated bounce layer if present (avoids conflicts with GSAP positioning)
     const bounceNode = el.querySelector?.('[data-skill-bounce]') ||
@@ -185,7 +186,7 @@ const RabbitCompanion = () => {
 
   // 3. Natural Biological Leap Engine with Smooth Airborne Flight
   const leapTo = useCallback((target, {
-    duration = 440,
+    duration: customDuration,
     arcHeight = 48,
     onLanding,
   } = {}) => {
@@ -216,7 +217,7 @@ const RabbitCompanion = () => {
     isHoppingRef.current = true;
 
     // Organic timing: short hops are brisk (~380ms), long leaps have floaty hang-time (~580ms)
-    const leapDuration = Math.min(580, Math.max(370, 320 + distance * 0.32));
+    const leapDuration = customDuration || Math.min(580, Math.max(370, 320 + distance * 0.32));
     const leapArc = Math.min(110, Math.max(arcHeight, 28 + distance * 0.12));
 
     const startTime = performance.now();
@@ -310,17 +311,17 @@ const RabbitCompanion = () => {
     const viewportH = window.innerHeight;
     const viewportW = window.innerWidth;
 
-    // Focused selectors: ALL skill items, CTA cards, badges, headings, cards, and interactive landmarks
+    // Focused selectors: ALL skill items, badges, headings, cards, and interactive landmarks
     const selectors = [
       // Skill Section specific targets
       '[data-skill-card]', '[data-skill-target]', '.skill-icon',
-      // CTA Section specific targets
-      '[data-cta-landmark]', '[data-cta-badge]', '[data-cta-button]',
       // Tech stack badges, skill pills & 3D model icons
       '[data-model-icon]', 'button', 'a[href]',
       '[class*="badge"]', '[class*="tag"]', '[class*="pill"]',
       // Section headings, stack items & cards
-      'h2', 'h3', 'article'
+      'h2', 'h3', 'article',
+      // Call to Action section: all letters of Idea! ('I', 'd', 'e', 'a', '!')
+      '[data-cta-idea-letter]'
     ].join(', ');
 
     const currentSecKey = activeSectionRef.current;
@@ -347,8 +348,66 @@ const RabbitCompanion = () => {
       if (el.closest('[data-rabbit-root]') || el.closest('#resume-modal')) continue;
       if (el.closest('nav') && !isNavItem) continue;
 
+      // DO NOT INTERACT WITH RABBIT TREE:
+      if (
+        el.closest('[data-rabbit-tree]') ||
+        el.closest('[data-rabbit-tree-modal]') ||
+        el.closest('[data-no-rabbit]') ||
+        el.closest('[aria-label*="Rabbit Tree"]') ||
+        el.closest('[title*="Rabbit Tree"]') ||
+        (el.textContent && el.textContent.toLowerCase().includes('rabbit tree'))
+      ) {
+        continue;
+      }
+
+      // CALL TO ACTION SECTION CONSTRAINT:
+      // The rabbit should ONLY interact with the letters of "Idea!" on the call to action section.
+      if (el.closest('#cta') && !el.closest('[data-cta-idea-letter]')) continue;
+
       // Discard invisible or zero-size elements
       if (!isNavItem && el.offsetParent === null) continue;
+
+      // Check Call to Action: letters of "Idea!" ('I', 'd', 'e', 'a', '!')
+      const ideaLetterEl = el.hasAttribute('data-cta-idea-letter') ? el : el.closest('[data-cta-idea-letter]');
+      if (ideaLetterEl) {
+        const style = window.getComputedStyle(ideaLetterEl);
+        if (parseFloat(style.opacity || '1') < 0.15) continue;
+        const rect = ideaLetterEl.getBoundingClientRect();
+        if (rect.bottom < 50 || rect.top > viewportH - 30) continue;
+        if (rect.right < 10 || rect.left > viewportW - 10) continue;
+
+        const letterIndex = ideaLetterEl.getAttribute('data-cta-idea-index') || '0';
+        const letterChar = ideaLetterEl.getAttribute('data-cta-idea-letter') || '';
+        const gridKey = `cta_idea_${letterIndex}`;
+        if (seenPositions.has(gridKey)) continue;
+        seenPositions.add(gridKey);
+
+        // Perch directly on top of this letter
+        let landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
+        let landY = rect.top - RABBIT_HEIGHT + 14;
+
+        landX = Math.max(10, Math.min(viewportW - RABBIT_WIDTH - 10, landX));
+        landY = Math.max(40, Math.min(viewportH - RABBIT_HEIGHT - 20, landY));
+
+        const col = landX < viewportW / 3 ? 0 : landX < (2 * viewportW) / 3 ? 1 : 2;
+        const row = landY < viewportH / 2 ? 0 : 1;
+        const sector = row * 3 + col;
+
+        validTargets.push({
+          el: ideaLetterEl,
+          rect,
+          landX,
+          landY,
+          sector,
+          isCard: false,
+          isInteractive: true,
+          inCurrentSection: true,
+          isIdeaLetter: true,
+          letterChar,
+          letterIndex: parseInt(letterIndex, 10),
+        });
+        continue;
+      }
 
       // Check skill cards specifically
       const skillCardEl = el.hasAttribute('data-skill-card') ? el : el.closest('[data-skill-card]');
@@ -529,10 +588,11 @@ const RabbitCompanion = () => {
     const scored = candidates.map(t => {
       const dist = Math.hypot(t.landX - curX, t.landY - curY);
       const isFreshSector = !visitedSectorsRef.current.slice(-2).includes(t.sector);
-      const isGoodDistance = dist >= 70 && dist <= viewportW * 0.75;
+      const isGoodDistance = t.isIdeaLetter ? (dist >= 14 && dist <= 380) : (dist >= 70 && dist <= viewportW * 0.75);
 
       let score = 0;
       if (t.inCurrentSection) score += 50;
+      if (t.isIdeaLetter) score += 65; // High priority for hopping across letters of Idea!
       if (t.skillName) score += 20; // Extra priority for skill icons!
       if (isFreshSector) score += 25;
       if (isGoodDistance) score += 20;
@@ -561,8 +621,8 @@ const RabbitCompanion = () => {
     isDarkBgRef.current = isTargetDark;
 
     leapTo({ x: chosen.landX, y: chosen.landY }, {
-      duration: 460,
-      arcHeight: 52,
+      duration: chosen.isIdeaLetter ? 380 : 460,
+      arcHeight: chosen.isIdeaLetter ? 38 : 52,
       onLanding: () => {
         // Physical squash & bounce on target
         triggerElementBounce(chosen.el);
@@ -573,7 +633,9 @@ const RabbitCompanion = () => {
         }
 
         // Adaptive perch duration based on element personality
-        const perchDelay = chosen.skillName
+        const perchDelay = chosen.isIdeaLetter
+          ? 1800 + Math.random() * 500
+          : chosen.skillName
           ? 2200 + Math.random() * 400
           : chosen.isInteractive
           ? 1800 + Math.random() * 400
@@ -588,15 +650,30 @@ const RabbitCompanion = () => {
     });
   }, [leapTo, returnToNavbar, checkIsDarkBackground]);
 
+  // Immediately dock rabbit safely whenever Rabbit Tree modal is open
+  useEffect(() => {
+    if (isRabbitTreeOpen) {
+      if (isRoamingRef.current) {
+        returnToNavbar(true);
+      }
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      if (roamStepTimerRef.current) clearTimeout(roamStepTimerRef.current);
+    }
+  }, [isRabbitTreeOpen, returnToNavbar]);
+
   // 7. Start Roaming Mode when Idle
   const startRoaming = useCallback(() => {
     if (isRoamingRef.current) return;
+    // Strictly do NOT roam if Rabbit Tree is open or resume modal is open
+    if (isRabbitTreeOpen || document.querySelector('[data-rabbit-tree-modal]') || document.getElementById('resume-modal')) {
+      return;
+    }
     setIsRoaming(true);
     isRoamingRef.current = true;
     roamStartScrollYRef.current = window.scrollY || 0;
 
     performRoamStep();
-  }, [performRoamStep]);
+  }, [performRoamStep, isRabbitTreeOpen]);
 
   // 8. Idle Monitor & Intentional Navigation Observer
   // - 3.8s idle threshold for calm, unobtrusive presence
@@ -647,6 +724,12 @@ const RabbitCompanion = () => {
         // If click is on rabbit itself, do NOT return to navbar
         if (e.target?.closest?.('[data-rabbit-root]')) return;
 
+        // If click is on Rabbit Tree button or modal, dock rabbit and do not disturb
+        if (e.target?.closest?.('[data-rabbit-tree]') || e.target?.closest?.('[data-rabbit-tree-modal]') || e.target?.closest?.('[data-no-rabbit]')) {
+          if (isRoamingRef.current) returnToNavbar(true);
+          return;
+        }
+
         // If click was on another interactive element, return to navbar
         if (isRoamingRef.current && (e.target?.closest?.('button') || e.target?.closest?.('a'))) {
           returnToNavbar(true);
@@ -672,8 +755,10 @@ const RabbitCompanion = () => {
   // 9. Scroll Section Tracking (tracks current section and keeps rabbit synced)
   useEffect(() => {
     let scrollDebounceTimer = null;
+    let ticking = false;
 
-    const handleScroll = () => {
+    const checkScrollSection = () => {
+      ticking = false;
       // If user recently clicked a nav item, lock out intermediate scroll section updates
       if (performance.now() < navClickLockRef.current) return;
 
@@ -712,6 +797,41 @@ const RabbitCompanion = () => {
           scrollDebounceTimer = setTimeout(() => {
             if (isRoamingRef.current) performRoamStep();
           }, 120);
+        } else if (currentSec === 'cta') {
+          // In Call to Action section: rabbit targets letters of "Idea!"
+          const ideaLetters = Array.from(document.querySelectorAll('[data-cta-idea-letter]'));
+          const visibleLetter = ideaLetters.find(el => {
+            const rect = el.getBoundingClientRect();
+            return rect.top > 60 && rect.bottom < window.innerHeight - 30;
+          });
+          if (visibleLetter) {
+            const rect = visibleLetter.getBoundingClientRect();
+            const landX = Math.max(10, Math.min(window.innerWidth - RABBIT_WIDTH - 10, rect.left + (rect.width - RABBIT_WIDTH) / 2));
+            const landY = Math.max(40, Math.min(window.innerHeight - RABBIT_HEIGHT - 20, rect.top - RABBIT_HEIGHT + 14));
+            setIsRoaming(true);
+            isRoamingRef.current = true;
+            leapTo({ x: landX, y: landY }, {
+              duration: 450,
+              arcHeight: 46,
+              onLanding: () => {
+                triggerElementBounce(visibleLetter);
+                if (isRoamingRef.current) {
+                  roamStepTimerRef.current = setTimeout(performRoamStep, 2000);
+                }
+              }
+            });
+            return;
+          }
+          const newTarget = getNavbarTarget(currentSec);
+          leapTo(newTarget, {
+            duration: 380,
+            arcHeight: 26,
+            onLanding: () => {
+              const effectiveKey = (currentSec === 'contact' || currentSec === 'cta') ? 'experience' : currentSec;
+              const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
+              triggerElementBounce(navItemEl);
+            }
+          });
         } else {
           // Hop along to the newly active navbar tab!
           const newTarget = getNavbarTarget(currentSec);
@@ -725,13 +845,13 @@ const RabbitCompanion = () => {
             }
           });
         }
-      } else if (!isRoamingRef.current && !isHoppingRef.current) {
-        // Dynamically track navbar width and position changes
-        const currentTarget = getNavbarTarget(currentSec);
-        if (currentTarget.x > 0 && (Math.abs(currentTarget.x - currentPosRef.current.x) > 0.5 || Math.abs(currentTarget.y - currentPosRef.current.y) > 0.5)) {
-          currentPosRef.current = currentTarget;
-          setRabbitPos(currentTarget);
-        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(checkScrollSection);
       }
     };
 
@@ -828,6 +948,47 @@ const RabbitCompanion = () => {
       if (nav) nav.removeEventListener('click', handleNavClick);
     };
   }, [getNavbarTarget, leapTo]);
+
+  // 10b. Direct interaction listener for letters of "Idea!" on Call to Action section
+  useEffect(() => {
+    const handleLeapToLetter = (e) => {
+      const { index, char } = e?.detail || {};
+      const el = (index !== undefined ? document.getElementById(`cta-idea-letter-${index}`) : null) ||
+                 (char ? document.querySelector(`[data-cta-idea-letter="${char}"]`) : null) ||
+                 document.getElementById('cta-idea-letter-0') ||
+                 document.querySelector('[data-cta-idea-letter]');
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const landX = Math.max(10, Math.min(window.innerWidth - RABBIT_WIDTH - 10, rect.left + (rect.width - RABBIT_WIDTH) / 2));
+      const landY = Math.max(40, Math.min(window.innerHeight - RABBIT_HEIGHT - 20, rect.top - RABBIT_HEIGHT + 14));
+
+      if (roamStepTimerRef.current) {
+        clearTimeout(roamStepTimerRef.current);
+        roamStepTimerRef.current = null;
+      }
+
+      setIsRoaming(true);
+      isRoamingRef.current = true;
+
+      leapTo({ x: landX, y: landY }, {
+        duration: 440,
+        arcHeight: 46,
+        onLanding: () => {
+          triggerElementBounce(el);
+          if (isRoamingRef.current) {
+            roamStepTimerRef.current = setTimeout(performRoamStep, 2000);
+          }
+        }
+      });
+    };
+
+    window.addEventListener('rabbit-leap-to-letter', handleLeapToLetter);
+    window.addEventListener('rabbit-leap-to-i', handleLeapToLetter);
+    return () => {
+      window.removeEventListener('rabbit-leap-to-letter', handleLeapToLetter);
+      window.removeEventListener('rabbit-leap-to-i', handleLeapToLetter);
+    };
+  }, [leapTo, performRoamStep]);
 
   // 11. Click on Rabbit: Instantly return to Homepage from anywhere
   const handleRabbitClick = (e) => {
