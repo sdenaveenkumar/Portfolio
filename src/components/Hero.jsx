@@ -53,7 +53,7 @@ const Hero = () => {
       <h1 className="sr-only">Naveen Kumar — Fullstack Software Engineer &amp; Creative Technologist (RabbitFolio)</h1>
 
       {/* MASSIVE BACKGROUND TEXT (Anchored directly behind profile portrait on mobile & desktop) */}
-      <div aria-hidden="true" className="absolute inset-0 flex items-start md:items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[12vh] sm:pt-[15vh] md:pt-[40vh]">
+      <div aria-hidden="true" className="absolute inset-0 flex items-start md:items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[18vh] sm:pt-[22vh] md:pt-[44vh]">
         <motion.div
           className="text-[26vw] md:text-[28vw] font-bold text-gray-100 leading-none tracking-tighter flex"
           style={{ y: textY }}
