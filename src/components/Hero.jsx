@@ -46,7 +46,7 @@ const Hero = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
       style={{ willChange: "opacity" }}
-      className="relative w-full min-h-[100vh] bg-white flex flex-col justify-between overflow-hidden pt-16 sm:pt-20"
+      className="relative w-full min-h-[100vh] bg-white flex flex-col justify-between overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20 md:pb-6"
     >
 
       {/* SEMANTIC ACCESSIBLE HEADING FOR SEARCH ENGINES */}
@@ -63,10 +63,10 @@ const Hero = () => {
       </div>
 
       {/* THREE COLUMN FOREGROUND */}
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 md:gap-6 lg:gap-12 items-center flex-1 my-auto py-6 sm:py-8 md:py-10">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 md:gap-6 lg:gap-12 items-center flex-1 my-auto py-4 sm:py-6 md:py-10">
 
-        {/* LEFT COLUMN */}
-        <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left pt-4 sm:pt-6 md:pt-0 z-20 pointer-events-auto">
+        {/* LEFT COLUMN: Fullstack Software Engineer (Order 2 on mobile, Order 1 on desktop) */}
+        <div className="order-2 md:order-1 flex flex-col justify-center items-center md:items-start text-center md:text-left pt-1 sm:pt-3 md:pt-0 z-20 pointer-events-auto">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -96,8 +96,8 @@ const Hero = () => {
           </motion.div>
         </div>
 
-        {/* CENTER COLUMN (IMAGE & BADGES) */}
-        <div className="relative flex justify-center items-end h-[40vh] sm:h-[48vh] md:h-[54vh] lg:h-[72vh] xl:h-[80vh] w-full max-w-[280px] sm:max-w-[340px] md:max-w-none md:w-[280px] lg:w-[380px] xl:w-[460px] mx-auto">
+        {/* CENTER COLUMN: IMAGE & BADGES (Order 1 on mobile, Order 2 on desktop) */}
+        <div className="order-1 md:order-2 relative flex justify-center items-end h-[36vh] sm:h-[44vh] md:h-[54vh] lg:h-[72vh] xl:h-[80vh] w-full max-w-[260px] sm:max-w-[320px] md:max-w-none md:w-[280px] lg:w-[380px] xl:w-[460px] mx-auto mt-2 sm:mt-4 md:mt-0">
           <motion.img
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -106,7 +106,7 @@ const Hero = () => {
             alt="Naveen Kumar — Fullstack Software Engineer Portrait"
             loading="eager"
             fetchPriority="high"
-            className="w-full h-full object-contain object-bottom relative z-10 filter contrast-[1.05] drop-shadow-2xl rounded-b-none rounded-t-[40px] scale-[1.18] sm:scale-[1.28] md:scale-[1.32] lg:scale-[1.55] xl:scale-[1.72] origin-bottom translate-y-6 sm:translate-y-10 md:translate-y-12 lg:translate-y-20 md:-translate-x-4 lg:-translate-x-8"
+            className="w-full h-full object-contain object-bottom relative z-10 filter contrast-[1.05] drop-shadow-2xl rounded-b-none rounded-t-[40px] scale-[1.10] sm:scale-[1.20] md:scale-[1.32] lg:scale-[1.55] xl:scale-[1.72] origin-bottom translate-y-3 sm:translate-y-6 md:translate-y-12 lg:translate-y-20 md:-translate-x-4 lg:-translate-x-8"
           />
 
           {/* Floating Badges (Fluid offsets preventing edge collisions on mobile & tablet) */}
@@ -115,8 +115,8 @@ const Hero = () => {
           {floatingBadge("TYPESCRIPT", "auto", "left-1 sm:left-3 md:left-[-4%] lg:left-[-6%]", "auto", "bottom-[22%] sm:bottom-[26%]", 2, "#3b82f6")}
         </div>
 
-        {/* RIGHT COLUMN */}
-        <div className="flex flex-col justify-center items-center md:items-end text-center md:text-right pt-2 sm:pt-4 md:pt-0 -mt-2 md:-mt-10 lg:-mt-20 z-20">
+        {/* RIGHT COLUMN: BIO & CTA (Order 3) */}
+        <div className="order-3 md:order-3 flex flex-col justify-center items-center md:items-end text-center md:text-right pt-2 sm:pt-4 md:pt-0 -mt-1 md:-mt-10 lg:-mt-20 z-20">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
