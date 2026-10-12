@@ -52,10 +52,10 @@ const Hero = () => {
       {/* SEMANTIC ACCESSIBLE HEADING FOR SEARCH ENGINES */}
       <h1 className="sr-only">Naveen Kumar — Fullstack Software Engineer &amp; Creative Technologist (RabbitFolio)</h1>
 
-      {/* MASSIVE BACKGROUND TEXT */}
-      <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[30vh] md:pt-[40vh]">
+      {/* MASSIVE BACKGROUND TEXT (Anchored directly behind profile portrait on mobile & desktop) */}
+      <div aria-hidden="true" className="absolute inset-0 flex items-start md:items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[12vh] sm:pt-[15vh] md:pt-[40vh]">
         <motion.div
-          className="text-[20vw] md:text-[28vw] font-bold text-gray-100 leading-none tracking-tighter flex"
+          className="text-[26vw] md:text-[28vw] font-bold text-gray-100 leading-none tracking-tighter flex"
           style={{ y: textY }}
         >
           Naveen
@@ -77,21 +77,20 @@ const Hero = () => {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="text-[2.2rem] sm:text-[3rem] md:text-[2.6rem] lg:text-[3.5rem] xl:text-[4rem] font-black leading-[0.92] text-gray-900 tracking-tighter"
+              className="text-[1.85rem] sm:text-[2.6rem] md:text-[2.4rem] lg:text-[3.2rem] xl:text-[3.8rem] font-black leading-[0.96] text-gray-900 tracking-tighter"
             >
-              {"Fullstack".split("").map((char, index) => (
-                <motion.span key={`char-1-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
-              ))}
-              <br />
-              <span>
-                {"Software".split("").map((char, index) => (
-                  <motion.span key={`char-2-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
+              <span className="block">
+                {"Fullstack".split("").map((char, index) => (
+                  <motion.span key={`char-1-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
                 ))}
               </span>
-              <br />
-              {"Engineer".split("").map((char, index) => (
-                <motion.span key={`char-3-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
-              ))}
+              <span className="block whitespace-nowrap">
+                {"Software Engineer".split("").map((char, index) => (
+                  <motion.span key={`char-2-${index}`} variants={childVariants} className="inline-block">
+                    {char === " " ? "\u00A0" : char}
+                  </motion.span>
+                ))}
+              </span>
             </motion.h2>
           </motion.div>
         </div>
