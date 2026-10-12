@@ -135,7 +135,7 @@ function App() {
         data-rabbit-tree="true"
         data-no-rabbit="true"
         onClick={toggleRabbitTreeModal}
-        className={`fixed top-4 sm:top-6 md:top-7 right-3 sm:right-6 md:right-8 z-40 pointer-events-auto group flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full ${
+        className={`fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] sm:top-6 md:top-7 right-3 sm:right-6 md:right-8 z-40 pointer-events-auto group flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full ${
           showRabbitTreeModal 
             ? 'bg-black text-white border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.5)]' 
             : 'bg-white/85 hover:bg-white text-gray-900 border-white/60 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.2)]'

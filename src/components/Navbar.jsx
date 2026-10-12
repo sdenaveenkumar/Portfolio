@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Sparkles, FolderGit2, GraduationCap, MessageSquare } from 'lucide-react';
+import { Home, Sparkles, FolderGit2, GraduationCap, MessageSquare, FileText } from 'lucide-react';
 import { updateSeoMeta, SECTION_SEO, syncUrlHash, scrollToHash } from '../utils/seoRouter';
 
 const mobileTabs = [
@@ -149,21 +149,18 @@ const Navbar = ({ onResumeClick }) => {
 
   return (
     <>
-      {/* 📱 Mobile Top App Header (< 768px): Minimal Brand Status & Quick Resume */}
-      <div className="fixed top-[calc(env(safe-area-inset-top,0px)+0.6rem)] inset-x-0 z-40 flex md:hidden justify-between items-center px-4 pointer-events-none">
-        <div 
-          onClick={() => scrollToSection('home')}
-          className="pointer-events-auto px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] flex items-center gap-2 cursor-pointer active:scale-95 transition-transform"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-black text-xs tracking-tight text-gray-900 font-sans">RabbitFolio</span>
-        </div>
-
+      {/* 📱 Mobile Top-Left Floating Button: Resume (Symmetrically balances Rabbit Tree on Top-Right) */}
+      <div className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] left-3 sm:left-6 z-40 flex md:hidden pointer-events-none">
         <button 
           onClick={onResumeClick}
-          className="pointer-events-auto px-4 py-1.5 rounded-full bg-black hover:bg-gray-800 text-white text-xs font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] active:scale-95 transition-all cursor-pointer"
+          className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/85 hover:bg-white text-gray-900 border border-white/60 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer select-none"
+          title="Open Resume"
+          aria-label="Open Resume"
         >
-          Resume
+          <FileText className="w-3.5 h-3.5 text-gray-500" />
+          <span className="font-bold text-xs tracking-tight text-black">
+            Resume
+          </span>
         </button>
       </div>
 
