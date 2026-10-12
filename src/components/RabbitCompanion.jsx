@@ -278,6 +278,27 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     hopAnimRef.current = requestAnimationFrame(step);
   }, [getNavbarTarget]);
 
+  // Trigger home landing bounce and event, and glide with the home dock as navbar contracts
+  const triggerHomeLanding = useCallback((itemEl) => {
+    triggerElementBounce(itemEl);
+    window.dispatchEvent(new CustomEvent('rabbit-landed-home'));
+
+    // As the navbar contracts from wide (700px) to compact (520px) over 500ms,
+    // continuously track the home dock on every frame so the rabbit smoothly glides with it!
+    const trackStart = performance.now();
+    const trackDockGlide = (now) => {
+      if (now - trackStart < 620 && activeSectionRef.current === 'home' && !isRoamingRef.current && !isHoppingRef.current) {
+        const target = getNavbarTarget('home');
+        if (target.x > 0 && target.y > 0) {
+          currentPosRef.current = target;
+          setRabbitPos(target);
+        }
+        requestAnimationFrame(trackDockGlide);
+      }
+    };
+    requestAnimationFrame(trackDockGlide);
+  }, [getNavbarTarget]);
+
   // 4. Return to Navbar Dock
   const returnToNavbar = useCallback((speedy = false) => {
     if (roamStepTimerRef.current) {
@@ -301,10 +322,14 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       onLanding: () => {
         const effectiveKey = (targetKey === 'contact' || targetKey === 'cta') ? 'experience' : targetKey;
         const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
-        triggerElementBounce(navItemEl);
+        if (targetKey === 'home') {
+          triggerHomeLanding(navItemEl);
+        } else {
+          triggerElementBounce(navItemEl);
+        }
       },
     });
-  }, [getNavbarTarget, leapTo]);
+  }, [getNavbarTarget, leapTo, triggerHomeLanding]);
 
   // 5. Discover Genuine High-Value UI Landmarks Across Current Section & Skills
   const findScreenTargets = () => {
@@ -773,7 +798,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       ];
 
       let currentSec = 'home';
-      if (scrollY >= 180) {
+      if (scrollY >= 140) {
         for (const sec of sections) {
           const el = document.getElementById(sec.id);
           if (el) {
@@ -790,6 +815,17 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       if (activeSectionRef.current !== currentSec) {
         activeSectionRef.current = currentSec;
         setActiveSection(currentSec);
+
+        // If returning home, cleanly disengage roaming
+        if (currentSec === 'home' && isRoamingRef.current) {
+          setIsRoaming(false);
+          isRoamingRef.current = false;
+          window.dispatchEvent(new CustomEvent('rabbit-skill-hover', { detail: { skillName: null } }));
+          if (roamStepTimerRef.current) {
+            clearTimeout(roamStepTimerRef.current);
+            roamStepTimerRef.current = null;
+          }
+        }
 
         if (isRoamingRef.current) {
           if (scrollDebounceTimer) clearTimeout(scrollDebounceTimer);
@@ -829,19 +865,27 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
             onLanding: () => {
               const effectiveKey = (currentSec === 'contact' || currentSec === 'cta') ? 'experience' : currentSec;
               const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
-              triggerElementBounce(navItemEl);
+              if (currentSec === 'home') {
+                triggerHomeLanding(navItemEl);
+              } else {
+                triggerElementBounce(navItemEl);
+              }
             }
           });
         } else {
           // Hop along to the newly active navbar tab!
           const newTarget = getNavbarTarget(currentSec);
           leapTo(newTarget, {
-            duration: 380,
-            arcHeight: 26,
+            duration: currentSec === 'home' ? 420 : 380,
+            arcHeight: currentSec === 'home' ? 32 : 26,
             onLanding: () => {
               const effectiveKey = (currentSec === 'contact' || currentSec === 'cta') ? 'experience' : currentSec;
               const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
-              triggerElementBounce(navItemEl);
+              if (currentSec === 'home') {
+                triggerHomeLanding(navItemEl);
+              } else {
+                triggerElementBounce(navItemEl);
+              }
             }
           });
         }
@@ -904,7 +948,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       if (syncAnimId) cancelAnimationFrame(syncAnimId);
       if (navObserver) navObserver.disconnect();
     };
-  }, [getNavbarTarget, leapTo, performRoamStep]);
+  }, [getNavbarTarget, leapTo, performRoamStep, triggerHomeLanding]);
 
   // 10. Nav-Click Lock: Single, confident leap directly to clicked destination
   useEffect(() => {
@@ -932,10 +976,14 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
       const targetPos = getNavbarTarget(navKey);
       leapTo(targetPos, {
-        duration: 380,
-        arcHeight: 30,
+        duration: navKey === 'home' ? 420 : 380,
+        arcHeight: navKey === 'home' ? 32 : 30,
         onLanding: () => {
-          triggerElementBounce(itemEl);
+          if (navKey === 'home') {
+            triggerHomeLanding(itemEl);
+          } else {
+            triggerElementBounce(itemEl);
+          }
         },
       });
     };
@@ -947,7 +995,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     return () => {
       if (nav) nav.removeEventListener('click', handleNavClick);
     };
-  }, [getNavbarTarget, leapTo]);
+  }, [getNavbarTarget, leapTo, triggerHomeLanding]);
 
   // 10b. Direct interaction listener for letters of "Idea!" on Call to Action section
   useEffect(() => {

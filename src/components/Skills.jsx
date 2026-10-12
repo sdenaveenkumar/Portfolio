@@ -204,8 +204,9 @@ const Skills = () => {
               >
                 <img 
                   src={skill.icon} 
-                  alt={skill.name} 
+                  alt={`${skill.name} — Technical proficiency of Naveen Kumar`} 
                   loading="lazy" 
+                  decoding="async"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                     if (e.currentTarget.nextElementSibling) {

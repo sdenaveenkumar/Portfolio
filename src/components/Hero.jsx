@@ -49,14 +49,17 @@ const Hero = () => {
       className="relative w-full min-h-[100vh] bg-white flex flex-col justify-between overflow-hidden pt-16 sm:pt-20"
     >
 
+      {/* SEMANTIC ACCESSIBLE HEADING FOR SEARCH ENGINES */}
+      <h1 className="sr-only">Naveen Kumar — Fullstack Software Engineer &amp; Creative Technologist (RabbitFolio)</h1>
+
       {/* MASSIVE BACKGROUND TEXT */}
-      <div className="absolute inset-0 flex items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[30vh] md:pt-[40vh]">
-        <motion.h1
+      <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[30vh] md:pt-[40vh]">
+        <motion.div
           className="text-[20vw] md:text-[28vw] font-bold text-gray-100 leading-none tracking-tighter flex"
           style={{ y: textY }}
         >
           Naveen
-        </motion.h1>
+        </motion.div>
       </div>
 
       {/* THREE COLUMN FOREGROUND */}
@@ -100,7 +103,7 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
             src="/image.webp"
-            alt="Naveen - Fullstack Software Engineer"
+            alt="Naveen Kumar — Fullstack Software Engineer Portrait"
             loading="eager"
             fetchPriority="high"
             className="w-full h-full object-contain object-bottom relative z-10 filter contrast-[1.05] drop-shadow-2xl rounded-b-none rounded-t-[40px] scale-[1.25] sm:scale-[1.35] md:scale-[1.5] lg:scale-[1.75] origin-bottom translate-y-8 sm:translate-y-12 md:translate-y-16 lg:translate-y-24 md:-translate-x-6 lg:-translate-x-10"
@@ -128,6 +131,7 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+            aria-label="Explore featured software engineering projects by Naveen Kumar"
             className="flex items-center gap-3 bg-[#111111] text-white px-6 py-3.5 rounded-full font-semibold text-[13px] hover:opacity-80 transition-opacity cursor-pointer shadow-md"
           >
             See my works

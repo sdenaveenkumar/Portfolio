@@ -53,3 +53,21 @@ body {
 .rabbit-dust-particle {
   animation: rabbit-dust-pop 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* 🌊 Organic Zero-Gravity Floating Animation for Project Cards */
+@keyframes card-zero-gravity-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-9px) rotate(0.6deg);
+  }
+  66% {
+    transform: translateY(4px) rotate(-0.5deg);
+  }
+}
+
+.animate-card-float {
+  animation: card-zero-gravity-float ease-in-out infinite;
+  will-change: transform;
+}

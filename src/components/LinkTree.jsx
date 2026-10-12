@@ -184,8 +184,9 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
           className="relative w-full aspect-[4/3] rounded-[28px] sm:rounded-[32px] overflow-hidden bg-gradient-to-tr from-[#7c2d12] via-[#ea580c] to-[#f97316] shadow-2xl border border-white/[0.08] group"
         >
           <img
-            src={imgError ? "/reference-portrait.png" : "/projects/RabbitTreeProfile.jpeg"}
-            alt="Naveen Kumar - Rabbit Tree Profile"
+            src={imgError ? "/reference-portrait.png" : "/projects/RabbitTreeProfile.webp"}
+            alt="Naveen Kumar — Fullstack Software Engineer Portrait (Rabbit Tree Profile)"
+            decoding="async"
             className="w-full h-full object-cover object-center filter contrast-[1.04] brightness-[1.0] select-none transition-transform duration-700 group-hover:scale-105"
             onError={() => setImgError(true)}
           />
@@ -246,9 +247,8 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.18 + idx * 0.05 }}
               whileTap={{ scale: 0.98 }}
-              className={`group relative w-full bg-white hover:bg-zinc-100 active:scale-[0.98] transition-all duration-200 rounded-[20px] sm:rounded-[24px] px-5 sm:px-6 py-4 sm:py-4.5 flex items-center justify-between text-black shadow-md cursor-pointer select-none ${
-                activeLinkId === link.id ? 'ring-2 ring-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.35)]' : ''
-              }`}
+              className={`group relative w-full bg-white hover:bg-zinc-100 active:scale-[0.98] transition-all duration-200 rounded-[20px] sm:rounded-[24px] px-5 sm:px-6 py-4 sm:py-4.5 flex items-center justify-between text-black shadow-md cursor-pointer select-none ${activeLinkId === link.id ? 'ring-2 ring-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.35)]' : ''
+                }`}
             >
               {/* Left Column: Title & Subtitle */}
               <div className="flex flex-col min-w-0 pr-3">

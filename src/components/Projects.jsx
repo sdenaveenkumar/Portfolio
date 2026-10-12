@@ -5,6 +5,8 @@ import { useGSAP } from '@gsap/react';
 
 import initialProjects from '../data/projects.json';
 import ProjectDetailModal from './ProjectDetailModal';
+import ProjectCardFace from './ProjectCardFace';
+import { updateSeoMeta, SECTION_SEO } from '../utils/seoRouter';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -36,11 +38,6 @@ const sortProjects = (list) => {
     }
     return (b.stargazers_count || 0) - (a.stargazers_count || 0);
   });
-};
-
-const formatTitle = (name = '') => {
-  if (!name) return '';
-  return name.charAt(0).toUpperCase() + name.slice(1);
 };
 
 // Bespoke metadata mapping for Naveen's repositories to create rich interactive cards
@@ -139,6 +136,8 @@ const Projects = () => {
   const folderWrapperRef = useRef(null);
   const cardsRef = useRef([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [originRect, setOriginRect] = useState(null);
+  const [activeCardName, setActiveCardName] = useState(null);
 
   // Initialize immediately from localStorage cache or bundled static projects
   const [repos, setRepos] = useState(() => {
@@ -205,6 +204,83 @@ const Projects = () => {
     return key ? projectMeta[key] : null;
   };
 
+  const openProject = (repo, rect = null) => {
+    setOriginRect(rect);
+    setActiveCardName(repo.name);
+    setSelectedProject(repo);
+
+    try {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('project', repo.name);
+      window.history.pushState({ modal: 'project', project: repo.name }, '', currentUrl.toString());
+    } catch {
+      // Fallback
+    }
+
+    const meta = getProjectMeta(repo.name);
+    updateSeoMeta({
+      title: `${repo.name} | Project Case Study — Naveen Kumar`,
+      description: meta?.snippet || repo.description || `Case study and technical architecture of ${repo.name} by Naveen Kumar.`,
+      canonical: 'https://www.rabbitfolio.me/#projects'
+    });
+  };
+
+  const closeProject = () => {
+    setSelectedProject(null);
+    try {
+      if (window.history.state?.modal === 'project') {
+        window.history.back();
+      } else {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('project');
+        window.history.replaceState(null, '', currentUrl.toString());
+      }
+    } catch {
+      // Fallback
+    }
+    updateSeoMeta(SECTION_SEO.projects);
+  };
+
+  // Back button closing modal
+  useEffect(() => {
+    const handlePopState = (e) => {
+      if (e?.state?.modal !== 'project') {
+        setSelectedProject(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const deepLinkHandledRef = useRef(false);
+
+  // Deep linking: If URL has ?project=..., automatically open it on mount
+  useEffect(() => {
+    if (displayRepos.length === 0 || deepLinkHandledRef.current) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const targetProjectName = params.get('project');
+      if (targetProjectName && !selectedProject) {
+        deepLinkHandledRef.current = true;
+        const match = displayRepos.find(
+          r => r.name.toLowerCase() === targetProjectName.toLowerCase()
+        );
+        if (match) {
+          const fallbackRect = {
+            top: window.innerHeight * 0.25,
+            left: window.innerWidth * 0.5 - 180,
+            width: 360,
+            height: 480
+          };
+          openProject(match, fallbackRect);
+        }
+      }
+    } catch {
+      // Fallback
+    }
+  }, [displayRepos, selectedProject]);
+
   useGSAP(() => {
     if (displayRepos.length === 0) return;
 
@@ -218,11 +294,17 @@ const Projects = () => {
         trigger: containerRef.current,
         start: "top top",
         end: "bottom bottom",
-        scrub: 1.4
+        scrub: 1.2 // Responsive scrub to ensure reverse tracking completes without trailing lag
       }
     });
 
-    // PHASE 1: Cards fan out organically
+    // BUFFER 0: Dedicated entry cushion zone.
+    // When scrolling up, ensures the reverse animation (folding cards back into deck)
+    // is 100% completed and resting before the section unpins and reveals Skills!
+    const entryBuffer = 1.2;
+    tl.to({}, { duration: entryBuffer });
+
+    // PHASE 1: Cards fan out with spring overshoot ejection physics
     cardsRef.current.forEach((card, index) => {
       if (!card) return;
 
@@ -232,13 +314,13 @@ const Projects = () => {
       tl.to(card, {
         y: yOffset,
         rotationZ: rotation,
-        scale: 0.95,
-        duration: 1.4,
-        ease: "power2.out"
-      }, index * 0.12);
+        scale: 0.96,
+        duration: 1.5,
+        ease: "back.out(1.8)" // Spring overshoot ejection as cards pop out of folder
+      }, entryBuffer + index * 0.12);
     });
 
-    // PHASE 2: Folder scales & glides
+    // PHASE 2: Folder scales & glides with cushioned momentum
     const folderWidth = isMobile ? (isSmallMobile ? 250 : 290) : 450;
     const cardWidth = isMobile ? (isSmallMobile ? 260 : 300) : 360;
     const cardGap = isMobile ? (isSmallMobile ? 35 : 45) : 70;
@@ -251,10 +333,10 @@ const Projects = () => {
       x: isMobile ? (isSmallMobile ? "-10vw" : "-15vw") : "-26vw",
       y: isMobile ? "-4vh" : "0",
       duration: 2.2,
-      ease: "power2.inOut"
+      ease: "power3.inOut"
     }, "-=0.2");
 
-    // PHASE 3: Cards slide out smoothly
+    // PHASE 3: Cards slide out and spring-settle into horizontal slots
     cardsRef.current.forEach((card, index) => {
       if (!card) return;
 
@@ -266,9 +348,9 @@ const Projects = () => {
         y: ySpread,
         rotationZ: 0,
         scale: 1,
-        duration: 1.4,
-        ease: "power2.out"
-      }, `-=${1.2 - (index * 0.1)}`);
+        duration: 1.5,
+        ease: "back.out(1.4)" // Elastic spring settling into resting slot positions
+      }, `-=${1.25 - (index * 0.08)}`);
     });
 
     // PHASE 4: Smooth camera pan across all project cards
@@ -282,6 +364,9 @@ const Projects = () => {
       ease: "power1.inOut"
     }, "-=0.4");
 
+    // BUFFER 5: Exit cushion zone before unpinning to Education
+    tl.to({}, { duration: 0.8 });
+
     return () => {
       tl.kill();
     };
@@ -289,7 +374,7 @@ const Projects = () => {
   }, { scope: containerRef, dependencies: [displayRepos] });
 
   return (
-    <div id="projects" ref={containerRef} className="relative w-full bg-[#fafafc]" style={{ height: `${Math.max(300, displayRepos.length * 48)}vh` }}>
+    <div id="projects" ref={containerRef} className="relative w-full bg-[#fafafc]" style={{ height: `${Math.max(340, displayRepos.length * 52)}vh` }}>
       <div className="absolute inset-0 bg-[#fafafc] -z-10" />
 
       {/* Sticky Fullscreen Presentation Stage */}
@@ -319,141 +404,44 @@ const Projects = () => {
           <div className="absolute bottom-0 left-0 w-full h-full p-4 flex items-end justify-center pointer-events-none">
             {displayRepos.map((repo, i) => {
               const meta = getProjectMeta(repo.name) || defaultColorDeck[i % defaultColorDeck.length];
-              const categoryTag = meta.category || 'SOFTWARE ENGINEERING';
-              const badgeLabel = meta.badge || repo.language || 'Code';
-              const previewImg = meta.image || '/projects/portfolio.svg';
-              const formattedTitle = formatTitle(repo.name);
 
               return (
                 <div
                   key={repo.id || i}
                   ref={el => cardsRef.current[i] = el}
-                  className="absolute bottom-4 w-[260px] sm:w-[300px] md:w-[360px] h-[365px] sm:h-[405px] md:h-[450px] origin-bottom z-10 pointer-events-auto cursor-pointer group select-none will-change-transform"
-                  onClick={() => setSelectedProject(repo)}
+                  className="absolute bottom-4 w-[260px] sm:w-[300px] md:w-[360px] h-[395px] sm:h-[445px] md:h-[500px] origin-bottom z-10 pointer-events-auto cursor-pointer group select-none will-change-transform"
+                  onClick={(e) => {
+                    const visualCard = e.currentTarget.querySelector('.visual-card-surface') || e.currentTarget;
+                    const rect = visualCard.getBoundingClientRect();
+                    openProject(repo, {
+                      top: rect.top,
+                      left: rect.left,
+                      width: rect.width,
+                      height: rect.height,
+                    });
+                  }}
                 >
+                  {/* Subtle Recessed Dock Silhouette while Card is Open */}
+                  {activeCardName === repo.name && (
+                    <div className="absolute inset-0 rounded-[26px] sm:rounded-[30px] bg-black/[0.03] border border-black/[0.04] shadow-inner pointer-events-none z-0" />
+                  )}
+
+                  {/* Zero-Gravity Floating Wrapper (Staggered Natural Levitation) */}
                   <div
-                    className="w-full h-full bg-white rounded-[26px] sm:rounded-[30px] border border-black/[0.08] shadow-[0_12px_32px_-8px_rgba(0,0,0,0.08)] p-3.5 sm:p-4.5 md:p-5 flex flex-col justify-between transition-[transform,box-shadow] duration-200 ease-out group-hover:scale-[1.02] group-hover:-translate-y-1.5 group-hover:shadow-[0_20px_44px_-10px_rgba(0,0,0,0.14)] relative overflow-hidden"
+                    className="w-full h-full animate-card-float group-hover:[animation-play-state:paused]"
+                    style={{
+                      animationDuration: `${4.2 + (i % 4) * 0.6}s`,
+                      animationDelay: `${(i * 0.8) % 3.2}s`,
+                      animationPlayState: activeCardName === repo.name ? 'paused' : undefined,
+                    }}
                   >
-                    {/* TOP: IMAGE SHOWCASE VIEWPORT */}
-                    <div className="relative w-full aspect-[16/10] rounded-[18px] sm:rounded-[20px] overflow-hidden bg-[#0F172A] border border-black/5 shadow-inner shrink-0">
-                      {/* Visual Image */}
-                      <img
-                        src={previewImg}
-                        alt={formattedTitle}
-                        decoding="async"
-                        className="w-full h-full object-cover object-center pointer-events-none transition-transform duration-300 ease-out group-hover:scale-105"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-
-                      {/* Floating Category Pill */}
-                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 border border-white/20 shadow-xs z-10">
-                        <span
-                          className="w-1.5 h-1.5 rounded-full shrink-0"
-                          style={{ backgroundColor: meta.accent || '#10B981' }}
-                        />
-                        <span className="text-[9px] sm:text-[10px] font-mono font-bold tracking-wider text-white uppercase truncate max-w-[130px] sm:max-w-[170px]">
-                          {categoryTag}
-                        </span>
-                      </div>
-
-                      {/* Live Badge if liveUrl exists */}
-                      {(meta.liveUrl || repo.homepage) && (
-                        <a
-                          href={meta.liveUrl || repo.homepage}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute top-2.5 right-11 sm:right-12 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/85 border border-emerald-400/40 shadow-xs z-10 hover:bg-emerald-900 transition-colors group/live"
-                          title="Open Live API (http://140.245.24.219)"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span className="text-[9px] sm:text-[10px] font-mono font-bold text-emerald-300">
-                            LIVE
-                          </span>
-                        </a>
-                      )}
-
-                      {/* External Link Action Arrow */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(meta.liveUrl || repo.homepage || repo.html_url, '_blank');
-                        }}
-                        className="absolute top-2.5 right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/75 border border-white/25 shadow-xs flex items-center justify-center text-white group-hover:bg-white group-hover:text-black transition-all duration-200 z-10 hover:scale-110 active:scale-95 cursor-pointer"
-                        title={meta.liveUrl || repo.homepage ? "Open Live Deployment" : "View on GitHub"}
-                      >
-                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="7" y1="17" x2="17" y2="7" />
-                          <polyline points="7 7 17 7 17 17" />
-                        </svg>
-                      </button>
-
-                      {/* Inset Bottom Gradient for Contrast */}
-                      <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-
-                      {/* Badge in Bottom Right of Image */}
-                      <div className="absolute bottom-2.5 right-2.5 z-10">
-                        <span className="px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[9px] font-mono font-bold text-white/90">
-                          {badgeLabel}
-                        </span>
-                      </div>
+                    <div
+                      className={`visual-card-surface w-full h-full transition-[transform,box-shadow,opacity] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-[1.03] group-hover:-translate-y-2.5 group-hover:shadow-[0_24px_48px_-10px_rgba(0,0,0,0.16)] active:scale-[0.97] ${
+                        activeCardName === repo.name ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                      }`}
+                    >
+                      <ProjectCardFace repo={repo} meta={meta} />
                     </div>
-
-                    {/* MIDDLE: PROJECT DETAILS */}
-                    <div className="my-auto py-1.5 flex flex-col justify-center">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <h3 className="text-lg sm:text-xl md:text-[22px] font-black tracking-tight text-[#111827] group-hover:text-black transition-colors line-clamp-1">
-                          {formattedTitle}
-                        </h3>
-                        {repo.stargazers_count > 0 && (
-                          <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200/80 text-[10px] font-bold text-amber-700 flex items-center gap-1 shrink-0">
-                            ★ {repo.stargazers_count}
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-xs sm:text-[13px] text-gray-600 font-medium line-clamp-2 leading-relaxed">
-                        {repo.description || "Production-grade, extensible codebase with modular architecture and rigorous standards."}
-                      </p>
-
-                      {/* Mini snippet status row */}
-                      {meta.snippet && (
-                        <div className="mt-2 flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-gray-50 border border-gray-200/70 text-gray-600">
-                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: meta.accent || '#10B981' }} />
-                          <span className="font-mono text-[10px] sm:text-[11px] font-medium truncate">
-                            {meta.snippet}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* BOTTOM: TECH PILLS & EXPLORE CTA */}
-                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-2 shrink-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {meta.tags ? (
-                          meta.tags.slice(0, 3).map((t, idx) => (
-                            <span key={idx} className="px-2 py-0.5 rounded-lg bg-gray-100/90 text-[10px] font-semibold text-gray-700">
-                              {t}
-                            </span>
-                          ))
-                        ) : (
-                          repo.language && (
-                            <span className="px-2 py-0.5 rounded-lg bg-gray-100/90 text-[10px] font-semibold text-gray-700">
-                              {repo.language}
-                            </span>
-                          )
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1 font-mono text-[10px] sm:text-[11px] font-bold text-gray-900 group-hover:text-black group-hover:translate-x-1 transition-all duration-200 shrink-0">
-                        <span>DETAILS</span>
-                        <span>→</span>
-                      </div>
-                    </div>
-
                   </div>
                 </div>
               );
@@ -485,12 +473,17 @@ const Projects = () => {
 
       </div>
 
-      {/* Interactive Card Morph / Expansion Modal */}
+      {/* Interactive Card Morph / 3D Turnaround Expansion Modal */}
       <ProjectDetailModal
         project={selectedProject}
         meta={selectedProject ? (getProjectMeta(selectedProject.name) || defaultColorDeck[0]) : null}
+        originRect={originRect}
         isOpen={!!selectedProject}
-        onClose={() => setSelectedProject(null)}
+        onClose={closeProject}
+        onExitComplete={() => {
+          setOriginRect(null);
+          setActiveCardName(null);
+        }}
       />
     </div>
   );

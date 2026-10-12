@@ -7,25 +7,131 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Naveen Kumar | Fullstack Software Engineer</title>
-    <meta name="description" content="Portfolio of Naveen Kumar — Fullstack Software Engineer specializing in scalable backends, interactive web applications, React, Node.js, and high-performance design." />
-    <meta name="keywords" content="Naveen Kumar, Fullstack Developer, Software Engineer, React Developer, Node.js, GSAP, Web Development, Portfolio" />
+    
+    <!-- Title & SEO Metadata -->
+    <title>Naveen Kumar | Fullstack Software Engineer &amp; Portfolio</title>
+    <meta name="description" content="Official portfolio of Naveen Kumar, a Fullstack Software Engineer specializing in React, Node.js, distributed backend systems, and interactive UI engineering. Discover projects, technical writing, and background." />
     <meta name="author" content="Naveen Kumar" />
     <meta name="theme-color" content="#0a0a0a" />
 
-    <!-- Open Graph / Facebook / LinkedIn -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Naveen Kumar | Fullstack Software Engineer" />
-    <meta property="og:description" content="Explore my portfolio of high-performance web applications, scalable backends, and creative interactive experiences." />
-    <meta property="og:image" content="/image.webp" />
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.rabbitfolio.me/" />
 
-    <!-- Twitter / X -->
+    <!-- Search Engine Crawling & Robots -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="RabbitFolio" />
+    <meta property="og:title" content="Naveen Kumar | Fullstack Software Engineer &amp; Portfolio" />
+    <meta property="og:description" content="Official portfolio of Naveen Kumar, a Fullstack Software Engineer specializing in React, Node.js, and scalable interactive applications." />
+    <meta property="og:url" content="https://www.rabbitfolio.me/" />
+    <meta property="og:image" content="https://www.rabbitfolio.me/projects/RabbitTreeProfile.webp" />
+    <meta property="og:image:alt" content="Naveen Kumar - Fullstack Software Engineer Portrait" />
+    <meta property="profile:first_name" content="Naveen" />
+    <meta property="profile:last_name" content="Kumar" />
+    <meta property="profile:username" content="sdenaveenkumar" />
+
+    <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Naveen Kumar | Fullstack Software Engineer" />
-    <meta name="twitter:description" content="Explore my portfolio of high-performance web applications, scalable backends, and creative interactive experiences." />
-    <meta name="twitter:image" content="/image.webp" />
+    <meta name="twitter:title" content="Naveen Kumar | Fullstack Software Engineer &amp; Portfolio" />
+    <meta name="twitter:description" content="Official portfolio of Naveen Kumar, a Fullstack Software Engineer specializing in React, Node.js, and scalable interactive applications." />
+    <meta name="twitter:image" content="https://www.rabbitfolio.me/projects/RabbitTreeProfile.webp" />
+
+    <!-- Structured Data (JSON-LD) for Personal Entity SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://www.rabbitfolio.me/#person",
+          "name": "Naveen Kumar",
+          "alternateName": [
+            "SdeNaveenKumar",
+            "RabbitFolio",
+            "Naveen Kumar BCA",
+            "Naveen Kumar Software Engineer"
+          ],
+          "jobTitle": "Fullstack Software Engineer",
+          "description": "Fullstack Software Engineer specializing in React, Node.js, distributed backend systems, and creative web engineering.",
+          "url": "https://www.rabbitfolio.me",
+          "image": "https://www.rabbitfolio.me/projects/RabbitTreeProfile.webp",
+          "sameAs": [
+            "https://github.com/sdenaveenkumar",
+            "https://www.linkedin.com/in/sdenaveenkumar",
+            "https://www.rabbitfolio.me/link",
+            "mailto:sdenaveenkumar@gmail.com"
+          ],
+          "knowsAbout": [
+            "Full Stack Web Development",
+            "Software Engineering",
+            "React.js",
+            "Node.js",
+            "GSAP Animations",
+            "Tailwind CSS",
+            "RESTful APIs",
+            "JavaScript",
+            "Express.js"
+          ],
+          "hasCredential": {
+            "@type": "EducationalOccupationalCredential",
+            "credentialCategory": "degree",
+            "name": "BCA (Bachelor of Computer Applications)"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://www.rabbitfolio.me/#website",
+          "url": "https://www.rabbitfolio.me",
+          "name": "RabbitFolio",
+          "alternateName": "Naveen Kumar Portfolio",
+          "description": "Interactive 3D portfolio and engineering showcase of Naveen Kumar.",
+          "author": {
+            "@id": "https://www.rabbitfolio.me/#person"
+          }
+        },
+        {
+          "@type": "ProfilePage",
+          "@id": "https://www.rabbitfolio.me/#profilepage",
+          "url": "https://www.rabbitfolio.me",
+          "name": "Naveen Kumar | Fullstack Software Engineer & Portfolio",
+          "isPartOf": {
+            "@id": "https://www.rabbitfolio.me/#website"
+          },
+          "mainEntity": {
+            "@id": "https://www.rabbitfolio.me/#person"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
+    <!-- Semantic crawler fallback for search engine bots -->
+    <noscript>
+      <header style="padding: 2rem; max-width: 900px; margin: 0 auto; font-family: system-ui, sans-serif; color: #111;">
+        <h1>Naveen Kumar — Fullstack Software Engineer</h1>
+        <p>Welcome to the official portfolio of Naveen Kumar (RabbitFolio), a Fullstack Software Engineer specializing in React, Node.js, distributed backend systems, and interactive web architecture.</p>
+        
+        <h2>Featured Engineering Projects</h2>
+        <ul>
+          <li><strong>Dolphin AI</strong>: Local offline LLM inference application with PWA and Android package deployment.</li>
+          <li><strong>Personal REST API</strong>: High-throughput distributed API services with automated OpenAPI documentation.</li>
+          <li><strong>Lofi Radio VS Code Extension</strong>: In-editor streaming audio extension for developer productivity.</li>
+          <li><strong>RabbitFolio</strong>: Interactive 3D portfolio featuring GSAP physics and WebGL.</li>
+        </ul>
+
+        <h2>Education &amp; Credentials</h2>
+        <p>Bachelor of Computer Applications (BCA) — Software engineering, database design, and web architecture.</p>
+
+        <h2>Official Links &amp; Profiles</h2>
+        <p>Visit the <a href="/link">Rabbit Tree link hub</a> or download Naveen Kumar's official <a href="/resume.pdf">Software Engineer Resume (PDF)</a>.</p>
+        <p>Contact: <a href="mailto:sdenaveenkumar@gmail.com">sdenaveenkumar@gmail.com</a> | <a href="https://github.com/sdenaveenkumar" rel="noopener noreferrer">GitHub</a> | <a href="https://www.linkedin.com/in/sdenaveenkumar" rel="noopener noreferrer">LinkedIn</a></p>
+      </header>
+    </noscript>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

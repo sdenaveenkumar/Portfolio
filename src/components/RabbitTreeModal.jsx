@@ -58,15 +58,24 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, activePreviewLink]);
 
-  // Prevent background body scroll when open on mobile
+  // Prevent background body scroll when open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overscrollBehavior = 'none';
+      document.documentElement.style.overscrollBehavior = 'none';
     } else {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
+      document.documentElement.style.overscrollBehavior = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
+      document.documentElement.style.overscrollBehavior = '';
     };
   }, [isOpen]);
 
@@ -80,7 +89,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
+        <motion.div
           data-rabbit-tree-modal="true"
           data-rabbit-tree="true"
           data-no-rabbit="true"
@@ -94,27 +103,27 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
           }}
           className="fixed inset-0 z-50 flex items-center justify-end overflow-hidden cursor-pointer"
         >
-          
+
           {/* Frosted Backdrop Overlay with Smooth Progressive Blur */}
           <motion.div
-            initial={{ 
-              opacity: 0, 
-              backdropFilter: 'blur(0px)', 
-              WebkitBackdropFilter: 'blur(0px)' 
+            initial={{
+              opacity: 0,
+              backdropFilter: 'blur(0px)',
+              WebkitBackdropFilter: 'blur(0px)'
             }}
-            animate={{ 
-              opacity: 1, 
-              backdropFilter: 'blur(14px)', 
-              WebkitBackdropFilter: 'blur(14px)' 
+            animate={{
+              opacity: 1,
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)'
             }}
-            exit={{ 
-              opacity: 0, 
-              backdropFilter: 'blur(0px)', 
-              WebkitBackdropFilter: 'blur(0px)' 
+            exit={{
+              opacity: 0,
+              backdropFilter: 'blur(0px)',
+              WebkitBackdropFilter: 'blur(0px)'
             }}
-            transition={{ 
-              duration: 0.55, 
-              ease: [0.16, 1, 0.3, 1] 
+            transition={{
+              duration: 0.55,
+              ease: [0.16, 1, 0.3, 1]
             }}
             onClick={handleCloseAll}
             className="fixed inset-0 bg-black/60 cursor-pointer will-change-[backdrop-filter,opacity]"
@@ -122,7 +131,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
           />
 
           {/* Floating Dual Device Stage Container: Tablet on Left + Phone on Right */}
-          <div 
+          <div
             data-device-stage="true"
             onClick={(e) => {
               if (e.target.closest('[data-device-chassis]')) return;
@@ -130,7 +139,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
             }}
             className="relative z-10 w-full h-full flex items-center justify-end px-2 sm:px-5 md:px-8 py-2 sm:py-6 cursor-pointer gap-2 sm:gap-4 lg:gap-6 overflow-hidden"
           >
-            
+
             {/* ─────────────────────────────────────────────────────────────
                 TABLET PREVIEW BOX (Opens to the left of the mobile box)
                ───────────────────────────────────────────────────────────── */}
@@ -150,8 +159,8 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
               onClick={(e) => e.stopPropagation()}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ 
-                opacity: 0, 
+              exit={{
+                opacity: 0,
                 x: 40,
                 transition: {
                   x: { duration: 0.62, ease: [0.16, 1, 0.3, 1] },
@@ -189,9 +198,9 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
               data-device-chassis="true"
               onClick={(e) => e.stopPropagation()}
               initial={{ x: typeof window !== 'undefined' ? Math.max(window.innerWidth * 0.5, 500) : 500, opacity: 0, scale: 0.96 }}
-              animate={{ 
-                x: 0, 
-                opacity: 1, 
+              animate={{
+                x: 0,
+                opacity: 1,
                 scale: 1,
                 transition: {
                   type: 'spring',
@@ -210,9 +219,8 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
                   opacity: { duration: 0.42, delay: 0.18, ease: 'easeInOut' }
                 }
               }}
-              className={`pointer-events-auto relative w-[340px] sm:w-[370px] md:w-[390px] max-w-[calc(100vw-20px)] h-[94vh] max-h-[820px] rounded-[48px] sm:rounded-[54px] p-[10px] sm:p-[12px] bg-gradient-to-b from-[#38383a] via-[#1a1a1c] to-[#2c2c2e] shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.18),inset_0_1px_2px_rgba(255,255,255,0.25)] flex flex-col select-none shrink-0 cursor-default ${
-                activePreviewLink ? 'hidden lg:flex' : 'flex'
-              }`}
+              className={`pointer-events-auto relative w-[340px] sm:w-[370px] md:w-[390px] max-w-[calc(100vw-20px)] h-[94vh] max-h-[820px] rounded-[48px] sm:rounded-[54px] p-[10px] sm:p-[12px] bg-gradient-to-b from-[#38383a] via-[#1a1a1c] to-[#2c2c2e] shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.18),inset_0_1px_2px_rgba(255,255,255,0.25)] flex flex-col select-none shrink-0 cursor-default ${activePreviewLink ? 'hidden lg:flex' : 'flex'
+                }`}
             >
 
               {/* Physical Edge Details: Side Buttons */}
@@ -270,7 +278,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
                 {/* ─────────────────────────────────────────────────────────────
                     BOTTOM: iOS Home Indicator Pill
                    ───────────────────────────────────────────────────────────── */}
-                <div 
+                <div
                   onClick={handleCloseAll}
                   className="w-full py-2 bg-black flex justify-center items-center shrink-0 cursor-pointer group"
                   title="Click to dismiss"

@@ -14,6 +14,7 @@ import LinkTree from './components/LinkTree';
 import RabbitTreeModal from './components/RabbitTreeModal';
 import { Analytics } from '@vercel/analytics/react';
 import { ArrowUpRight } from 'lucide-react';
+import { updateSeoMeta, SECTION_SEO, scrollToHash } from './utils/seoRouter';
 
 const Resume = React.lazy(() => import('./components/Resume'));
 
@@ -29,28 +30,79 @@ function App() {
     return false;
   });
 
+  // Synchronize SEO tags and handle route changes
   useEffect(() => {
-    const handleLocationChange = () => {
+    const handleLocationChange = (e) => {
       const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
       const hash = window.location.hash.toLowerCase();
-      setIsLinkTree(path === '/link' || path === '/links' || path === '/linktree' || hash === '#/link' || hash === '#link');
+      const nextIsLinkTree = path === '/link' || path === '/links' || path === '/linktree' || hash === '#/link' || hash === '#link';
+      
+      setIsLinkTree(nextIsLinkTree);
+
+      if (nextIsLinkTree) {
+        updateSeoMeta(SECTION_SEO.link);
+      } else {
+        // Unknown path redirect for clean SEO indexing
+        if (path && path !== '' && path !== '/') {
+          window.history.replaceState(null, '', `/${window.location.hash}`);
+        }
+        updateSeoMeta(SECTION_SEO.home);
+      }
+
+      // Handle Back Button closing modals
+      if (e?.state) {
+        if (e.state.modal !== 'resume') setShowResume(false);
+        if (e.state.modal !== 'rabbit-tree') setShowRabbitTreeModal(false);
+      } else {
+        setShowResume(false);
+        setShowRabbitTreeModal(false);
+      }
     };
 
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('hashchange', handleLocationChange);
+
+    // Initial SEO update & Deep-link anchor auto-scroll
+    if (isLinkTree) {
+      updateSeoMeta(SECTION_SEO.link);
+    } else {
+      updateSeoMeta(SECTION_SEO.home);
+      if (window.location.hash) {
+        setTimeout(() => {
+          scrollToHash(window.location.hash);
+        }, 120);
+      }
+    }
+
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('hashchange', handleLocationChange);
     };
-  }, []);
+  }, [isLinkTree]);
 
   const toggleResume = () => {
-    setShowResume(prev => !prev);
+    setShowResume(prev => {
+      const next = !prev;
+      if (next) {
+        window.history.pushState({ modal: 'resume' }, '', window.location.hash || window.location.pathname);
+      } else if (window.history.state?.modal === 'resume') {
+        window.history.back();
+      }
+      return next;
+    });
   };
 
   const toggleRabbitTreeModal = (e) => {
     if (e) e.preventDefault();
-    setShowRabbitTreeModal(prev => !prev);
+    setShowRabbitTreeModal(prev => {
+      const next = !prev;
+      if (next) {
+        window.history.pushState({ modal: 'rabbit-tree' }, '', window.location.hash || window.location.pathname);
+      } else if (window.history.state?.modal === 'rabbit-tree') {
+        window.history.back();
+      }
+      return next;
+    });
   };
 
   // Standalone /link Linktree View
@@ -61,10 +113,11 @@ function App() {
           onBackToPortfolio={(targetUrl = '/') => {
             window.history.pushState({}, '', targetUrl);
             setIsLinkTree(false);
+            updateSeoMeta(SECTION_SEO.home);
             if (targetUrl.includes('#')) {
               const hashId = targetUrl.split('#')[1];
               setTimeout(() => {
-                document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth' });
+                scrollToHash(hashId);
               }, 150);
             }
           }} 

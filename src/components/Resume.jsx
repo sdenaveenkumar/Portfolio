@@ -1,9 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sun, Moon, Download, FileText } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 
 const Resume = ({ onClose }) => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  // Prevent background page scrolling while resume modal is open
+  useEffect(() => {
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyOverscroll = document.body.style.overscrollBehavior;
+    const originalHtmlOverscroll = document.documentElement.style.overscrollBehavior;
+
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+    document.documentElement.style.overscrollBehavior = 'none';
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.overscrollBehavior = originalBodyOverscroll;
+      document.documentElement.style.overscrollBehavior = originalHtmlOverscroll;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
 
   return (
     <>
@@ -13,6 +39,14 @@ const Resume = ({ onClose }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
+        onWheel={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onTouchMove={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
         className="fixed inset-0 bg-black/75 backdrop-blur-md z-[100] cursor-pointer"
       />
 
@@ -22,11 +56,13 @@ const Resume = ({ onClose }) => {
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 220, mass: 0.8 }}
-        className="fixed top-0 right-0 w-full md:w-[80vw] max-w-[1000px] h-screen bg-[#0e0e12]/95 backdrop-blur-3xl border-l border-white/10 shadow-[-30px_0_80px_rgba(0,0,0,0.7)] z-[101] flex flex-col rounded-none sm:rounded-l-3xl overflow-hidden text-white"
+        onWheel={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        className="fixed top-0 right-0 w-full md:w-[80vw] max-w-[1000px] h-screen bg-[#0e0e12]/95 backdrop-blur-3xl border-l border-white/10 shadow-[-30px_0_80px_rgba(0,0,0,0.7)] z-[101] flex flex-col rounded-none sm:rounded-l-3xl overflow-hidden text-white overscroll-contain"
       >
 
         {/* Top Bar */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -34,10 +70,10 @@ const Resume = ({ onClose }) => {
         >
           {/* Left: Window Controls */}
           <div className="flex items-center gap-2">
-            <button 
-              onClick={onClose} 
-              className="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-500 shadow-sm cursor-pointer transition-colors" 
-              title="Close (Esc)" 
+            <button
+              onClick={onClose}
+              className="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-500 shadow-sm cursor-pointer transition-colors"
+              title="Close (Esc)"
             />
             <div className="w-3.5 h-3.5 rounded-full bg-yellow-500/80 shadow-sm" />
             <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/80 shadow-sm" />
@@ -49,18 +85,8 @@ const Resume = ({ onClose }) => {
             <span>resume.pdf</span>
           </div>
 
-          {/* Right: Actions (Theme Toggle & Download) */}
+          {/* Right: Action (Download) */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Dark / Light Toggle */}
-            <button
-              onClick={() => setIsDarkMode(prev => !prev)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-zinc-200 text-xs font-semibold border border-white/10 transition-all cursor-pointer hover:scale-105 active:scale-95"
-              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-blue-400" />}
-              <span className="text-[11px] font-mono hidden sm:inline">{isDarkMode ? 'Light' : 'Dark'}</span>
-            </button>
-
             {/* Download Button */}
             <a
               href="/resume.pdf"
@@ -74,21 +100,17 @@ const Resume = ({ onClose }) => {
           </div>
         </motion.div>
 
-        {/* PDF Viewer */}
-        <motion.div 
+        {/* PDF Viewer - Clean Light Mode Rendering */}
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.6, ease: "easeOut" }}
-          className="w-full flex-1 bg-[#09090c] relative overflow-hidden"
+          className="w-full flex-1 bg-[#18181c] relative overflow-hidden"
         >
           <object
             data="/resume.pdf"
             type="application/pdf"
-            style={{
-              filter: isDarkMode ? 'invert(0.92) hue-rotate(180deg) contrast(0.95) brightness(0.95)' : 'none',
-              transition: 'filter 0.3s ease-in-out'
-            }}
-            className="w-full h-full bg-[#09090c]"
+            className="w-full h-full bg-[#18181c]"
           >
             {/* Fallback if PDF embedding fails */}
             <div className="p-8 text-center flex flex-col items-center justify-center h-full text-zinc-400">

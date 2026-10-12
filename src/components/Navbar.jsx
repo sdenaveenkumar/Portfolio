@@ -1,9 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { updateSeoMeta, SECTION_SEO, syncUrlHash, scrollToHash } from '../utils/seoRouter';
 
 const Navbar = ({ onResumeClick }) => {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const pendingRabbitHomeRef = useRef(false);
+  const rabbitHomeTimeoutRef = useRef(null);
+
+  // Synchronize Resume section disappearance with the rabbit jumping to his place first
+  useEffect(() => {
+    const handleRabbitLandedHome = () => {
+      if (pendingRabbitHomeRef.current) {
+        if (rabbitHomeTimeoutRef.current) {
+          clearTimeout(rabbitHomeTimeoutRef.current);
+          rabbitHomeTimeoutRef.current = null;
+        }
+        pendingRabbitHomeRef.current = false;
+        // Natural micro-pause upon landing so user sees the rabbit in his place before resume folds away
+        setTimeout(() => {
+          setScrolled(false);
+        }, 80);
+      }
+    };
+
+    window.addEventListener('rabbit-landed-home', handleRabbitLandedHome);
+    return () => {
+      window.removeEventListener('rabbit-landed-home', handleRabbitLandedHome);
+      if (rabbitHomeTimeoutRef.current) {
+        clearTimeout(rabbitHomeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Section scroll tracking with requestAnimationFrame throttle
   useEffect(() => {
@@ -15,13 +43,35 @@ const Navbar = ({ onResumeClick }) => {
       ticking = false;
       const scrollY = window.scrollY || 0;
       const isScrolled = scrollY > 100;
-      if (isScrolled !== currentScrolled) {
-        currentScrolled = isScrolled;
-        setScrolled(isScrolled);
+
+      if (isScrolled) {
+        // Scrolling down: show resume section immediately and expand navbar
+        if (rabbitHomeTimeoutRef.current) {
+          clearTimeout(rabbitHomeTimeoutRef.current);
+          rabbitHomeTimeoutRef.current = null;
+        }
+        pendingRabbitHomeRef.current = false;
+        if (!currentScrolled) {
+          currentScrolled = true;
+          setScrolled(true);
+        }
+      } else {
+        // Scrolling up to home: if resume is currently visible, hold it until the rabbit jumps home!
+        if (currentScrolled && !pendingRabbitHomeRef.current) {
+          pendingRabbitHomeRef.current = true;
+          currentScrolled = false;
+          // Safe fallback in case rabbit is already docked or event delayed
+          rabbitHomeTimeoutRef.current = setTimeout(() => {
+            if (pendingRabbitHomeRef.current) {
+              pendingRabbitHomeRef.current = false;
+              setScrolled(false);
+            }
+          }, 520);
+        }
       }
 
       let newSection = 'home';
-      if (scrollY >= 180) {
+      if (scrollY >= 140) {
         const sections = [
           { id: 'contact', offset: 260 },
           { id: 'cta', offset: 260 },
@@ -45,6 +95,10 @@ const Navbar = ({ onResumeClick }) => {
       if (newSection !== currentSection) {
         currentSection = newSection;
         setActiveSection(newSection);
+        syncUrlHash(newSection, true);
+        if (SECTION_SEO[newSection]) {
+          updateSeoMeta(SECTION_SEO[newSection]);
+        }
       }
     };
 
@@ -62,10 +116,25 @@ const Navbar = ({ onResumeClick }) => {
 
   const scrollToSection = (sectionId) => {
     setActiveSection(sectionId);
+    syncUrlHash(sectionId, false);
+    if (SECTION_SEO[sectionId]) {
+      updateSeoMeta(SECTION_SEO[sectionId]);
+    }
     if (sectionId === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      // When navigating to home, keep resume visible until the rabbit jumps to his place
+      if (scrolled) {
+        pendingRabbitHomeRef.current = true;
+        if (rabbitHomeTimeoutRef.current) clearTimeout(rabbitHomeTimeoutRef.current);
+        rabbitHomeTimeoutRef.current = setTimeout(() => {
+          if (pendingRabbitHomeRef.current) {
+            pendingRabbitHomeRef.current = false;
+            setScrolled(false);
+          }
+        }, 550);
+      }
     } else {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+      scrollToHash(sectionId);
     }
   };
 
