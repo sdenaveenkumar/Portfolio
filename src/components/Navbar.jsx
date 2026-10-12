@@ -139,9 +139,9 @@ const Navbar = ({ onResumeClick }) => {
   };
 
   return (
-    <div className="fixed top-16 sm:top-8 inset-x-0 z-40 flex justify-center w-full pointer-events-none px-2">
+    <div className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] sm:top-8 inset-x-0 z-40 flex justify-center w-full pointer-events-none px-2">
       <nav 
-        className={`relative pointer-events-auto flex items-center justify-between px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 w-full max-w-[96vw] ${scrolled ? 'md:max-w-[700px] md:min-w-[620px]' : 'md:max-w-[520px] md:min-w-[480px]'} rounded-full bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] text-gray-900 mx-auto transition-all duration-500`}
+        className={`relative pointer-events-auto flex items-center justify-between px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 w-full max-w-[96vw] ${scrolled ? 'md:max-w-[700px] md:min-w-[620px]' : 'md:max-w-[520px] md:min-w-[480px]'} rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] text-gray-900 mx-auto transition-all duration-500`}
       >
         {/* Left side: Home Base / Logo Dock */}
         <div data-nav-item="home" className="flex items-center pl-1 sm:pl-2 md:pl-3 pr-1 sm:pr-2 md:pr-3 shrink-0">

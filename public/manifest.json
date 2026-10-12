@@ -1,0 +1,18 @@
+{
+  "name": "Naveen Kumar — Portfolio",
+  "short_name": "Rabbitfolio",
+  "description": "Portfolio of Naveen Kumar, Fullstack Software Engineer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafc",
+  "theme_color": "#fafafc",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

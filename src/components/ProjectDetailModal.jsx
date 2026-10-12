@@ -260,12 +260,12 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
 
 
   const isMobile = windowSize.width < 640;
-  const targetWidth = isMobile ? Math.max(300, windowSize.width - 20) : Math.min(896, windowSize.width - 32);
+  const targetWidth = isMobile ? windowSize.width : Math.min(896, windowSize.width - 32);
   const targetHeight = isMobile 
-    ? Math.max(480, windowSize.height - 28) 
+    ? Math.round(windowSize.height * 0.92) 
     : Math.min(Math.round(windowSize.height * 0.90), 840);
-  const targetLeft = Math.max(10, (windowSize.width - targetWidth) / 2);
-  const targetTop = Math.max(12, (windowSize.height - targetHeight) / 2);
+  const targetLeft = isMobile ? 0 : (windowSize.width - targetWidth) / 2;
+  const targetTop = isMobile ? windowSize.height - targetHeight : (windowSize.height - targetHeight) / 2;
 
   // Exact coordinates and sizes for morphing from card to modal and vice versa
   const startTop = activeRect ? activeRect.top : targetTop;
@@ -300,8 +300,16 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
             className="fixed inset-0 z-[101] pointer-events-none"
             style={{ perspective: 1800, WebkitPerspective: 1800 }}
           >
-            {/* 3D Morphing Card / Modal Flipper */}
+            {/* 3D Morphing Card / Modal Flipper (Acts as Native Bottom Sheet on Mobile) */}
             <motion.div
+              drag={isMobile ? "y" : false}
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0.05, bottom: 0.5 }}
+              onDragEnd={(e, info) => {
+                if (isMobile && (info.offset.y > 90 || info.velocity.y > 350)) {
+                  onClose();
+                }
+              }}
               initial={{
                 top: startTop,
                 left: startLeft,
@@ -357,17 +365,22 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                 />
               </div>
 
-              {/* FACE B: DETAILED DOSSIER MODAL (Back Face, visible when rotateY is 180°) */}
+              {/* FACE B: DETAILED DOSSIER MODAL (Native Bottom Sheet on Mobile, Dossier on Desktop) */}
               <div
                 style={{
                   backfaceVisibility: "hidden",
                   WebkitBackfaceVisibility: "hidden",
                   transform: "rotateY(180deg) translateZ(1px)",
                 }}
-                className="absolute inset-0 w-full h-full bg-white rounded-[24px] sm:rounded-[36px] shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-gray-200/80 flex flex-col overflow-hidden pointer-events-auto select-auto"
+                className="absolute inset-0 w-full h-full bg-white rounded-t-[32px] sm:rounded-[36px] rounded-b-none sm:rounded-b-[36px] shadow-[0_-15px_50px_rgba(0,0,0,0.35)] sm:shadow-[0_25px_80px_rgba(0,0,0,0.4)] border-t sm:border border-gray-200/80 flex flex-col overflow-hidden pointer-events-auto select-auto"
               >
+                {/* iOS Mobile App Sheet Pull Handle */}
+                <div className="w-full flex sm:hidden justify-center pt-2 pb-1 bg-white/95 backdrop-blur-md shrink-0 cursor-grab active:cursor-grabbing">
+                  <div className="w-10 h-1 rounded-full bg-gray-300" />
+                </div>
+
                 {/* STICKY TOP APP BAR */}
-                <div className="sticky top-0 left-0 right-0 z-30 px-3 sm:px-6 py-2.5 sm:py-3.5 bg-white/90 backdrop-blur-md border-b border-gray-100 flex items-center justify-between gap-2 sm:gap-3 shrink-0">
+                <div className="sticky top-0 left-0 right-0 z-30 px-3 sm:px-6 py-2 sm:py-3.5 bg-white/95 backdrop-blur-md border-b border-gray-100 flex items-center justify-between gap-2 sm:gap-3 shrink-0">
                   <div className="flex items-center gap-2 overflow-hidden">
                     <button
                       onClick={onClose}
@@ -436,7 +449,7 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                 </div>
 
                 {/* SCROLLABLE MODAL CONTENT BODY */}
-                <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6">
+                <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6 space-y-6 pb-[calc(env(safe-area-inset-bottom,16px)+24px)]">
 
                   {/* HERO SHOWCASE BANNER */}
                   <div className="relative w-full aspect-[21/9] sm:aspect-[24/9] rounded-[22px] overflow-hidden bg-[#0A0E17] border border-gray-200 shadow-md">
