@@ -130,14 +130,14 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
             aria-label="Close Rabbit Tree"
           />
 
-          {/* Floating Dual Device Stage Container: Tablet on Left + Phone on Right */}
+          {/* Floating Device Stage Container: Tablet Frame Centered (or Side-by-Side if preview open) */}
           <div
             data-device-stage="true"
             onClick={(e) => {
               if (e.target.closest('[data-device-chassis]')) return;
               handleCloseAll();
             }}
-            className="relative z-10 w-full h-full flex items-center justify-end px-2 sm:px-5 md:px-8 py-2 sm:py-6 cursor-pointer gap-2 sm:gap-4 lg:gap-6 overflow-hidden"
+            className={`relative z-10 w-full h-full flex items-center ${activePreviewLink ? 'justify-end' : 'justify-center'} px-2 sm:px-5 md:px-8 py-2 sm:py-6 cursor-pointer gap-2 sm:gap-4 lg:gap-6 overflow-hidden`}
           >
 
             {/* ─────────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
             </motion.div>
 
             {/* ─────────────────────────────────────────────────────────────
-                SMARTPHONE CHASSIS (Rabbit Tree List)
+                TABLET CHASSIS (Rabbit Tree Tablet Box)
                ───────────────────────────────────────────────────────────── */}
             <motion.div
               data-device-chassis="true"
@@ -219,42 +219,43 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
                   opacity: { duration: 0.42, delay: 0.18, ease: 'easeInOut' }
                 }
               }}
-              className={`pointer-events-auto relative w-[340px] sm:w-[370px] md:w-[390px] max-w-[calc(100vw-20px)] h-[94vh] max-h-[820px] rounded-[48px] sm:rounded-[54px] p-[10px] sm:p-[12px] bg-gradient-to-b from-[#38383a] via-[#1a1a1c] to-[#2c2c2e] shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.18),inset_0_1px_2px_rgba(255,255,255,0.25)] flex flex-col select-none shrink-0 cursor-default ${activePreviewLink ? 'hidden lg:flex' : 'flex'
+              className={`pointer-events-auto relative w-[94vw] sm:w-[580px] md:w-[660px] lg:w-[740px] xl:w-[780px] max-w-[820px] h-[94vh] max-h-[860px] rounded-[38px] sm:rounded-[46px] p-[10px] sm:p-[14px] bg-gradient-to-b from-[#3a3a3c] via-[#1a1a1c] to-[#2c2c2e] shadow-[0_30px_90px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.18),inset_0_1px_2px_rgba(255,255,255,0.25)] flex flex-col select-none shrink-0 cursor-default ${activePreviewLink ? 'hidden 2xl:flex' : 'flex'
                 }`}
             >
 
-              {/* Physical Edge Details: Side Buttons */}
-              <div className="absolute -left-[3px] top-[105px] w-[3px] h-9 bg-zinc-700/80 rounded-l-sm" /> {/* Volume Up */}
-              <div className="absolute -left-[3px] top-[152px] w-[3px] h-9 bg-zinc-700/80 rounded-l-sm" /> {/* Volume Down */}
-              <div className="absolute -right-[3px] top-[125px] w-[3px] h-14 bg-zinc-700/80 rounded-r-sm" /> {/* Power Button */}
+              {/* Physical Edge Details: Tablet Hardware Buttons */}
+              <div className="absolute -right-[3px] top-[75px] w-[3px] h-10 bg-zinc-700/80 rounded-r-sm" /> {/* Volume Up */}
+              <div className="absolute -right-[3px] top-[125px] w-[3px] h-10 bg-zinc-700/80 rounded-r-sm" /> {/* Volume Down */}
+              <div className="absolute -top-[3px] right-[70px] h-[3px] w-12 bg-zinc-700/80 rounded-t-sm" /> {/* Power Button */}
 
               {/* Screen Bezel Frame */}
-              <div className="relative w-full h-full rounded-[38px] sm:rounded-[44px] overflow-hidden bg-black border border-white/[0.08] shadow-inner flex flex-col">
+              <div className="relative w-full h-full rounded-[28px] sm:rounded-[36px] overflow-hidden bg-black border border-white/[0.08] shadow-inner flex flex-col">
 
                 {/* ─────────────────────────────────────────────────────────────
-                    TOP: Dynamic Island & iOS Status Bar
+                    TOP: iPad / Tablet Status Bar with Ambient Camera Sensor
                    ───────────────────────────────────────────────────────────── */}
-                <div className="relative z-30 w-full pt-3 px-6 pb-2 bg-black flex items-center justify-between text-white shrink-0 select-none">
+                <div className="relative z-30 w-full pt-3 px-5 sm:px-6 pb-2.5 bg-black flex items-center justify-between text-white shrink-0 select-none border-b border-white/[0.04]">
                   {/* Left: Clock */}
-                  <span className="text-[12px] sm:text-[13px] font-semibold tracking-tight text-zinc-200">
+                  <span className="text-[12px] sm:text-[13px] font-semibold tracking-tight text-zinc-300">
                     {currentTime}
                   </span>
 
-                  {/* Center: Interactive Dynamic Island */}
-                  <div className="w-[100px] sm:w-[110px] h-[26px] bg-black border border-white/[0.12] rounded-full flex items-center justify-between px-2.5 shadow-md">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[9px] font-mono tracking-wider font-bold text-zinc-300 uppercase">Rabbit</span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 border border-zinc-700" />
+                  {/* Center: Tablet Front Camera Sensor */}
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-950/80 border border-white/[0.08] shadow-inner">
+                    <div className="w-2.5 h-2.5 rounded-full bg-zinc-800 border border-zinc-700/80 flex items-center justify-center shadow-inner">
+                      <div className="w-1 h-1 rounded-full bg-emerald-500/80" />
+                    </div>
+                    <span className="text-[10px] font-mono tracking-wider font-bold text-zinc-400 uppercase">RabbitPad</span>
                   </div>
 
-                  {/* Right: Signal, Wifi, Battery & Mobile Close */}
-                  <div className="flex items-center gap-1.5 text-zinc-300">
+                  {/* Right: Wifi, Battery & Close */}
+                  <div className="flex items-center gap-2 text-zinc-300">
                     <Wifi className="w-3.5 h-3.5 stroke-[2.2]" />
                     <Battery className="w-4 h-4 stroke-[2.2]" />
-                    {/* Mobile Close Button */}
+                    {/* Close Button */}
                     <button
                       onClick={handleCloseAll}
-                      className="md:hidden ml-1 p-1 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                      className="ml-1 p-1 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer"
                       title="Close"
                       aria-label="Close"
                     >

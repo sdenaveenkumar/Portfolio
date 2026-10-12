@@ -136,8 +136,8 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
   return (
     <div className={`${isEmbedded ? 'min-h-full px-2.5 sm:px-3 py-2' : 'min-h-screen px-3.5 sm:px-4 py-4 sm:py-6'} w-full bg-black text-white font-sans antialiased flex flex-col justify-between selection:bg-zinc-800 selection:text-white`}>
 
-      {/* Centered Mobile Container (max-w-[440px] matching standard mobile screen proportions) */}
-      <main className="w-full max-w-[430px] mx-auto flex flex-col gap-3 sm:gap-3.5">
+      {/* Spacious Container for Tablet Frame / Centered Container on Mobile */}
+      <main className={`w-full ${isEmbedded ? 'max-w-[620px]' : 'max-w-[430px] sm:max-w-[560px]'} mx-auto flex flex-col gap-3 sm:gap-3.5`}>
 
         {/* ─────────────────────────────────────────────────────────────
             0. TOP UTILITY BAR (Back to Portfolio & Share)
