@@ -519,7 +519,7 @@ const Education = () => {
       className="relative w-full h-[480vh] bg-[#fafafc] text-gray-900 selection:bg-black selection:text-white font-sans rounded-t-[44px] md:rounded-t-[64px] border-t border-black/[0.08] shadow-[0_-20px_50px_rgba(0,0,0,0.05)] -mt-16 md:-mt-24 z-30"
     >
       {/* Sticky Fullscreen Stage (Anchored down to bottom of viewport) */}
-      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col justify-between pt-20 sm:pt-24 md:pt-26 pb-1 sm:pb-2 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 select-none bg-[#fafafc]">
+      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col justify-between pt-16 sm:pt-20 md:pt-22 lg:pt-24 pb-2 sm:pb-3 px-3.5 sm:px-6 md:px-8 lg:px-14 xl:px-20 select-none bg-[#fafafc]">
 
         {/* Dynamic Ambient Background Glow from Contact Us Theme */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
@@ -571,7 +571,7 @@ const Education = () => {
                 BCA
               </span>
             </div>
-            <h2 className="text-xl sm:text-3xl md:text-4xl font-black text-neutral-950 tracking-tighter uppercase leading-none">
+            <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-neutral-950 tracking-tighter uppercase leading-none">
               Academic Excellence
             </h2>
           </div>
@@ -607,15 +607,15 @@ const Education = () => {
         {/* =============================================================== */}
         <div
           ref={mainStageRef}
-          className="w-full flex-1 flex flex-col lg:flex-row gap-4 lg:gap-5 my-1.5 overflow-hidden items-stretch relative z-10 opacity-0"
+          className="w-full flex-1 flex flex-col md:flex-row gap-3.5 md:gap-4 lg:gap-5 my-1 sm:my-1.5 overflow-hidden items-stretch relative z-10 opacity-0"
         >
           {/* Left Column (Spacious Cumulative GPA, Metrics, Trajectory) */}
-          <div className="w-full lg:w-[350px] xl:w-[390px] 2xl:w-[420px] shrink-0 flex flex-col gap-3.5 justify-between h-full max-h-[70vh] md:max-h-[72vh] [perspective:1400px]">
+          <div className="w-full md:w-[270px] lg:w-[330px] xl:w-[380px] 2xl:w-[420px] shrink-0 flex flex-col gap-2.5 sm:gap-3.5 justify-between h-full max-h-[52vh] sm:max-h-[58vh] md:max-h-[64vh] lg:max-h-[72vh] [perspective:1400px]">
 
             {/* Cumulative GPA Card (Destination of the Morphing 8.82) */}
             <div
               ref={gpaCardRef}
-              className="p-4 sm:p-5 rounded-2xl bg-white border border-black/[0.08] shadow-[0_6px_20px_rgba(0,0,0,0.035)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] hover:-translate-y-2 hover:scale-[1.015] sem-card-spring flex flex-col justify-between relative overflow-hidden shrink-0 will-change-transform cursor-pointer"
+              className="p-3.5 sm:p-4 lg:p-5 rounded-2xl bg-white border border-black/[0.08] shadow-[0_6px_20px_rgba(0,0,0,0.035)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] hover:-translate-y-2 hover:scale-[1.015] sem-card-spring flex flex-col justify-between relative overflow-hidden shrink-0 will-change-transform cursor-pointer"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-neutral-500 font-medium">
@@ -630,53 +630,53 @@ const Education = () => {
               <div className="flex items-baseline gap-2.5 my-1">
                 <div
                   ref={targetSlotRef}
-                  className="text-5xl md:text-6xl font-black tracking-tighter text-neutral-950 leading-none select-none opacity-0 will-change-opacity"
+                  className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black tracking-tighter text-neutral-950 leading-none select-none opacity-0 will-change-opacity"
                 >
                   8.82
                 </div>
-                <span className="text-base sm:text-lg font-mono font-bold text-neutral-400">/ 10.0</span>
+                <span className="text-sm sm:text-base lg:text-lg font-mono font-bold text-neutral-400">/ 10.0</span>
               </div>
 
-              <p className="text-xs sm:text-[13px] text-neutral-600 font-mono leading-relaxed">
+              <p className="text-[11px] sm:text-xs lg:text-[13px] text-neutral-600 font-mono leading-relaxed">
                 Maintained across all completed semesters in Core Computer Science, Software Engineering, and Mathematics.
               </p>
             </div>
 
             {/* Quick Metrics & Trajectory Area Chart */}
-            <div className={`${mobileTab === 'trajectory' ? 'flex' : 'hidden'} md:flex flex-col gap-3.5 flex-1 justify-between`}>
+            <div className={`${mobileTab === 'trajectory' ? 'flex' : 'hidden'} md:flex flex-col gap-2.5 sm:gap-3.5 flex-1 justify-between`}>
               {/* Quick Metrics */}
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-2.5 lg:gap-3">
                 <div
                   ref={peakSgpaRef}
-                  className="p-3.5 sm:p-4 rounded-xl bg-white border border-black/[0.08] shadow-[0_3px_10px_rgba(0,0,0,0.025)] hover:shadow-[0_10px_24px_rgba(0,0,0,0.07)] hover:-translate-y-2 hover:scale-[1.03] sem-card-spring will-change-transform cursor-pointer"
+                  className="p-3 sm:p-3.5 lg:p-4 rounded-xl bg-white border border-black/[0.08] shadow-[0_3px_10px_rgba(0,0,0,0.025)] hover:shadow-[0_10px_24px_rgba(0,0,0,0.07)] hover:-translate-y-2 hover:scale-[1.03] sem-card-spring will-change-transform cursor-pointer"
                 >
                   <span className="text-[10px] sm:text-[11px] font-mono text-neutral-500 uppercase block font-medium">Peak SGPA</span>
-                  <span className="text-2xl sm:text-3xl font-black text-neutral-950 block mt-1 font-mono">9.50</span>
-                  <span className="text-[10px] text-neutral-500 font-mono">Semester 01</span>
+                  <span className="text-xl sm:text-2xl lg:text-3xl font-black text-neutral-950 block mt-0.5 sm:mt-1 font-mono">9.50</span>
+                  <span className="text-[9px] sm:text-[10px] text-neutral-500 font-mono">Semester 01</span>
                 </div>
                 <div
                   ref={topPracticalRef}
-                  className="p-3.5 sm:p-4 rounded-xl bg-white border border-black/[0.08] shadow-[0_3px_10px_rgba(0,0,0,0.025)] hover:shadow-[0_10px_24px_rgba(0,0,0,0.07)] hover:-translate-y-2 hover:scale-[1.03] sem-card-spring will-change-transform cursor-pointer"
+                  className="p-3 sm:p-3.5 lg:p-4 rounded-xl bg-white border border-black/[0.08] shadow-[0_3px_10px_rgba(0,0,0,0.025)] hover:shadow-[0_10px_24px_rgba(0,0,0,0.07)] hover:-translate-y-2 hover:scale-[1.03] sem-card-spring will-change-transform cursor-pointer"
                 >
                   <span className="text-[10px] sm:text-[11px] font-mono text-neutral-500 uppercase block font-medium">Top Practical</span>
-                  <span className="text-2xl sm:text-3xl font-black text-neutral-950 block mt-1 font-mono">100/100</span>
-                  <span className="text-[10px] text-neutral-500 font-mono">System Software Lab</span>
+                  <span className="text-xl sm:text-2xl lg:text-3xl font-black text-neutral-950 block mt-0.5 sm:mt-1 font-mono">100/100</span>
+                  <span className="text-[9px] sm:text-[10px] text-neutral-500 font-mono">System Software Lab</span>
                 </div>
               </div>
 
               {/* Trajectory Area Chart */}
               <div
                 ref={trajectoryRef}
-                className="p-4 sm:p-5 rounded-2xl bg-white border border-black/[0.08] shadow-[0_6px_20px_rgba(0,0,0,0.035)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] hover:-translate-y-2 hover:scale-[1.015] sem-card-spring flex-1 flex flex-col justify-between will-change-transform cursor-pointer"
+                className="p-3.5 sm:p-4 lg:p-5 rounded-2xl bg-white border border-black/[0.08] shadow-[0_6px_20px_rgba(0,0,0,0.035)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] hover:-translate-y-2 hover:scale-[1.015] sem-card-spring flex-1 flex flex-col justify-between will-change-transform cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs sm:text-sm font-mono font-bold text-neutral-950 uppercase tracking-wider">
+                  <span className="text-[11px] sm:text-xs lg:text-sm font-mono font-bold text-neutral-950 uppercase tracking-wider">
                     Trajectory Curve
                   </span>
-                  <span className="text-[10px] font-mono text-neutral-500">Range: 6.0 – 10.0</span>
+                  <span className="text-[9px] sm:text-[10px] font-mono text-neutral-500">Range: 6.0 – 10.0</span>
                 </div>
 
-                <div className="w-full h-[115px] md:h-[130px] xl:h-[145px]">
+                <div className="w-full h-[95px] sm:h-[110px] md:h-[115px] lg:h-[130px] xl:h-[145px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={gpaData}
@@ -733,7 +733,7 @@ const Education = () => {
           {/* Right Column: 4 Editorial Cards Lifted Up Comfortably from Viewport Bottom */}
           <div className={`${mobileTab === 'vault' ? 'flex' : 'hidden'} md:flex flex-1 min-w-0 h-full items-end justify-center [perspective:1400px]`}>
 
-            <div className="w-full flex gap-3 xl:gap-4 items-end justify-center overflow-x-auto lg:overflow-visible pb-7 sm:pb-9 md:pb-12 mb-1 sm:mb-2">
+            <div className="w-full flex gap-2.5 sm:gap-3 xl:gap-4 items-end justify-start md:justify-center overflow-x-auto md:overflow-x-auto lg:overflow-visible pb-4 sm:pb-6 md:pb-8 mb-1">
               {transcriptData.map((card, idx) => {
                 const theme = semThemes[idx % semThemes.length];
                 const isActive = activeSemIndex === idx;
@@ -741,7 +741,7 @@ const Education = () => {
                   <div
                     key={card.sem}
                     ref={el => cardsRef.current[idx] = el}
-                    className="flex-shrink-0 w-[210px] sm:w-[225px] lg:flex-shrink lg:flex-1 lg:max-w-[270px] will-change-transform"
+                    className="flex-shrink-0 w-[205px] sm:w-[220px] md:w-[200px] lg:flex-shrink lg:flex-1 lg:max-w-[270px] will-change-transform"
                     style={{ zIndex: 10 + idx }}
                   >
                     {/* Organic Floating Wrapper (Continuous Asynchronous Elevation) */}
@@ -750,7 +750,7 @@ const Education = () => {
                       {/* Tactile Editorial Card with Bouncy Spring Physics */}
                       <div
                         onMouseEnter={() => setActiveSemIndex(idx)}
-                        className={`group w-full h-[400px] sm:h-[430px] md:h-[460px] lg:h-[480px] max-h-[66vh] md:max-h-[68vh] ${theme.cardBg} rounded-[24px] sm:rounded-[28px] border ${theme.cardBorder} ${isActive
+                        className={`group w-full h-[370px] sm:h-[400px] md:h-[420px] lg:h-[480px] max-h-[52vh] sm:max-h-[58vh] md:max-h-[62vh] lg:max-h-[68vh] ${theme.cardBg} rounded-[24px] sm:rounded-[28px] border ${theme.cardBorder} ${isActive
                             ? (theme.isDark ? 'ring-2 ring-white/90 shadow-[0_24px_50px_rgba(0,0,0,0.30)]' : 'ring-2 ring-black/80 shadow-[0_24px_50px_rgba(0,0,0,0.14)]')
                             : (theme.isDark ? 'shadow-[0_16px_36px_rgba(0,0,0,0.20)]' : 'shadow-[0_14px_34px_rgba(0,0,0,0.06)]')
                           } ${theme.isDark

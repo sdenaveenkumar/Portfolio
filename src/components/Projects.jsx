@@ -267,11 +267,15 @@ const Projects = () => {
           r => r.name.toLowerCase() === targetProjectName.toLowerCase()
         );
         if (match) {
+          const isMobile = window.innerWidth < 640;
+          const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
+          const cWidth = isMobile ? (window.innerWidth < 380 ? 245 : 280) : (isTablet ? 310 : 360);
+          const cHeight = isMobile ? (window.innerWidth < 380 ? 375 : 420) : (isTablet ? 460 : 500);
           const fallbackRect = {
             top: window.innerHeight * 0.25,
-            left: window.innerWidth * 0.5 - 180,
-            width: 360,
-            height: 480
+            left: window.innerWidth * 0.5 - (cWidth / 2),
+            width: cWidth,
+            height: cHeight
           };
           openProject(match, fallbackRect);
         }
@@ -284,8 +288,9 @@ const Projects = () => {
   useGSAP(() => {
     if (displayRepos.length === 0) return;
 
-    const isMobile = window.innerWidth < 768;
-    const isSmallMobile = typeof window !== 'undefined' && window.innerWidth < 420;
+    const isMobile = window.innerWidth < 640;
+    const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
+    const isSmallMobile = window.innerWidth < 380;
     const totalCards = displayRepos.length;
     const centerIndex = (totalCards - 1) / 2;
 
@@ -309,7 +314,7 @@ const Projects = () => {
       if (!card) return;
 
       const rotation = (index - centerIndex) * 10;
-      const yOffset = -190 - Math.abs(index - centerIndex) * 12;
+      const yOffset = (isMobile ? -140 : (isTablet ? -170 : -190)) - Math.abs(index - centerIndex) * 12;
 
       tl.to(card, {
         y: yOffset,
@@ -321,17 +326,17 @@ const Projects = () => {
     });
 
     // PHASE 2: Folder scales & glides with cushioned momentum
-    const folderWidth = isMobile ? (isSmallMobile ? 250 : 290) : 450;
-    const cardWidth = isMobile ? (isSmallMobile ? 260 : 300) : 360;
-    const cardGap = isMobile ? (isSmallMobile ? 35 : 45) : 70;
+    const folderWidth = isSmallMobile ? 240 : (isMobile ? 280 : (isTablet ? 360 : 450));
+    const cardWidth = isSmallMobile ? 245 : (isMobile ? 280 : (isTablet ? 310 : 360));
+    const cardGap = isSmallMobile ? 25 : (isMobile ? 35 : (isTablet ? 50 : 70));
     const cardStep = cardWidth + cardGap;
     // folderOffset ensures the gap between folder and first card is identical to the gap between cards
     const folderOffset = (folderWidth - cardWidth) / 2;
 
     tl.to(folderWrapperRef.current, {
-      scale: isMobile ? (isSmallMobile ? 0.8 : 0.85) : 0.72,
-      x: isMobile ? (isSmallMobile ? "-10vw" : "-15vw") : "-26vw",
-      y: isMobile ? "-4vh" : "0",
+      scale: isSmallMobile ? 0.8 : (isMobile ? 0.84 : (isTablet ? 0.78 : 0.72)),
+      x: isSmallMobile ? "-10vw" : (isMobile ? "-14vw" : (isTablet ? "-18vw" : "-26vw")),
+      y: isMobile ? "-3vh" : (isTablet ? "-1vh" : "0"),
       duration: 2.2,
       ease: "power3.inOut"
     }, "-=0.2");
@@ -341,7 +346,7 @@ const Projects = () => {
       if (!card) return;
 
       const xSpread = folderOffset + (index + 1) * cardStep;
-      const ySpread = isMobile ? 15 : 40;
+      const ySpread = isMobile ? 15 : (isTablet ? 25 : 40);
 
       tl.to(card, {
         x: xSpread,
@@ -357,7 +362,9 @@ const Projects = () => {
     tl.to(folderWrapperRef.current, {
       x: () => {
         const centerPan = folderOffset + cardStep * totalCards;
-        const rightEdgeOffset = window.innerWidth * 0.5 - (isMobile ? (isSmallMobile ? 115 : 130) : 180);
+        const rightEdgeOffset = window.innerWidth * 0.5 - (
+          isSmallMobile ? 110 : (isMobile ? 125 : (isTablet ? 145 : 180))
+        );
         return -(centerPan - rightEdgeOffset);
       },
       duration: totalCards * 0.8,
@@ -387,17 +394,17 @@ const Projects = () => {
         </div>
 
         {/* Section Header - positioned safely behind unstacking cards in the z-axis */}
-        <h2 className="absolute top-24 sm:top-28 md:top-32 text-[28px] sm:text-[42px] md:text-[54px] font-black text-[#1F1F1F] tracking-tighter uppercase z-0 pointer-events-none select-none">
+        <h2 className="absolute top-20 sm:top-24 md:top-28 lg:top-32 text-[26px] sm:text-[36px] md:text-[46px] lg:text-[54px] font-black text-[#1F1F1F] tracking-tighter uppercase z-0 pointer-events-none select-none">
           Projects
         </h2>
 
         {/* Folder Container Wrapper */}
-        <div ref={folderWrapperRef} className="relative z-10 w-[250px] sm:w-[290px] md:w-[450px] h-[175px] sm:h-[200px] md:h-[300px] mt-24 sm:mt-32 md:mt-40">
+        <div ref={folderWrapperRef} className="relative z-10 w-[240px] sm:w-[280px] md:w-[360px] lg:w-[450px] h-[165px] sm:h-[195px] md:h-[240px] lg:h-[300px] mt-20 sm:mt-26 md:mt-32 lg:mt-40">
 
           {/* Back of the Folder */}
           <div className="absolute bottom-0 left-0 w-full h-full bg-[#E5E5E7] rounded-3xl shadow-inner border border-gray-300/80">
             {/* Back tab */}
-            <div className="absolute -top-8 left-6 w-28 sm:w-32 h-10 bg-[#E5E5E7] rounded-t-2xl border-t border-l border-r border-gray-300/80" />
+            <div className="absolute -top-7 sm:-top-8 left-4 sm:left-6 w-24 sm:w-28 md:w-32 h-9 sm:h-10 bg-[#E5E5E7] rounded-t-2xl border-t border-l border-r border-gray-300/80" />
           </div>
 
           {/* Project Cards Deck */}
@@ -409,7 +416,7 @@ const Projects = () => {
                 <div
                   key={repo.id || i}
                   ref={el => cardsRef.current[i] = el}
-                  className="absolute bottom-4 w-[260px] sm:w-[300px] md:w-[360px] h-[395px] sm:h-[445px] md:h-[500px] origin-bottom z-10 pointer-events-auto cursor-pointer group select-none will-change-transform"
+                  className="absolute bottom-4 w-[245px] sm:w-[280px] md:w-[310px] lg:w-[360px] h-[375px] sm:h-[420px] md:h-[460px] lg:h-[500px] origin-bottom z-10 pointer-events-auto cursor-pointer group select-none will-change-transform"
                   onClick={(e) => {
                     const visualCard = e.currentTarget.querySelector('.visual-card-surface') || e.currentTarget;
                     const rect = visualCard.getBoundingClientRect();

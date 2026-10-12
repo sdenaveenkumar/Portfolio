@@ -260,12 +260,12 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
 
 
   const isMobile = windowSize.width < 640;
-  const targetWidth = isMobile ? windowSize.width - 24 : Math.min(896, windowSize.width - 32);
+  const targetWidth = isMobile ? Math.max(300, windowSize.width - 20) : Math.min(896, windowSize.width - 32);
   const targetHeight = isMobile 
-    ? windowSize.height - 32 
+    ? Math.max(480, windowSize.height - 28) 
     : Math.min(Math.round(windowSize.height * 0.90), 840);
-  const targetLeft = isMobile ? 12 : (windowSize.width - targetWidth) / 2;
-  const targetTop = isMobile ? 16 : (windowSize.height - targetHeight) / 2;
+  const targetLeft = Math.max(10, (windowSize.width - targetWidth) / 2);
+  const targetTop = Math.max(12, (windowSize.height - targetHeight) / 2);
 
   // Exact coordinates and sizes for morphing from card to modal and vice versa
   const startTop = activeRect ? activeRect.top : targetTop;
@@ -364,22 +364,22 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                   WebkitBackfaceVisibility: "hidden",
                   transform: "rotateY(180deg) translateZ(1px)",
                 }}
-                className="absolute inset-0 w-full h-full bg-white rounded-[28px] sm:rounded-[36px] shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-gray-200/80 flex flex-col overflow-hidden pointer-events-auto select-auto"
+                className="absolute inset-0 w-full h-full bg-white rounded-[24px] sm:rounded-[36px] shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-gray-200/80 flex flex-col overflow-hidden pointer-events-auto select-auto"
               >
                 {/* STICKY TOP APP BAR */}
-                <div className="sticky top-0 left-0 right-0 z-30 px-4 sm:px-6 py-3.5 bg-white/90 backdrop-blur-md border-b border-gray-100 flex items-center justify-between gap-3 shrink-0">
-                  <div className="flex items-center gap-2.5 overflow-hidden">
+                <div className="sticky top-0 left-0 right-0 z-30 px-3 sm:px-6 py-2.5 sm:py-3.5 bg-white/90 backdrop-blur-md border-b border-gray-100 flex items-center justify-between gap-2 sm:gap-3 shrink-0">
+                  <div className="flex items-center gap-2 overflow-hidden">
                     <button
                       onClick={onClose}
-                      className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
                       title="Back / Close (Esc)"
                     >
-                      <ArrowLeft className="w-4 h-4" />
+                      <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
 
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: activeMeta?.accent || '#10B981' }} />
-                      <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate">
+                      <h3 className="font-bold text-gray-900 text-sm sm:text-lg truncate">
                         {title}
                       </h3>
                       {activeMeta?.badge && (
@@ -391,18 +391,18 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     {liveUrl && (
                       <a
                         href={liveUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
+                        className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
                         title={`Open Live Service (${liveUrl})`}
                       >
-                        <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-                        <span>Live App</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-300 animate-pulse" />
+                        <span>Live</span>
+                        <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </a>
                     )}
 
@@ -419,18 +419,18 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                       href={activeProject?.html_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#111827] hover:bg-black text-white text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
+                      className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#111827] hover:bg-black text-white text-[11px] sm:text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
                     >
                       <span>GitHub</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </a>
 
                     <button
                       onClick={onClose}
-                      className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-black flex items-center justify-center transition-colors cursor-pointer shrink-0 ml-1"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-black flex items-center justify-center transition-colors cursor-pointer shrink-0 ml-0.5 sm:ml-1"
                       title="Close (Esc)"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>

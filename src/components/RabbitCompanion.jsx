@@ -689,6 +689,8 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   // 7. Start Roaming Mode when Idle
   const startRoaming = useCallback(() => {
     if (isRoamingRef.current) return;
+    // On mobile devices (< 768px), keep rabbit safely docked in navbar/tabs so touch targets are never blocked
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return;
     // Strictly do NOT roam if Rabbit Tree is open or resume modal is open
     if (isRabbitTreeOpen || document.querySelector('[data-rabbit-tree-modal]') || document.getElementById('resume-modal')) {
       return;
@@ -932,6 +934,10 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     }
 
     const handleResize = () => {
+      if (typeof window !== 'undefined' && window.innerWidth < 768 && isRoamingRef.current) {
+        returnToNavbar(true);
+        return;
+      }
       if (!isRoamingRef.current) {
         const target = getNavbarTarget(activeSectionRef.current);
         if (target.x > 0 && target.y > 0) {
@@ -948,7 +954,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       if (syncAnimId) cancelAnimationFrame(syncAnimId);
       if (navObserver) navObserver.disconnect();
     };
-  }, [getNavbarTarget, leapTo, performRoamStep, triggerHomeLanding]);
+  }, [getNavbarTarget, leapTo, performRoamStep, returnToNavbar, triggerHomeLanding]);
 
   // 10. Nav-Click Lock: Single, confident leap directly to clicked destination
   useEffect(() => {

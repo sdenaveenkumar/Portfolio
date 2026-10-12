@@ -351,20 +351,21 @@ const CallToAction = () => {
              ============================================================== */}
           <div
             ref={ctaBarRef}
-            className="mt-4 sm:mt-6 w-full max-w-xl mx-auto will-change-transform"
+            className="mt-4 sm:mt-6 w-full max-w-xl mx-auto will-change-transform px-2 sm:px-0"
           >
             <div
               data-cta-card
-              className="w-full flex items-center justify-between gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-white/90 backdrop-blur-xl border border-black/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.08)] cta-float-bar"
+              className="w-full flex items-center justify-between gap-2 sm:gap-3 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-white/90 backdrop-blur-xl border border-black/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.08)] cta-float-bar"
             >
               {/* Primary Action Button */}
               <button
                 data-cta-button
                 onClick={scrollToContact}
-                className="px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-gray-900 hover:bg-black text-white font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer group shrink-0"
+                className="px-4 sm:px-7 py-2 sm:py-3 rounded-full bg-gray-900 hover:bg-black text-white font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer group shrink-0"
               >
-                <span>Start a Conversation</span>
-                <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                <span className="hidden sm:inline">Start a Conversation</span>
+                <span className="sm:hidden">Let's Talk</span>
+                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-300 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </button>
 
           {/* Quick Actions & Socials */}
