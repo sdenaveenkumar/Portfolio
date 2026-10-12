@@ -103,19 +103,30 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   }, []);
 
   // 1. Measure Navbar Target Position:
-  // - At home: Perfectly centered in the circular home dock.
-  // - At section tabs: Perches gracefully atop the active section pill with paws on the glass rim.
+  // - On desktop: Perfectly centered in the circular home dock, or perches atop active section tab.
+  // - On mobile bottom tab bar: Sits gracefully right atop the active tab icon on the frosted glass rim.
   const getNavbarTarget = useCallback((sectionKey) => {
-    const navEl = document.querySelector('nav');
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const navEl = isMobile
+      ? (document.querySelector('[data-mobile-tab-bar]') || document.querySelector('nav'))
+      : (document.querySelector('[data-desktop-nav]') || document.querySelector('nav'));
     if (!navEl) return { x: -999, y: -999 };
 
     const effectiveKey = (sectionKey === 'contact' || sectionKey === 'cta') ? 'experience' : sectionKey;
-    const itemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`) ||
-                   document.querySelector('[data-nav-item="home"]') ||
+    const itemEl = navEl.querySelector(`[data-nav-item="${effectiveKey}"]`) ||
+                   navEl.querySelector('[data-nav-item="home"]') ||
                    navEl;
 
     const navRect = navEl.getBoundingClientRect();
     const isHome = effectiveKey === 'home';
+
+    if (isMobile) {
+      const itemRect = itemEl.getBoundingClientRect();
+      const x = itemRect.left + (itemRect.width - RABBIT_WIDTH) / 2;
+      // On mobile bottom tab bar, rabbit paws rest gracefully on the upper rim of the tab bar
+      const y = navRect.top - RABBIT_HEIGHT + 14;
+      return { x, y };
+    }
 
     if (isHome) {
       // At home base: center directly in the circular home dock
@@ -917,10 +928,10 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     };
     syncInitialHome();
 
-    // ResizeObserver on navbar to stick to it smoothly during layout shifts
-    const navEl = document.querySelector('nav');
+    // ResizeObserver on navbars to stick to them smoothly during layout shifts
+    const navEls = document.querySelectorAll('nav');
     let navObserver;
-    if (navEl) {
+    if (navEls.length > 0) {
       navObserver = new ResizeObserver(() => {
         if (!isRoamingRef.current && !isHoppingRef.current) {
           const target = getNavbarTarget(activeSectionRef.current);
@@ -930,7 +941,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
           }
         }
       });
-      navObserver.observe(navEl);
+      navEls.forEach(el => navObserver.observe(el));
     }
 
     const handleResize = () => {
@@ -994,12 +1005,10 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       });
     };
 
-    const nav = document.querySelector('nav');
-    if (nav) {
-      nav.addEventListener('click', handleNavClick);
-    }
+    const navEls = document.querySelectorAll('nav');
+    navEls.forEach(nav => nav.addEventListener('click', handleNavClick));
     return () => {
-      if (nav) nav.removeEventListener('click', handleNavClick);
+      navEls.forEach(nav => nav.removeEventListener('click', handleNavClick));
     };
   }, [getNavbarTarget, leapTo, triggerHomeLanding]);
 

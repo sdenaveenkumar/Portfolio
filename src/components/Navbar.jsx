@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Home, Sparkles, FolderGit2, GraduationCap, MessageSquare } from 'lucide-react';
 import { updateSeoMeta, SECTION_SEO, syncUrlHash, scrollToHash } from '../utils/seoRouter';
+
+const mobileTabs = [
+  { id: 'home', label: 'Home', Icon: Home },
+  { id: 'skills', label: 'Skills', Icon: Sparkles },
+  { id: 'projects', label: 'Projects', Icon: FolderGit2 },
+  { id: 'education', label: 'Academics', Icon: GraduationCap },
+  { id: 'experience', label: 'Contact', Icon: MessageSquare },
+];
 
 const Navbar = ({ onResumeClick }) => {
   const [scrolled, setScrolled] = useState(false);
@@ -139,87 +148,144 @@ const Navbar = ({ onResumeClick }) => {
   };
 
   return (
-    <div className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] sm:top-8 inset-x-0 z-40 flex justify-center w-full pointer-events-none px-2">
-      <nav 
-        className={`relative pointer-events-auto flex items-center justify-between px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 w-full max-w-[96vw] ${scrolled ? 'md:max-w-[700px] md:min-w-[620px]' : 'md:max-w-[520px] md:min-w-[480px]'} rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] text-gray-900 mx-auto transition-all duration-500`}
-      >
-        {/* Left side: Home Base / Logo Dock */}
-        <div data-nav-item="home" className="flex items-center pl-1 sm:pl-2 md:pl-3 pr-1 sm:pr-2 md:pr-3 shrink-0">
-          <button 
-            onClick={() => scrollToSection('home')} 
-            className="flex items-center cursor-pointer group"
-            aria-label="RabbitFolio Home"
-          >
-            <div className="relative w-8 h-8 sm:w-9 sm:h-9" />
-          </button>
+    <>
+      {/* 📱 Mobile Top App Header (< 768px): Minimal Brand Status & Quick Resume */}
+      <div className="fixed top-[calc(env(safe-area-inset-top,0px)+0.6rem)] inset-x-0 z-40 flex md:hidden justify-between items-center px-4 pointer-events-none">
+        <div 
+          onClick={() => scrollToSection('home')}
+          className="pointer-events-auto px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] flex items-center gap-2 cursor-pointer active:scale-95 transition-transform"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-black text-xs tracking-tight text-gray-900 font-sans">RabbitFolio</span>
         </div>
 
-        {/* Right side: Navigation Links */}
-        <motion.div layout className="flex items-center space-x-0.5 sm:space-x-1 text-[10px] sm:text-[11px] md:text-[13px] font-semibold text-[#111111] group">
-          <motion.button 
-            layout 
-            data-nav-item="skills"
-            onClick={() => scrollToSection('skills')} 
-            className={`px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 transition-colors duration-200 cursor-pointer ${activeSection === 'skills' ? 'text-black font-semibold' : 'text-gray-500 hover:text-black'}`}
-          >
-            <span className="inline-block pointer-events-none">Skills</span>
-          </motion.button>
+        <button 
+          onClick={onResumeClick}
+          className="pointer-events-auto px-4 py-1.5 rounded-full bg-black hover:bg-gray-800 text-white text-xs font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] active:scale-95 transition-all cursor-pointer"
+        >
+          Resume
+        </button>
+      </div>
 
-          <motion.button 
-            layout 
-            data-nav-item="projects"
-            onClick={() => scrollToSection('projects')} 
-            className={`px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 transition-colors duration-200 cursor-pointer ${activeSection === 'projects' ? 'text-black font-semibold' : 'text-gray-500 hover:text-black'}`}
-          >
-            <span className="inline-block pointer-events-none">Projects</span>
-          </motion.button>
+      {/* 💻 Desktop / Tablet Top Island Navbar (>= 768px) */}
+      <div className="fixed top-8 inset-x-0 z-40 hidden md:flex justify-center w-full pointer-events-none px-2">
+        <nav 
+          data-desktop-nav
+          className={`relative pointer-events-auto flex items-center justify-between px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 w-full max-w-[96vw] ${scrolled ? 'md:max-w-[700px] md:min-w-[620px]' : 'md:max-w-[520px] md:min-w-[480px]'} rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] text-gray-900 mx-auto transition-all duration-500`}
+        >
+          {/* Left side: Home Base / Logo Dock */}
+          <div data-nav-item="home" className="flex items-center pl-1 sm:pl-2 md:pl-3 pr-1 sm:pr-2 md:pr-3 shrink-0">
+            <button 
+              onClick={() => scrollToSection('home')} 
+              className="flex items-center cursor-pointer group"
+              aria-label="RabbitFolio Home"
+            >
+              <div className="relative w-8 h-8 sm:w-9 sm:h-9" />
+            </button>
+          </div>
 
-          <motion.button 
-            layout 
-            data-nav-item="education"
-            onClick={() => scrollToSection('education')} 
-            className={`px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 transition-colors duration-200 cursor-pointer ${activeSection === 'education' ? 'text-black font-semibold' : 'text-gray-500 hover:text-black'}`}
-          >
-            <span className="inline-block pointer-events-none">
-              <span className="sm:hidden">Edu</span>
-              <span className="hidden sm:inline">Academics</span>
-            </span>
-          </motion.button>
+          {/* Right side: Navigation Links */}
+          <motion.div layout className="flex items-center space-x-0.5 sm:space-x-1 text-[10px] sm:text-[11px] md:text-[13px] font-semibold text-[#111111] group">
+            <motion.button 
+              layout 
+              data-nav-item="skills"
+              onClick={() => scrollToSection('skills')} 
+              className={`px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 transition-colors duration-200 cursor-pointer ${activeSection === 'skills' ? 'text-black font-semibold' : 'text-gray-500 hover:text-black'}`}
+            >
+              <span className="inline-block pointer-events-none">Skills</span>
+            </motion.button>
 
-          <motion.button 
-            layout 
-            data-nav-item="experience"
-            onClick={() => scrollToSection('experience')} 
-            className={`px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 transition-colors duration-200 cursor-pointer ${activeSection === 'experience' ? 'text-black font-semibold' : 'text-gray-500 hover:text-black'}`}
-          >
-            <span className="inline-block pointer-events-none">
-              <span className="sm:hidden">Exp</span>
-              <span className="hidden sm:inline">Experience</span>
-            </span>
-          </motion.button>
-          
-          <AnimatePresence>
-            {scrolled && (
-              <motion.div
-                layout
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="overflow-hidden flex items-center justify-end"
-              >
-                <button 
-                  onClick={onResumeClick}
-                  className="px-2.5 sm:px-3.5 md:px-4 py-1 sm:py-1.5 md:py-2 ml-1 bg-black text-white hover:bg-gray-800 rounded-full transition-colors whitespace-nowrap cursor-pointer text-[10px] sm:text-xs font-bold shadow-sm"
+            <motion.button 
+              layout 
+              data-nav-item="projects"
+              onClick={() => scrollToSection('projects')} 
+              className={`px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 transition-colors duration-200 cursor-pointer ${activeSection === 'projects' ? 'text-black font-semibold' : 'text-gray-500 hover:text-black'}`}
+            >
+              <span className="inline-block pointer-events-none">Projects</span>
+            </motion.button>
+
+            <motion.button 
+              layout 
+              data-nav-item="education"
+              onClick={() => scrollToSection('education')} 
+              className={`px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 transition-colors duration-200 cursor-pointer ${activeSection === 'education' ? 'text-black font-semibold' : 'text-gray-500 hover:text-black'}`}
+            >
+              <span className="inline-block pointer-events-none">
+                <span className="sm:hidden">Edu</span>
+                <span className="hidden sm:inline">Academics</span>
+              </span>
+            </motion.button>
+
+            <motion.button 
+              layout 
+              data-nav-item="experience"
+              onClick={() => scrollToSection('experience')} 
+              className={`px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 transition-colors duration-200 cursor-pointer ${activeSection === 'experience' ? 'text-black font-semibold' : 'text-gray-500 hover:text-black'}`}
+            >
+              <span className="inline-block pointer-events-none">
+                <span className="sm:hidden">Exp</span>
+                <span className="hidden sm:inline">Experience</span>
+              </span>
+            </motion.button>
+            
+            <AnimatePresence>
+              {scrolled && (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden flex items-center justify-end"
                 >
-                  Resume
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </nav>
-    </div>
+                  <button 
+                    onClick={onResumeClick}
+                    className="px-2.5 sm:px-3.5 md:px-4 py-1 sm:py-1.5 md:py-2 ml-1 bg-black text-white hover:bg-gray-800 rounded-full transition-colors whitespace-nowrap cursor-pointer text-[10px] sm:text-xs font-bold shadow-sm"
+                  >
+                    Resume
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </nav>
+      </div>
+
+      {/* 📱 Mobile iOS / Android Floating Bottom Tab Bar (< 768px) */}
+      <div className="fixed bottom-0 inset-x-0 z-40 flex md:hidden justify-center w-full pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px)+0.6rem)] px-3">
+        <nav
+          data-mobile-tab-bar
+          className="pointer-events-auto flex items-center justify-around px-2 py-1.5 w-full max-w-[380px] rounded-[28px] bg-white/85 backdrop-blur-2xl border border-white/70 shadow-[0_12px_40px_rgba(0,0,0,0.14),0_2px_8px_rgba(0,0,0,0.06)] text-gray-800 mx-auto transition-all"
+        >
+          {mobileTabs.map(({ id, label, Icon }) => {
+            const isActive = activeSection === id;
+            return (
+              <button
+                key={id}
+                data-nav-item={id}
+                onClick={() => scrollToSection(id)}
+                className={`relative flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all duration-200 cursor-pointer active:scale-90 select-none ${
+                  isActive ? 'text-black' : 'text-gray-400 hover:text-gray-700'
+                }`}
+                title={label}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeMobileTabGlow"
+                    className="absolute inset-0 bg-black/[0.06] rounded-2xl -z-10"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110 stroke-[2.3]' : 'stroke-[1.8]'}`} />
+                <span className={`text-[10px] tracking-tight mt-0.5 leading-none ${isActive ? 'font-black' : 'font-medium'}`}>
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+    </>
   );
 };
 
