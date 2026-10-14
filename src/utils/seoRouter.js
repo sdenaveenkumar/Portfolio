@@ -41,7 +41,7 @@ export const SECTION_SEO = {
   },
   link: {
     title: 'Rabbit Tree | Official Links & Profiles — Naveen Kumar',
-    description: 'All official developer links, GitHub repositories, LinkedIn, live REST APIs, and direct contacts for Naveen Kumar.',
+    description: 'All official developer links, GitHub repositories, LinkedIn, Personal API, and direct contacts for Naveen Kumar.',
     canonical: 'https://www.rabbitfolio.me/link'
   },
   rabbitStudio: {
