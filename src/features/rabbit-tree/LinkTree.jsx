@@ -57,8 +57,8 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
     {
       id: 'email',
       title: 'Email',
-      subtitle: 'sdenaveenkumar@gmail.com // Direct Dispatch',
-      url: 'mailto:sdenaveenkumar@gmail.com',
+      subtitle: 'sde.naveenkumar@gmail.com // Direct Dispatch',
+      url: 'mailto:sde.naveenkumar@gmail.com',
       isExternal: true
     },
     {
@@ -78,11 +78,19 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
     },
     {
       id: 'live-api',
-      title: 'Live REST API',
+      title: 'Personal API',
       subtitle: '140.245.24.219 // Interactive API Docs & Specs',
       url: 'http://140.245.24.219',
       isExternal: true,
       badge: 'LIVE'
+    },
+    {
+      id: 'rabbit-studio',
+      title: 'Rabbit Studio',
+      subtitle: 'Interactive Mindmap & Architecture Ideation Canvas',
+      url: '/tool/rabbit_studio',
+      isInternal: true,
+      badge: 'TOOL'
     }
   ];
 
@@ -136,8 +144,8 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
   return (
     <div className={`${isEmbedded ? 'min-h-full px-2.5 sm:px-3 py-2' : 'min-h-screen px-3.5 sm:px-4 py-4 sm:py-6'} w-full bg-black text-white font-sans antialiased flex flex-col justify-between selection:bg-zinc-800 selection:text-white`}>
 
-      {/* Spacious Container for Tablet Frame / Centered Container on Mobile */}
-      <main className={`w-full ${isEmbedded ? 'max-w-[620px]' : 'max-w-[430px] sm:max-w-[560px]'} mx-auto flex flex-col gap-3 sm:gap-3.5`}>
+      {/* Centered Mobile Container (max-w-[430px] matching standard mobile screen proportions) */}
+      <main className="w-full max-w-[430px] mx-auto flex flex-col gap-3 sm:gap-3.5">
 
         {/* ─────────────────────────────────────────────────────────────
             0. TOP UTILITY BAR (Back to Portfolio & Share)
@@ -247,24 +255,17 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.18 + idx * 0.05 }}
               whileTap={{ scale: 0.98 }}
-              className={`group relative w-full bg-white hover:bg-zinc-100 active:scale-[0.98] transition-all duration-200 rounded-[20px] sm:rounded-[24px] px-5 sm:px-6 py-4 sm:py-4.5 flex items-center justify-between text-black shadow-md cursor-pointer select-none ${activeLinkId === link.id ? 'ring-2 ring-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.35)]' : ''
+              className={`group relative w-full bg-white hover:bg-zinc-100 active:scale-[0.98] transition-all duration-200 rounded-[20px] sm:rounded-[24px] px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between text-black shadow-md cursor-pointer select-none ${activeLinkId === link.id ? 'ring-2 ring-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.35)]' : ''
                 }`}
             >
-              {/* Left Column: Title & Subtitle */}
-              <div className="flex flex-col min-w-0 pr-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-[15px] sm:text-[16px] tracking-tight text-black group-hover:text-zinc-900">
-                    {link.title}
-                  </span>
-                  {link.badge && (
-                    <span className="px-2 py-0.5 rounded-md bg-black text-white text-[9px] font-mono font-bold tracking-wider uppercase">
-                      {link.badge}
-                    </span>
-                  )}
-                </div>
-                {link.subtitle && (
-                  <span className="text-[11px] sm:text-[12px] font-medium text-zinc-500 truncate mt-0.5 group-hover:text-zinc-600">
-                    {link.subtitle}
+              {/* Left Column: Title & Badge */}
+              <div className="flex items-center gap-2 min-w-0 pr-3">
+                <span className="font-bold text-[15px] sm:text-[16px] tracking-tight text-black group-hover:text-zinc-900">
+                  {link.title}
+                </span>
+                {link.badge && (
+                  <span className="px-2 py-0.5 rounded-md bg-black text-white text-[9px] font-mono font-bold tracking-wider uppercase">
+                    {link.badge}
                   </span>
                 )}
               </div>

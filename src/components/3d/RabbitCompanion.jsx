@@ -107,24 +107,49 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   // - On mobile bottom tab bar: Sits gracefully right atop the active tab icon on the frosted glass rim.
   const getNavbarTarget = useCallback((sectionKey) => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const navEl = isMobile
-      ? (document.querySelector('[data-mobile-tab-bar]') || document.querySelector('nav'))
-      : (document.querySelector('[data-desktop-nav]') || document.querySelector('nav'));
+    let navEl = null;
+
+    if (isMobile) {
+      navEl = document.querySelector('[data-mobile-tab-bar]');
+      if (!navEl) {
+        // Fallback: look for a visible nav in the lower half of viewport
+        const allNavs = Array.from(document.querySelectorAll('nav'));
+        navEl = allNavs.find((n) => {
+          const rect = n.getBoundingClientRect();
+          return rect.height > 0 && rect.top > (window.innerHeight / 2);
+        }) || null;
+      }
+    } else {
+      navEl = document.querySelector('[data-desktop-nav]');
+      if (!navEl) {
+        const allNavs = Array.from(document.querySelectorAll('nav'));
+        navEl = allNavs.find((n) => {
+          const rect = n.getBoundingClientRect();
+          return rect.height > 0 && rect.top < (window.innerHeight / 2);
+        }) || null;
+      }
+    }
+
     if (!navEl) return { x: -999, y: -999 };
+
+    const navRect = navEl.getBoundingClientRect();
+    if (navRect.height === 0 || navRect.width === 0) return { x: -999, y: -999 };
 
     const effectiveKey = (sectionKey === 'contact' || sectionKey === 'cta') ? 'experience' : sectionKey;
     const itemEl = navEl.querySelector(`[data-nav-item="${effectiveKey}"]`) ||
                    navEl.querySelector('[data-nav-item="home"]') ||
                    navEl;
 
-    const navRect = navEl.getBoundingClientRect();
+    const navItemRect = itemEl.getBoundingClientRect();
     const isHome = effectiveKey === 'home';
 
     if (isMobile) {
-      const itemRect = itemEl.getBoundingClientRect();
-      const x = itemRect.left + (itemRect.width - RABBIT_WIDTH) / 2;
-      // On mobile bottom tab bar, rabbit paws rest gracefully on the upper rim of the tab bar
-      const y = navRect.top - RABBIT_HEIGHT + 14;
+      const x = navItemRect.width > 0
+        ? navItemRect.left + (navItemRect.width - RABBIT_WIDTH) / 2
+        : navRect.left + 24;
+      // On mobile bottom tab bar, rabbit paws rest gracefully on the upper frosted rim of the bar,
+      // completely clear of tab icons and text labels underneath
+      const y = navRect.top - RABBIT_HEIGHT + 6;
       return { x, y };
     }
 
@@ -132,16 +157,18 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       // At home base: center directly in the circular home dock
       const dockEl = itemEl.querySelector('.rounded-full') || itemEl.querySelector('button') || itemEl;
       const dockRect = dockEl.getBoundingClientRect();
-      const x = dockRect.left + (dockRect.width - RABBIT_WIDTH) / 2;
+      const x = dockRect.width > 0
+        ? dockRect.left + (dockRect.width - RABBIT_WIDTH) / 2
+        : navRect.left + 16;
       const y = navRect.top + (navRect.height - RABBIT_HEIGHT) / 2;
       return { x, y };
     }
 
     // At section name text (skills, projects, education, experience):
     // Perch right atop the active section item with paws resting on the navbar pill rim
-    const itemRect = itemEl.getBoundingClientRect();
-    const x = itemRect.left + (itemRect.width - RABBIT_WIDTH) / 2;
-    // Paws rest naturally on the top edge of the navbar pill; clamp with safe top-screen margin
+    const x = navItemRect.width > 0
+      ? navItemRect.left + (navItemRect.width - RABBIT_WIDTH) / 2
+      : navRect.left + (navRect.width - RABBIT_WIDTH) / 2;
     const y = Math.max(10, navRect.top - RABBIT_HEIGHT + 18);
 
     return { x, y };
@@ -216,6 +243,9 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     if (distance < 4) {
       currentPosRef.current = target;
       setRabbitPos(target);
+      if (target.x > -100 && target.y > -100) {
+        setIsReady(true);
+      }
       setIsHopping(false);
       isHoppingRef.current = false;
       if (onLanding) onLanding();
@@ -265,6 +295,9 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
       currentPosRef.current = { x: curX, y: curY };
       setRabbitPos({ x: curX, y: curY });
+      if (curX > -100 && curY > -100) {
+        setIsReady(true);
+      }
 
       if (t < 1.0) {
         hopAnimRef.current = requestAnimationFrame(step);
@@ -276,6 +309,9 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
         currentPosRef.current = finalTarget;
         setRabbitPos(finalTarget);
+        if (finalTarget.x > -100 && finalTarget.y > -100) {
+          setIsReady(true);
+        }
         setIsHopping(false);
         isHoppingRef.current = false;
         setHopProgress(0);
@@ -797,32 +833,46 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
     const checkScrollSection = () => {
       ticking = false;
-      // If user recently clicked a nav item, lock out intermediate scroll section updates
+      // If user recently clicked a nav item or a smooth scroll navigation is underway, ignore intermediate scroll frames
+      if (window.__navTargetLock && performance.now() < window.__navTargetLock.expiryTime) {
+        return;
+      }
       if (performance.now() < navClickLockRef.current) return;
 
       const scrollY = window.scrollY || 0;
       const sections = [
-        { id: 'contact', offset: 260 },
-        { id: 'cta', offset: 260 },
-        { id: 'experience', offset: 260 },
-        { id: 'education', offset: 260 },
-        { id: 'projects', offset: 260 },
-        { id: 'skills', offset: 260 },
+        { id: 'contact', offset: 280 },
+        { id: 'cta', offset: 280 },
+        { id: 'experience', offset: 280 },
+        { id: 'education', offset: 280 },
+        { id: 'projects', offset: 280 },
+        { id: 'skills', offset: 280 },
       ];
 
       let currentSec = 'home';
       if (scrollY >= 140) {
-        for (const sec of sections) {
-          const el = document.getElementById(sec.id);
-          if (el) {
-            const rect = el.getBoundingClientRect();
-            if (rect.top <= sec.offset && rect.bottom > 100) {
-              currentSec = sec.id;
-              break;
-            }
+        // Hysteresis preference: if currently on an active section and its container remains comfortably in view, stay on it!
+        const curEl = activeSectionRef.current !== 'home' ? document.getElementById(activeSectionRef.current) : null;
+        if (curEl) {
+          const cRect = curEl.getBoundingClientRect();
+          if (cRect.top <= 280 && cRect.bottom > 150) {
+            currentSec = activeSectionRef.current;
           }
         }
-        if (currentSec === 'home') currentSec = 'skills';
+
+        if (currentSec === 'home') {
+          for (const sec of sections) {
+            const el = document.getElementById(sec.id);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              if (rect.top <= sec.offset && rect.bottom > 120) {
+                currentSec = sec.id;
+                break;
+              }
+            }
+          }
+          if (currentSec === 'home') currentSec = 'skills';
+        }
       }
 
       if (activeSectionRef.current !== currentSec) {
@@ -914,19 +964,83 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Initial mount sync (polls until navbar is measured)
-    let syncAnimId;
-    const syncInitialHome = () => {
-      const initTarget = getNavbarTarget('home');
-      if (initTarget.x > 0 && initTarget.y > 0) {
-        currentPosRef.current = initTarget;
-        setRabbitPos(initTarget);
-        setIsReady(true);
-      } else {
-        syncAnimId = requestAnimationFrame(syncInitialHome);
+    // Helper to determine initial section on mount based on hash or restored scroll
+    const getInitialActiveSection = () => {
+      if (typeof window === 'undefined') return 'home';
+      const hash = window.location.hash.replace(/^#/, '');
+      if (hash && ['home', 'skills', 'projects', 'education', 'experience', 'contact', 'cta'].includes(hash)) {
+        return (hash === 'contact' || hash === 'cta') ? 'experience' : hash;
       }
+      const scrollY = window.scrollY || 0;
+      if (scrollY < 140) return 'home';
+      const sections = [
+        { id: 'contact', offset: 280 },
+        { id: 'cta', offset: 280 },
+        { id: 'experience', offset: 280 },
+        { id: 'education', offset: 280 },
+        { id: 'projects', offset: 280 },
+        { id: 'skills', offset: 280 },
+      ];
+      for (const sec of sections) {
+        const el = document.getElementById(sec.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= sec.offset && rect.bottom > 120) {
+            return (sec.id === 'contact' || sec.id === 'cta') ? 'experience' : sec.id;
+          }
+        }
+      }
+      return 'home';
     };
-    syncInitialHome();
+
+    // Initial mount sync: resilient multi-tier positioning guaranteeing the rabbit always appears
+    let syncAnimId = null;
+    let pollInterval = null;
+    let safetyTimeout = null;
+
+    const initSec = getInitialActiveSection();
+    activeSectionRef.current = initSec;
+    setActiveSection(initSec);
+
+    const trySyncPosition = () => {
+      const target = getNavbarTarget(activeSectionRef.current);
+      if (target.x > -100 && target.y > -100) {
+        currentPosRef.current = target;
+        setRabbitPos(target);
+        setIsReady(true);
+        return true;
+      }
+      return false;
+    };
+
+    if (!trySyncPosition()) {
+      const pollFrame = () => {
+        if (!trySyncPosition()) {
+          syncAnimId = requestAnimationFrame(pollFrame);
+        }
+      };
+      syncAnimId = requestAnimationFrame(pollFrame);
+
+      // Interval fallback ensuring appearance even under mobile rAF background throttle
+      pollInterval = setInterval(() => {
+        if (trySyncPosition()) {
+          if (pollInterval) clearInterval(pollInterval);
+        }
+      }, 60);
+
+      // Safe fallback timer: computes estimated layout coordinates so rabbit is NEVER hidden
+      safetyTimeout = setTimeout(() => {
+        if (currentPosRef.current.x < -100) {
+          const isMobile = window.innerWidth < 768;
+          const fallback = isMobile
+            ? { x: Math.max(20, (window.innerWidth - 380) / 2 + 28), y: window.innerHeight - 70 }
+            : { x: Math.max(20, (window.innerWidth - 520) / 2 + 28), y: 44 };
+          currentPosRef.current = fallback;
+          setRabbitPos(fallback);
+          setIsReady(true);
+        }
+      }, 650);
+    }
 
     // ResizeObserver on navbars to stick to them smoothly during layout shifts
     const navEls = document.querySelectorAll('nav');
@@ -935,9 +1049,10 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       navObserver = new ResizeObserver(() => {
         if (!isRoamingRef.current && !isHoppingRef.current) {
           const target = getNavbarTarget(activeSectionRef.current);
-          if (target.x > 0 && target.y > 0) {
+          if (target.x > -100 && target.y > -100) {
             currentPosRef.current = target;
             setRabbitPos(target);
+            setIsReady(true);
           }
         }
       });
@@ -951,9 +1066,10 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       }
       if (!isRoamingRef.current) {
         const target = getNavbarTarget(activeSectionRef.current);
-        if (target.x > 0 && target.y > 0) {
+        if (target.x > -100 && target.y > -100) {
           currentPosRef.current = target;
           setRabbitPos(target);
+          setIsReady(true);
         }
       }
     };
@@ -963,23 +1079,20 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       if (syncAnimId) cancelAnimationFrame(syncAnimId);
+      if (pollInterval) clearInterval(pollInterval);
+      if (safetyTimeout) clearTimeout(safetyTimeout);
       if (navObserver) navObserver.disconnect();
     };
   }, [getNavbarTarget, leapTo, performRoamStep, returnToNavbar, triggerHomeLanding]);
 
-  // 10. Nav-Click Lock: Single, confident leap directly to clicked destination
+  // 10. Nav-Leap Listener: Single, confident aerodynamic leap directly to clicked destination
   useEffect(() => {
-    const handleNavClick = (e) => {
-      const itemEl = e.target.closest('[data-nav-item]');
-      if (!itemEl) return;
-      const navKey = itemEl.getAttribute('data-nav-item');
+    const handleNavLeap = (e) => {
+      const navKey = e?.detail?.target;
       if (!navKey) return;
 
-      // Lock section scroll listener for 750ms so smooth scrolling doesn't cause stutter hops
-      navClickLockRef.current = performance.now() + 750;
-
-      activeSectionRef.current = navKey;
-      setActiveSection(navKey);
+      // Lock section scroll listener for 2000ms so smooth scrolling doesn't cause intermediate hops
+      navClickLockRef.current = performance.now() + 2000;
 
       if (isRoamingRef.current) {
         setIsRoaming(false);
@@ -991,10 +1104,31 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
         }
       }
 
+      activeSectionRef.current = navKey;
+      setActiveSection(navKey);
+
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
       const targetPos = getNavbarTarget(navKey);
+      const effectiveKey = (navKey === 'contact' || navKey === 'cta') ? 'experience' : navKey;
+      const itemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
+
+      const dx = targetPos.x - currentPosRef.current.x;
+      const dy = targetPos.y - currentPosRef.current.y;
+      const distance = Math.hypot(dx, dy);
+
+      // Tailored organic trajectory:
+      // On mobile bottom toolbar, leaps gracefully from one tab to another in a single buoyant parabolic arc
+      const duration = isMobile
+        ? Math.min(410, Math.max(320, 280 + distance * 0.35))
+        : (navKey === 'home' ? 420 : 380);
+
+      const arcHeight = isMobile
+        ? Math.min(36, Math.max(26, 22 + distance * 0.05))
+        : (navKey === 'home' ? 32 : 30);
+
       leapTo(targetPos, {
-        duration: navKey === 'home' ? 420 : 380,
-        arcHeight: navKey === 'home' ? 32 : 30,
+        duration,
+        arcHeight,
         onLanding: () => {
           if (navKey === 'home') {
             triggerHomeLanding(itemEl);
@@ -1005,12 +1139,36 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       });
     };
 
+    window.addEventListener('rabbit-nav-leap', handleNavLeap);
+    return () => {
+      window.removeEventListener('rabbit-nav-leap', handleNavLeap);
+    };
+  }, [getNavbarTarget, leapTo, triggerHomeLanding]);
+
+  // Fallback direct click delegator on nav items (e.g. desktop nav pills)
+  useEffect(() => {
+    const handleNavClick = (e) => {
+      const itemEl = e.target.closest('[data-nav-item]');
+      if (!itemEl) return;
+      const navKey = itemEl.getAttribute('data-nav-item');
+      if (!navKey) return;
+
+      if (!window.__navTargetLock || window.__navTargetLock.target !== navKey) {
+        window.__navTargetLock = {
+          target: navKey,
+          startTime: performance.now(),
+          expiryTime: performance.now() + 2000,
+        };
+        window.dispatchEvent(new CustomEvent('rabbit-nav-leap', { detail: { target: navKey } }));
+      }
+    };
+
     const navEls = document.querySelectorAll('nav');
     navEls.forEach(nav => nav.addEventListener('click', handleNavClick));
     return () => {
       navEls.forEach(nav => nav.removeEventListener('click', handleNavClick));
     };
-  }, [getNavbarTarget, leapTo, triggerHomeLanding]);
+  }, []);
 
   // 10b. Direct interaction listener for letters of "Idea!" on Call to Action section
   useEffect(() => {
@@ -1053,9 +1211,29 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     };
   }, [leapTo, performRoamStep]);
 
-  // 11. Click on Rabbit: Instantly return to Homepage from anywhere
+  // 11. Click on Rabbit: On mobile active tab, playful spring-bounce; else return to Homepage
   const handleRabbitClick = (e) => {
     e?.stopPropagation?.();
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // On mobile bottom toolbar, if rabbit is perched on an active section,
+    // play a delightful spring-bounce with dust puff in place instead of unexpectedly resetting scroll to top
+    if (isMobile && activeSectionRef.current !== 'home' && !isRoamingRef.current) {
+      const curTarget = getNavbarTarget(activeSectionRef.current);
+      leapTo(curTarget, {
+        duration: 330,
+        arcHeight: 28,
+        onLanding: () => {
+          const effectiveKey = (activeSectionRef.current === 'contact' || activeSectionRef.current === 'cta')
+            ? 'experience'
+            : activeSectionRef.current;
+          const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
+          triggerElementBounce(navItemEl);
+        },
+      });
+      return;
+    }
 
     if (roamStepTimerRef.current) {
       clearTimeout(roamStepTimerRef.current);
@@ -1068,8 +1246,13 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     isDarkBgRef.current = false;
     window.dispatchEvent(new CustomEvent('rabbit-skill-hover', { detail: { skillName: null } }));
 
-    // Lock scroll tracking for 850ms during smooth scroll back to home
-    navClickLockRef.current = performance.now() + 850;
+    // Lock scroll tracking for 2000ms during smooth scroll back to home
+    window.__navTargetLock = {
+      target: 'home',
+      startTime: performance.now(),
+      expiryTime: performance.now() + 2000,
+    };
+    navClickLockRef.current = performance.now() + 2000;
 
     activeSectionRef.current = 'home';
     setActiveSection('home');
@@ -1084,7 +1267,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       arcHeight: 50,
       onLanding: () => {
         const homeDockEl = document.querySelector('[data-nav-item="home"]');
-        triggerElementBounce(homeDockEl);
+        triggerHomeLanding(homeDockEl);
       },
     });
   };

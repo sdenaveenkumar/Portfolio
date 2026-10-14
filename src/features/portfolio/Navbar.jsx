@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Sparkles, FolderGit2, GraduationCap, MessageSquare, FileText } from 'lucide-react';
-import { updateSeoMeta, SECTION_SEO, syncUrlHash, scrollToHash } from '../utils/seoRouter';
+import { Home, Terminal, FolderGit2, GraduationCap, MessageSquare, FileText } from 'lucide-react';
+import { updateSeoMeta, SECTION_SEO, syncUrlHash, scrollToHash } from '../../utils/seoRouter';
 
 const mobileTabs = [
   { id: 'home', label: 'Home', Icon: Home },
-  { id: 'skills', label: 'Skills', Icon: Sparkles },
+  { id: 'skills', label: 'Skills', Icon: Terminal },
   { id: 'projects', label: 'Projects', Icon: FolderGit2 },
   { id: 'education', label: 'Academics', Icon: GraduationCap },
   { id: 'experience', label: 'Contact', Icon: MessageSquare },
@@ -42,16 +42,38 @@ const Navbar = ({ onResumeClick }) => {
     };
   }, []);
 
-  // Section scroll tracking with requestAnimationFrame throttle
+  // Section scroll tracking with requestAnimationFrame throttle and navigation lock
   useEffect(() => {
     let ticking = false;
     let currentScrolled = false;
     let currentSection = 'home';
+    let scrollEndDebounceTimer = null;
+
+    const clearNavLock = () => {
+      if (window.__navTargetLock) {
+        window.__navTargetLock = null;
+      }
+    };
 
     const updateScroll = () => {
       ticking = false;
       const scrollY = window.scrollY || 0;
       const isScrolled = scrollY > 100;
+
+      // Navigation lock: during programmatic smooth scroll to a selected tab, freeze activeSection to target
+      if (window.__navTargetLock) {
+        const now = performance.now();
+        if (now < window.__navTargetLock.expiryTime) {
+          const lockTarget = window.__navTargetLock.target;
+          if (currentSection !== lockTarget) {
+            currentSection = lockTarget;
+            setActiveSection(lockTarget);
+          }
+          return;
+        } else {
+          window.__navTargetLock = null;
+        }
+      }
 
       if (isScrolled) {
         // Scrolling down: show resume section immediately and expand navbar
@@ -82,20 +104,32 @@ const Navbar = ({ onResumeClick }) => {
       let newSection = 'home';
       if (scrollY >= 140) {
         const sections = [
-          { id: 'contact', offset: 260 },
-          { id: 'cta', offset: 260 },
-          { id: 'experience', offset: 260 },
-          { id: 'education', offset: 260 },
-          { id: 'projects', offset: 260 },
-          { id: 'skills', offset: 260 },
+          { id: 'contact', offset: 280 },
+          { id: 'cta', offset: 280 },
+          { id: 'experience', offset: 280 },
+          { id: 'education', offset: 280 },
+          { id: 'projects', offset: 280 },
+          { id: 'skills', offset: 280 },
         ];
-        for (const sec of sections) {
-          const el = document.getElementById(sec.id);
-          if (el) {
-            const rect = el.getBoundingClientRect();
-            if (rect.top <= sec.offset && rect.bottom > 100) {
-              newSection = (sec.id === 'contact' || sec.id === 'cta') ? 'experience' : sec.id;
-              break;
+
+        // Hysteresis preference: if currently on an active section and its container remains comfortably in view, stay on it!
+        const curEl = currentSection !== 'home' ? document.getElementById(currentSection) : null;
+        if (curEl) {
+          const cRect = curEl.getBoundingClientRect();
+          if (cRect.top <= 280 && cRect.bottom > 150) {
+            newSection = currentSection;
+          }
+        }
+
+        if (newSection === 'home') {
+          for (const sec of sections) {
+            const el = document.getElementById(sec.id);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              if (rect.top <= sec.offset && rect.bottom > 120) {
+                newSection = (sec.id === 'contact' || sec.id === 'cta') ? 'experience' : sec.id;
+                break;
+              }
             }
           }
         }
@@ -112,24 +146,59 @@ const Navbar = ({ onResumeClick }) => {
     };
 
     const handleScroll = () => {
+      // Clear nav lock once scroll has been quiet for 220ms
+      if (window.__navTargetLock) {
+        if (scrollEndDebounceTimer) clearTimeout(scrollEndDebounceTimer);
+        scrollEndDebounceTimer = setTimeout(() => {
+          clearNavLock();
+          updateScroll();
+        }, 220);
+      }
+
       if (!ticking) {
         ticking = true;
         requestAnimationFrame(updateScroll);
       }
     };
 
+    const handleScrollEnd = () => {
+      clearNavLock();
+      updateScroll();
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scrollend', handleScrollEnd, { passive: true });
     updateScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scrollend', handleScrollEnd);
+      if (scrollEndDebounceTimer) clearTimeout(scrollEndDebounceTimer);
+    };
   }, []);
 
   const scrollToSection = (sectionId) => {
-    setActiveSection(sectionId);
-    syncUrlHash(sectionId, false);
-    if (SECTION_SEO[sectionId]) {
-      updateSeoMeta(SECTION_SEO[sectionId]);
+    const effectiveTarget = (sectionId === 'contact' || sectionId === 'cta') ? 'experience' : sectionId;
+    
+    // Set global navigation lock so intermediate sections are not activated during smooth scroll
+    window.__navTargetLock = {
+      target: effectiveTarget,
+      rawTarget: sectionId,
+      startTime: performance.now(),
+      expiryTime: performance.now() + 2000,
+    };
+
+    setActiveSection(effectiveTarget);
+    syncUrlHash(effectiveTarget, false);
+    if (SECTION_SEO[effectiveTarget]) {
+      updateSeoMeta(SECTION_SEO[effectiveTarget]);
     }
-    if (sectionId === 'home') {
+
+    // Broadcast direct leap event to RabbitCompanion
+    window.dispatchEvent(new CustomEvent('rabbit-nav-leap', {
+      detail: { target: effectiveTarget }
+    }));
+
+    if (effectiveTarget === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       // When navigating to home, keep resume visible until the rabbit jumps to his place
       if (scrolled) {

@@ -13,7 +13,11 @@ import {
   GitFork, 
   BookOpen, 
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  RotateCw,
+  Monitor,
+  Tablet,
+  Smartphone
 } from 'lucide-react';
 import ProjectCardFace from './ProjectCardFace';
 
@@ -163,6 +167,12 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
   const [copiedClone, setCopiedClone] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // Tab & live embed state
+  const [activeTab, setActiveTab] = useState('live'); // 'live' | 'docs'
+  const [deviceMode, setDeviceMode] = useState('desktop'); // 'desktop' | 'tablet' | 'mobile'
+  const [iframeKey, setIframeKey] = useState(0);
+  const [iframeLoading, setIframeLoading] = useState(true);
+
   // Track viewport dimensions for responsive target sizing
   const [windowSize, setWindowSize] = useState(() => ({
     width: typeof window !== 'undefined' ? window.innerWidth : 1200,
@@ -186,6 +196,10 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
     if (project) setActiveProject(project);
     if (meta) setActiveMeta(meta);
     if (originRect) setActiveRect(originRect);
+
+    const hasLive = Boolean((meta?.liveUrl || project?.homepage));
+    setActiveTab(hasLive ? 'live' : 'docs');
+    setIframeLoading(true);
   }, [project, meta, originRect]);
 
   // Lock body & documentElement scroll and handle Escape key
@@ -448,124 +462,371 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                   </div>
                 </div>
 
+                {/* TAB SWITCHER: LIVE PROJECT EMBED vs DOCUMENTATION */}
+                <div className="sticky top-[53px] sm:top-[61px] z-20 px-3 sm:px-6 py-2 bg-gray-50/95 backdrop-blur-md border-b border-gray-200/80 flex items-center justify-between gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 p-1 bg-gray-200/70 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('live')}
+                      className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activeTab === 'live'
+                          ? 'bg-white text-gray-950 shadow-xs'
+                          : 'text-gray-600 hover:text-gray-950'
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${liveUrl ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+                      <span>Live Project</span>
+                      {liveUrl && (
+                        <span className="hidden sm:inline-block px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] font-mono rounded-md font-bold">
+                          ONLINE
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('docs')}
+                      className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activeTab === 'docs'
+                          ? 'bg-white text-gray-950 shadow-xs'
+                          : 'text-gray-600 hover:text-gray-950'
+                      }`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5 text-gray-500" />
+                      <span>Documentation</span>
+                    </button>
+                  </div>
+
+                  {activeTab === 'live' && liveUrl && (
+                    <div className="hidden sm:flex items-center gap-1 bg-gray-200/70 p-1 rounded-xl">
+                      <button
+                        type="button"
+                        onClick={() => setDeviceMode('desktop')}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                          deviceMode === 'desktop' ? 'bg-white text-gray-950 shadow-xs' : 'text-gray-600 hover:text-gray-950'
+                        }`}
+                        title="Desktop Responsive View (100%)"
+                      >
+                        <Monitor className="w-3.5 h-3.5" />
+                        <span>Desktop</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeviceMode('tablet')}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                          deviceMode === 'tablet' ? 'bg-white text-gray-950 shadow-xs' : 'text-gray-600 hover:text-gray-950'
+                        }`}
+                        title="Tablet View (768px)"
+                      >
+                        <Tablet className="w-3.5 h-3.5" />
+                        <span>Tablet</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeviceMode('mobile')}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                          deviceMode === 'mobile' ? 'bg-white text-gray-950 shadow-xs' : 'text-gray-600 hover:text-gray-950'
+                        }`}
+                        title="Mobile View (390px)"
+                      >
+                        <Smartphone className="w-3.5 h-3.5" />
+                        <span>Mobile</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {/* SCROLLABLE MODAL CONTENT BODY */}
                 <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6 space-y-6 pb-[calc(env(safe-area-inset-bottom,16px)+24px)]">
 
-                  {/* HERO SHOWCASE BANNER */}
-                  <div className="relative w-full aspect-[21/9] sm:aspect-[24/9] rounded-[22px] overflow-hidden bg-[#0A0E17] border border-gray-200 shadow-md">
-                    <img
-                      src={previewImg}
-                      alt={`${title} — Project Architecture & Showcase by Naveen Kumar`}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover object-center"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    
-                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur-md text-[10px] font-mono font-bold tracking-wider uppercase">
-                            {activeMeta?.category || 'PROJECT SHOWCASE'}
-                          </span>
-                          {activeProject.stargazers_count > 0 && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/80 backdrop-blur-md text-[10px] font-bold">
-                              <Star className="w-3 h-3 fill-current" /> {activeProject.stargazers_count}
-                            </span>
+                  {activeTab === 'live' ? (
+                    /* ======================================================= */
+                    /* LIVE PROJECT EMBED TAB                                  */
+                    /* ======================================================= */
+                    <div className="space-y-4">
+                      {liveUrl ? (
+                        <div className="w-full flex flex-col items-center">
+                          {/* Browser Chrome Frame */}
+                          <div
+                            className={`w-full transition-all duration-300 rounded-2xl overflow-hidden border border-gray-200 shadow-xl bg-white flex flex-col ${
+                              deviceMode === 'tablet'
+                                ? 'max-w-[768px]'
+                                : deviceMode === 'mobile'
+                                ? 'max-w-[390px]'
+                                : 'max-w-full'
+                            }`}
+                          >
+                            {/* Browser Top Navigation Bar */}
+                            <div className="px-3 sm:px-4 py-2.5 bg-gray-100/95 border-b border-gray-200 flex items-center justify-between gap-2 sm:gap-3 shrink-0">
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <span className="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E] inline-block shadow-2xs" />
+                                <span className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123] inline-block shadow-2xs" />
+                                <span className="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29] inline-block shadow-2xs" />
+                              </div>
+
+                              {/* Address Pill */}
+                              <div className="flex-1 max-w-[560px] mx-auto flex items-center gap-2 px-3 py-1 bg-white rounded-lg border border-gray-200 text-xs font-mono text-gray-700 shadow-2xs truncate">
+                                <span className="text-emerald-600 text-xs shrink-0">🔒</span>
+                                <span className="truncate select-all">{liveUrl}</span>
+                                <span className="ml-auto shrink-0 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                              </div>
+
+                              {/* Action Controls */}
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIframeLoading(true);
+                                    setIframeKey(k => k + 1);
+                                  }}
+                                  className="w-7 h-7 rounded-lg hover:bg-gray-200 text-gray-600 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                                  title="Reload Live Project"
+                                >
+                                  <RotateCw className="w-3.5 h-3.5" />
+                                </button>
+
+                                <a
+                                  href={liveUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="w-7 h-7 rounded-lg hover:bg-gray-200 text-gray-600 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                                  title="Open Live Project in New Tab"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              </div>
+                            </div>
+
+                            {/* Embedded Interactive Iframe Viewport */}
+                            <div className="relative w-full h-[520px] sm:h-[620px] bg-slate-900/5 overflow-hidden">
+                              {iframeLoading && (
+                                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/95 backdrop-blur-xs gap-3">
+                                  <div className="w-8 h-8 border-3 border-gray-200 border-t-emerald-600 rounded-full animate-spin" />
+                                  <p className="text-xs font-mono font-medium text-gray-600">
+                                    Loading live embedded project ({title})...
+                                  </p>
+                                </div>
+                              )}
+
+                              <iframe
+                                key={iframeKey}
+                                src={liveUrl}
+                                title={`${title} Live Project`}
+                                onLoad={() => setIframeLoading(false)}
+                                className="w-full h-full border-none bg-white"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Live Service Banner Below Embed */}
+                          <div className="w-full mt-4 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center shrink-0">
+                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-emerald-950">Live Project Environment</p>
+                                <p className="text-[11px] font-mono text-emerald-700 truncate max-w-[340px] sm:max-w-md">
+                                  Interactive embedded preview loaded from {liveUrl}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 self-end sm:self-auto">
+                              {activeMeta?.docsUrl && (
+                                <a
+                                  href={activeMeta.docsUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition-colors inline-flex items-center gap-1.5"
+                                >
+                                  <BookOpen className="w-3.5 h-3.5" />
+                                  <span>API Docs</span>
+                                </a>
+                              )}
+                              <a
+                                href={liveUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white shadow-xs transition-colors inline-flex items-center gap-1.5"
+                              >
+                                <span>Direct Link</span>
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            </div>
+                          </div>
+
+                          {/* Quick Endpoint Tester for APIs */}
+                          {activeProject?.name?.toLowerCase().includes('api') && (
+                            <div className="w-full mt-3 p-4 rounded-2xl bg-slate-900 text-white shadow-md border border-slate-800">
+                              <div className="flex items-center justify-between mb-2.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">
+                                    Live Backend Endpoints (0.4ms)
+                                  </span>
+                                </div>
+                                <a
+                                  href="http://140.245.24.219/docs"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[11px] font-mono text-emerald-300 hover:underline flex items-center gap-1"
+                                >
+                                  <span>Interactive Swagger</span>
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {[
+                                  { path: '/', label: 'Health' },
+                                  { path: '/docs', label: 'Docs' },
+                                  { path: '/api/v1/projects', label: 'Projects' },
+                                  { path: '/api/v1/profile', label: 'Profile' },
+                                ].map(ep => (
+                                  <a
+                                    key={ep.path}
+                                    href={`http://140.245.24.219${ep.path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-left transition-colors font-mono text-xs text-slate-200 flex items-center justify-between group"
+                                  >
+                                    <span className="truncate">GET {ep.path}</span>
+                                    <span className="text-emerald-400 group-hover:translate-x-0.5 transition-transform">↗</span>
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
-                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight drop-shadow-sm">
-                          {title}
-                        </h2>
-                      </div>
-
-                      {activeMeta?.tags && (
-                        <div className="hidden md:flex items-center gap-1.5">
-                          {activeMeta.tags.slice(0, 3).map((tag, idx) => (
-                            <span key={idx} className="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-[11px] font-medium border border-white/10">
-                              {tag}
-                            </span>
-                          ))}
+                      ) : (
+                        /* Fallback when no direct liveUrl exists */
+                        <div className="flex flex-col items-center justify-center py-12 px-4 rounded-2xl bg-gray-50 border border-gray-200 text-center">
+                          <div className="w-12 h-12 rounded-2xl bg-gray-200/80 flex items-center justify-center text-gray-700 mb-3">
+                            <Code2 className="w-6 h-6" />
+                          </div>
+                          <h4 className="text-base font-bold text-gray-900 mb-1">
+                            {title} is a CLI / System Codebase
+                          </h4>
+                          <p className="text-xs text-gray-600 max-w-md mb-4 leading-relaxed">
+                            This project runs as a native developer tool, extension, or local CLI utility. Explore the full technical specifications and README below.
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab('docs')}
+                              className="px-4 py-2 rounded-xl bg-black text-white text-xs font-bold hover:bg-gray-800 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <BookOpen className="w-3.5 h-3.5" />
+                              <span>Read Architecture Specs</span>
+                            </button>
+                            <a
+                              href={activeProject?.html_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2 rounded-xl bg-white border border-gray-300 text-xs font-bold text-gray-800 hover:bg-gray-100 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <span>GitHub Repository</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* LIVE SERVICE BANNER */}
-                  {liveUrl && (
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/90 text-emerald-950">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center shrink-0">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-emerald-950">Live Production Service</span>
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-200/80 text-[10px] font-mono font-bold text-emerald-800">
-                              200 OK • Online
-                            </span>
+                  ) : (
+                    /* ======================================================= */
+                    /* DOCUMENTATION & SPECS TAB                               */
+                    /* ======================================================= */
+                    <div className="space-y-6">
+                      {/* HERO SHOWCASE BANNER */}
+                      <div className="relative w-full aspect-[21/9] sm:aspect-[24/9] rounded-[22px] overflow-hidden bg-[#0A0E17] border border-gray-200 shadow-md">
+                        <img
+                          src={previewImg}
+                          alt={`${title} — Project Architecture & Showcase by Naveen Kumar`}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover object-center"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                        
+                        <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur-md text-[10px] font-mono font-bold tracking-wider uppercase">
+                                {activeMeta?.category || 'PROJECT SHOWCASE'}
+                              </span>
+                              {activeProject.stargazers_count > 0 && (
+                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/80 backdrop-blur-md text-[10px] font-bold">
+                                  <Star className="w-3 h-3 fill-current" /> {activeProject.stargazers_count}
+                                </span>
+                              )}
+                            </div>
+                            <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight drop-shadow-sm">
+                              {title}
+                            </h2>
                           </div>
-                          <p className="text-xs text-emerald-700 font-mono mt-0.5 select-all">
-                            {liveUrl}
-                          </p>
+
+                          {activeMeta?.tags && (
+                            <div className="hidden md:flex items-center gap-1.5">
+                              {activeMeta.tags.slice(0, 3).map((tag, idx) => (
+                                <span key={idx} className="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-[11px] font-medium border border-white/10">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 self-end sm:self-auto">
-                        {activeMeta?.docsUrl && (
-                          <a
-                            href={activeMeta.docsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition-colors inline-flex items-center gap-1.5"
+
+                      {/* QUICK LIVE ACTION IF AVAILABLE */}
+                      {liveUrl && (
+                        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200/90 text-emerald-950">
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-xs font-bold">Live project is running online</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('live')}
+                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                           >
-                            <BookOpen className="w-3.5 h-3.5" />
-                            <span>API Docs</span>
-                          </a>
-                        )}
-                        <a
-                          href={liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white shadow-xs transition-colors inline-flex items-center gap-1.5"
-                        >
-                          <span>Test Endpoint</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
-                    </div>
-                  )}
+                            <span>Open Live Embed</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
 
-                  {/* METADATA STRIP */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-2xl bg-gray-50 border border-gray-200/80 text-xs text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <Code2 className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span className="truncate"><strong>Lang:</strong> {activeProject.language || 'Multi-stack'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span className="truncate"><strong>Role:</strong> {activeMeta?.badge || 'Software Dev'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-purple-600 shrink-0" />
-                      <span className="truncate"><strong>Documentation:</strong> README.md</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <GitFork className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="truncate"><strong>License:</strong> MIT / Open Source</span>
-                    </div>
-                  </div>
-
-                  {/* MARKDOWN PARSED WEBPAGE CONTAINER */}
-                  <div className="mt-4 pb-8">
-                    {loading ? (
-                      <div className="py-16 flex flex-col items-center justify-center space-y-4">
-                        <div className="w-9 h-9 border-3 border-gray-300 border-t-black rounded-full animate-spin" />
-                        <p className="text-sm font-medium text-gray-500 font-mono">
-                          Fetching documentation from GitHub...
-                        </p>
+                      {/* METADATA STRIP */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-2xl bg-gray-50 border border-gray-200/80 text-xs text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <Code2 className="w-4 h-4 text-blue-600 shrink-0" />
+                          <span className="truncate"><strong>Lang:</strong> {activeProject.language || 'Multi-stack'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                          <span className="truncate"><strong>Role:</strong> {activeMeta?.badge || 'Software Dev'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-purple-600 shrink-0" />
+                          <span className="truncate"><strong>Documentation:</strong> README.md</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <GitFork className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span className="truncate"><strong>License:</strong> MIT / Open Source</span>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="markdown-prose space-y-4 text-gray-800 text-[14px] sm:text-[15px] leading-relaxed">
+
+                      {/* MARKDOWN PARSED WEBPAGE CONTAINER */}
+                      <div className="mt-4 pb-8">
+                        {loading ? (
+                          <div className="py-16 flex flex-col items-center justify-center space-y-4">
+                            <div className="w-9 h-9 border-3 border-gray-300 border-t-black rounded-full animate-spin" />
+                            <p className="text-sm font-medium text-gray-500 font-mono">
+                              Fetching documentation from GitHub...
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="markdown-prose space-y-4 text-gray-800 text-[14px] sm:text-[15px] leading-relaxed">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
@@ -651,10 +912,12 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                       </div>
                     )}
                   </div>
-
                 </div>
+              )}
 
-                {/* BOTTOM FIXED FOOTER */}
+            </div>
+
+            {/* BOTTOM FIXED FOOTER */}
                 <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500 shrink-0">
                   <span className="font-mono">Press Esc to close</span>
                   <div className="flex items-center gap-3">

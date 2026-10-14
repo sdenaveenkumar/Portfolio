@@ -43,6 +43,11 @@ export const SECTION_SEO = {
     title: 'Rabbit Tree | Official Links & Profiles — Naveen Kumar',
     description: 'All official developer links, GitHub repositories, LinkedIn, live REST APIs, and direct contacts for Naveen Kumar.',
     canonical: 'https://www.rabbitfolio.me/link'
+  },
+  rabbitStudio: {
+    title: 'Rabbit Studio — Interactive Mindmap & Visual Ideation | Naveen Kumar',
+    description: 'Rabbit Studio: Interactive mindmapping, system architecture diagramming, and visual ideation workspace by Naveen Kumar.',
+    canonical: 'https://www.rabbitfolio.me/tool/rabbit_studio'
   }
 };
 

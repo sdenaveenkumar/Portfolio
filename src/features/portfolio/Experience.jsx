@@ -67,14 +67,9 @@ const Experience = () => {
         <div className="w-12 sm:w-16 h-1.5 rounded-full bg-black/10 mx-auto mb-3 pointer-events-none" />
 
         {/* Title */}
-        <h2 className="text-[32px] md:text-[56px] lg:text-[64px] font-black text-[#1F1F1F] tracking-tighter mb-2 uppercase text-center relative z-10 leading-none">
-          The Journey Has Just Started
+        <h2 className="text-[32px] md:text-[56px] lg:text-[64px] font-black text-[#1F1F1F] tracking-tighter mb-8 sm:mb-12 uppercase text-center relative z-10 leading-none">
+          Journey Has Just Started
         </h2>
-
-        {/* Subtitle */}
-        <p className="text-xs sm:text-sm font-mono text-neutral-500 max-w-xl mx-auto uppercase tracking-wide text-center mb-8 sm:mb-12">
-          From academic foundations at Manipal University to building production-grade scalable systems.
-        </p>
 
         {/* Timeline Container */}
         <div className="relative flex-1 w-full max-w-5xl mx-auto flex">

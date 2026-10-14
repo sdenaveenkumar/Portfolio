@@ -16,7 +16,7 @@ export const ProjectCardFace = ({ repo, meta, className = '' }) => {
 
   return (
     <div
-      className={`w-full h-full bg-white rounded-[26px] sm:rounded-[30px] border border-black/[0.08] shadow-[0_12px_32px_-8px_rgba(0,0,0,0.08)] p-3.5 sm:p-4.5 md:p-5 flex flex-col justify-between relative overflow-hidden select-none ${className}`}
+      className={`w-full h-full bg-white rounded-[22px] sm:rounded-[26px] md:rounded-[30px] border border-black/[0.08] shadow-[0_12px_32px_-8px_rgba(0,0,0,0.08)] p-3 sm:p-3.5 md:p-5 flex flex-col justify-between relative overflow-hidden select-none ${className}`}
     >
       {/* TOP: IMAGE SHOWCASE VIEWPORT */}
       <div className="relative w-full aspect-[16/10] rounded-[18px] sm:rounded-[20px] overflow-hidden bg-[#0F172A] border border-black/5 shadow-inner shrink-0">
@@ -81,7 +81,7 @@ export const ProjectCardFace = ({ repo, meta, className = '' }) => {
       {/* MIDDLE: PROJECT DETAILS */}
       <div className="my-auto py-2 flex flex-col justify-center">
         <div className="flex items-center justify-between gap-2 mb-1">
-          <h3 className="text-lg sm:text-xl md:text-[22px] font-black tracking-tight text-[#111827] group-hover:text-black transition-colors line-clamp-1">
+          <h3 className="text-base sm:text-lg md:text-[22px] font-black tracking-tight text-[#111827] group-hover:text-black transition-colors line-clamp-1">
             {formattedTitle}
           </h3>
           {repo.stargazers_count > 0 && (
@@ -91,7 +91,7 @@ export const ProjectCardFace = ({ repo, meta, className = '' }) => {
           )}
         </div>
 
-        <p className="text-xs sm:text-[13px] text-gray-600 font-medium line-clamp-2 md:line-clamp-3 leading-relaxed">
+        <p className="text-[11px] sm:text-xs md:text-[13px] text-gray-600 font-medium line-clamp-2 md:line-clamp-3 leading-relaxed">
           {repo.description || "Production-grade, extensible codebase with modular architecture and rigorous standards."}
         </p>
 
@@ -125,7 +125,7 @@ export const ProjectCardFace = ({ repo, meta, className = '' }) => {
         </div>
 
         <div className="flex items-center gap-1 font-mono text-[10px] sm:text-[11px] font-bold text-gray-900 group-hover:text-black group-hover:translate-x-1 transition-all duration-200 shrink-0">
-          <span>DETAILS</span>
+          <span>VIEW PROJECT</span>
           <span>→</span>
         </div>
       </div>

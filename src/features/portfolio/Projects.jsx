@@ -3,10 +3,10 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 
-import initialProjects from '../data/projects.json';
+import initialProjects from '../../data/projects.json';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectCardFace from './ProjectCardFace';
-import { updateSeoMeta, SECTION_SEO } from '../utils/seoRouter';
+import { updateSeoMeta, SECTION_SEO } from '../../utils/seoRouter';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -94,6 +94,7 @@ const projectMeta = {
     type: 'ui',
     snippet: 'Physics Canvas • GSAP 3D • React 19',
     image: '/projects/portfolio.svg',
+    liveUrl: 'https://www.rabbitfolio.me',
     tags: ['React', 'GSAP', 'Tailwind', 'Motion'],
     color: 'bg-[#FDF2F8]',
     border: 'border-[#FBCFE8]',
@@ -269,8 +270,8 @@ const Projects = () => {
         if (match) {
           const isMobile = window.innerWidth < 640;
           const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
-          const cWidth = isMobile ? (window.innerWidth < 380 ? 245 : 280) : (isTablet ? 310 : 360);
-          const cHeight = isMobile ? (window.innerWidth < 380 ? 375 : 420) : (isTablet ? 460 : 500);
+          const cWidth = isMobile ? (window.innerWidth < 380 ? 215 : 245) : (isTablet ? 310 : 360);
+          const cHeight = isMobile ? (window.innerWidth < 380 ? 330 : 375) : (isTablet ? 460 : 500);
           const fallbackRect = {
             top: window.innerHeight * 0.25,
             left: window.innerWidth * 0.5 - (cWidth / 2),
@@ -285,12 +286,29 @@ const Projects = () => {
     }
   }, [displayRepos, selectedProject]);
 
+    // Track mobile screen size for responsive track height (< 768px only)
+  const [isMobileScreen, setIsMobileScreen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileScreen(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useGSAP(() => {
     if (displayRepos.length === 0) return;
 
     const isMobile = window.innerWidth < 640;
     const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
     const isSmallMobile = window.innerWidth < 380;
+    const isMobileDevice = window.innerWidth < 768;
     const totalCards = displayRepos.length;
     const centerIndex = (totalCards - 1) / 2;
 
@@ -327,8 +345,8 @@ const Projects = () => {
 
     // PHASE 2: Folder scales & glides with cushioned momentum
     const folderWidth = isSmallMobile ? 240 : (isMobile ? 280 : (isTablet ? 360 : 450));
-    const cardWidth = isSmallMobile ? 245 : (isMobile ? 280 : (isTablet ? 310 : 360));
-    const cardGap = isSmallMobile ? 25 : (isMobile ? 35 : (isTablet ? 50 : 70));
+    const cardWidth = isSmallMobile ? 215 : (isMobile ? 245 : (isTablet ? 310 : 360));
+    const cardGap = isSmallMobile ? 20 : (isMobile ? 28 : (isTablet ? 50 : 70));
     const cardStep = cardWidth + cardGap;
     // folderOffset ensures the gap between folder and first card is identical to the gap between cards
     const folderOffset = (folderWidth - cardWidth) / 2;
@@ -363,7 +381,7 @@ const Projects = () => {
       x: () => {
         const centerPan = folderOffset + cardStep * totalCards;
         const rightEdgeOffset = window.innerWidth * 0.5 - (
-          isSmallMobile ? 110 : (isMobile ? 125 : (isTablet ? 145 : 180))
+          isSmallMobile ? 95 : (isMobile ? 110 : (isTablet ? 145 : 180))
         );
         return -(centerPan - rightEdgeOffset);
       },
@@ -371,17 +389,24 @@ const Projects = () => {
       ease: "power1.inOut"
     }, "-=0.4");
 
-    // BUFFER 5: Exit cushion zone before unpinning to Education
-    tl.to({}, { duration: 0.8 });
+    // BUFFER 5: Dedicated exit cushion zone before unpinning to Education/next section.
+    // On mobile (< 768px), provides a generous dwell period (3.4s) so the entire camera pan
+    // across all cards 100% finishes and rests in place before the sticky stage unpins.
+    const exitBuffer = isMobileDevice ? 3.4 : 0.8;
+    tl.to({}, { duration: exitBuffer });
 
     return () => {
       tl.kill();
     };
 
-  }, { scope: containerRef, dependencies: [displayRepos] });
+  }, { scope: containerRef, dependencies: [displayRepos, isMobileScreen] });
+
+  const containerHeight = isMobileScreen
+    ? `${Math.max(460, displayRepos.length * 68)}vh`
+    : `${Math.max(340, displayRepos.length * 52)}vh`;
 
   return (
-    <div id="projects" ref={containerRef} className="relative w-full bg-[#fafafc]" style={{ height: `${Math.max(340, displayRepos.length * 52)}vh` }}>
+    <div id="projects" ref={containerRef} className="relative w-full bg-[#fafafc]" style={{ height: containerHeight }}>
       <div className="absolute inset-0 bg-[#fafafc] -z-10" />
 
       {/* Sticky Fullscreen Presentation Stage */}
@@ -416,7 +441,7 @@ const Projects = () => {
                 <div
                   key={repo.id || i}
                   ref={el => cardsRef.current[i] = el}
-                  className="absolute bottom-4 w-[245px] sm:w-[280px] md:w-[310px] lg:w-[360px] h-[375px] sm:h-[420px] md:h-[460px] lg:h-[500px] origin-bottom z-10 pointer-events-auto cursor-pointer group select-none will-change-transform"
+                  className="absolute bottom-4 w-[215px] sm:w-[245px] md:w-[310px] lg:w-[360px] h-[330px] sm:h-[375px] md:h-[460px] lg:h-[500px] origin-bottom z-10 pointer-events-auto cursor-pointer group select-none will-change-transform"
                   onClick={(e) => {
                     const visualCard = e.currentTarget.querySelector('.visual-card-surface') || e.currentTarget;
                     const rect = visualCard.getBoundingClientRect();

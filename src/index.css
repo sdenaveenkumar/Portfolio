@@ -91,3 +91,13 @@ body {
   animation: card-zero-gravity-float ease-in-out infinite;
   will-change: transform;
 }
+
+/* 🗺️ Rabbit Studio Mindmap Canvas */
+.canvas-grid {
+  background-color: #f8fafc;
+  background-image: radial-gradient(#cbd5e1 1.35px, transparent 1.35px);
+  background-size: 24px 24px;
+}
+.node-shadow {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+}

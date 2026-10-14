@@ -49,6 +49,7 @@ const Footer = () => {
             <span onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Contact Me</span>
             <a href="/resume.pdf" download="sdenaveenkumar.pdf" className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Resume</a>
             <a href="/link" className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Linktree (/link)</a>
+            <a href="/tool/rabbit_studio" className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">Rabbit Studio (Tool)</a>
           </div>
 
           {/* Say hello! */}

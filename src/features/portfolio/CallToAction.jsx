@@ -166,7 +166,7 @@ const CallToAction = () => {
 
   const handleCopyEmail = (e) => {
     e.stopPropagation();
-    navigator.clipboard.writeText('sdenaveenkumar@gmail.com');
+    navigator.clipboard.writeText('sde.naveenkumar@gmail.com');
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
   };
@@ -179,10 +179,10 @@ const CallToAction = () => {
     <section
       id="cta"
       ref={containerRef}
-      className="relative z-[45] w-full h-[480vh] -mt-[100vh] bg-transparent text-gray-900 select-none overflow-clip"
+      className="relative z-[45] w-full h-[400vh] sm:h-[480vh] -mt-[100vh] bg-transparent text-gray-900 select-none overflow-clip"
     >
-      {/* Sticky Fullscreen Presentation Stage (Centered directly in viewport) */}
-      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col justify-center items-center px-3 sm:px-6 md:px-10 bg-[#fafafc] border-t border-black/[0.08] shadow-[0_-30px_90px_rgba(0,0,0,0.1)] [perspective:1200px]">
+      {/* Sticky Fullscreen Presentation Stage (Using 100dvh for exact mobile viewport heights + bottom dock clearance) */}
+      <div className="sticky top-0 left-0 w-full h-[100dvh] overflow-hidden flex flex-col justify-center items-center px-3 sm:px-6 md:px-10 pb-16 sm:pb-0 bg-[#fafafc] border-t border-black/[0.08] shadow-[0_-30px_90px_rgba(0,0,0,0.1)] [perspective:1200px]">
 
         {/* Top Pull Tab Indicator */}
         <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-1.5 rounded-full bg-black/10 z-30 pointer-events-none" />
@@ -282,16 +282,16 @@ const CallToAction = () => {
         <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center justify-center">
 
           {/* THE THREE-SLIDE TRIPTYCH */}
-          <div className="w-full flex flex-row items-center justify-center gap-2 sm:gap-4 md:gap-6 h-[48vh] sm:h-[52vh] md:h-[56vh]">
+          <div className="w-full flex flex-row items-center justify-center gap-2 sm:gap-4 md:gap-6 h-[42vh] sm:h-[50vh] md:h-[56vh]">
 
             {/* 1. LEFT SLIDE: "Have" (Continuous Spring Bounce on Scroll + Ambient Float) */}
             <div
               ref={leftSlideRef}
               className="flex-[1.25] h-full will-change-transform"
             >
-              <div className="w-full h-full rounded-[24px] sm:rounded-[36px] md:rounded-[44px] bg-white/80 backdrop-blur-xl border border-black/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] p-4 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-left transition-shadow duration-300 hover:shadow-[0_28px_60px_rgba(0,0,0,0.12)]">
+              <div className="w-full h-full rounded-[22px] sm:rounded-[36px] md:rounded-[44px] bg-white/80 backdrop-blur-xl border border-black/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] px-2 py-3 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-left transition-shadow duration-300 hover:shadow-[0_28px_60px_rgba(0,0,0,0.12)]">
                 {/* Core Word: "Have" */}
-                <span className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 tracking-tight leading-none select-none block">
+                <span className="text-[clamp(1.4rem,5.8vw,2.5rem)] sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 tracking-tight leading-none select-none block whitespace-nowrap">
                   Have
                 </span>
               </div>
@@ -302,12 +302,12 @@ const CallToAction = () => {
               ref={middleSlideRef}
               className="flex-[0.85] h-full will-change-transform"
             >
-              <div className="w-full h-full rounded-[24px] sm:rounded-[36px] md:rounded-[44px] bg-[#111111] text-white border border-gray-800 shadow-[0_25px_60px_rgba(0,0,0,0.25)] p-4 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-middle transition-shadow duration-300 hover:shadow-[0_32px_70px_rgba(0,0,0,0.35)]">
+              <div className="w-full h-full rounded-[22px] sm:rounded-[36px] md:rounded-[44px] bg-[#111111] text-white border border-gray-800 shadow-[0_25px_60px_rgba(0,0,0,0.25)] px-2 py-3 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-middle transition-shadow duration-300 hover:shadow-[0_32px_70px_rgba(0,0,0,0.35)]">
                 {/* Subtle top glow */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-28 bg-gradient-to-b from-blue-500/20 to-transparent rounded-full blur-2xl pointer-events-none" />
 
                 {/* Core Word: "an" */}
-                <span className="relative z-10 text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif italic text-white tracking-tight leading-none select-none block">
+                <span className="relative z-10 text-[clamp(1.25rem,5.2vw,2.25rem)] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif italic text-white tracking-tight leading-none select-none block whitespace-nowrap">
                   an
                 </span>
               </div>
@@ -318,9 +318,9 @@ const CallToAction = () => {
               ref={rightSlideRef}
               className="flex-[1.25] h-full will-change-transform"
             >
-              <div className="w-full h-full rounded-[24px] sm:rounded-[36px] md:rounded-[44px] bg-white/80 backdrop-blur-xl border border-black/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] p-4 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-right transition-shadow duration-300 hover:shadow-[0_28px_60px_rgba(0,0,0,0.12)]">
+              <div className="w-full h-full rounded-[22px] sm:rounded-[36px] md:rounded-[44px] bg-white/80 backdrop-blur-xl border border-black/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] px-2 py-3 sm:p-6 md:p-8 flex items-center justify-center text-center overflow-hidden relative cta-float-card-right transition-shadow duration-300 hover:shadow-[0_28px_60px_rgba(0,0,0,0.12)]">
                 {/* Core Word: "Idea!" (Each letter is an interactive stepping stone for the rabbit) */}
-                <span className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 tracking-tight leading-none select-none block">
+                <span className="text-[clamp(1.35rem,5.5vw,2.5rem)] sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 tracking-tight leading-none select-none block whitespace-nowrap">
                   {['I', 'd', 'e', 'a', '!'].map((char, index) => (
                     <span
                       key={index}
@@ -332,7 +332,7 @@ const CallToAction = () => {
                       onClick={() => {
                         window.dispatchEvent(new CustomEvent('rabbit-leap-to-letter', { detail: { index, char } }));
                       }}
-                      className="inline-block relative cursor-pointer transform-gpu hover:scale-105 active:scale-95 transition-transform"
+                      className="inline-block relative cursor-pointer transform-gpu hover:scale-105 active:scale-95 transition-transform touch-manipulation px-[1px] sm:px-0.5 py-1 -my-1"
                       style={{ transformOrigin: 'center bottom' }}
                       title={`Rabbit perch on "${char}"`}
                     >
@@ -355,73 +355,77 @@ const CallToAction = () => {
           >
             <div
               data-cta-card
-              className="w-full flex items-center justify-between gap-2 sm:gap-3 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-white/90 backdrop-blur-xl border border-black/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.08)] cta-float-bar"
+              className="w-full flex items-center justify-between gap-1.5 sm:gap-3 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-white/95 backdrop-blur-xl border border-black/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.08)] cta-float-bar"
             >
               {/* Primary Action Button */}
               <button
                 data-cta-button
                 onClick={scrollToContact}
-                className="px-4 sm:px-7 py-2 sm:py-3 rounded-full bg-gray-900 hover:bg-black text-white font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer group shrink-0"
+                className="px-3.5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-gray-900 hover:bg-black text-white font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer group shrink-0"
               >
                 <span className="hidden sm:inline">Start a Conversation</span>
-                <span className="sm:hidden">Let's Talk</span>
+                <span className="sm:hidden font-semibold">Let's Talk</span>
                 <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-300 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </button>
 
-          {/* Quick Actions & Socials */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Copy Email */}
-            <button
-              onClick={handleCopyEmail}
-              className="flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-full bg-black/[0.04] hover:bg-black/[0.08] border border-black/[0.04] text-gray-800 hover:text-black text-[11px] sm:text-xs font-mono font-medium transition-all active:scale-95 cursor-pointer"
-              title="Copy email to clipboard"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="text-emerald-700 font-bold hidden sm:inline">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Mail className="w-3.5 h-3.5 text-gray-500" />
-                  <span className="hidden sm:inline">Email</span>
-                </>
-              )}
-            </button>
+              {/* Quick Actions & Socials */}
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                {/* Copy Email */}
+                <button
+                  onClick={handleCopyEmail}
+                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-full border text-[11px] sm:text-xs font-mono font-medium transition-all active:scale-95 cursor-pointer ${
+                    copied 
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                      : 'bg-black/[0.04] hover:bg-black/[0.08] border-black/[0.04] text-gray-800 hover:text-black'
+                  }`}
+                  title="Copy email to clipboard"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="text-emerald-700 font-bold text-[11px] sm:text-xs">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                      <span className="hidden sm:inline">Email</span>
+                    </>
+                  )}
+                </button>
 
-            {/* GitHub */}
-            <a
-              href="https://github.com/sdenaveenkumar"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/[0.04] hover:bg-black/[0.08] border border-black/[0.04] text-gray-700 hover:text-black flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
-              title="GitHub Profile"
-              aria-label="GitHub Profile"
-            >
-              <GithubIcon />
-            </a>
+                {/* GitHub */}
+                <a
+                  href="https://github.com/sdenaveenkumar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-black/[0.04] hover:bg-black/[0.08] border border-black/[0.04] text-gray-700 hover:text-black flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer touch-manipulation"
+                  title="GitHub Profile"
+                  aria-label="GitHub Profile"
+                >
+                  <GithubIcon />
+                </a>
 
-            {/* LinkedIn */}
-            <a
-              href="https://linkedin.com/in/sdenaveenkumar"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/[0.04] hover:bg-black/[0.08] border border-black/[0.04] text-gray-700 hover:text-black flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
-              title="LinkedIn Profile"
-              aria-label="LinkedIn Profile"
-            >
-              <LinkedinIcon />
-            </a>
+                {/* LinkedIn */}
+                <a
+                  href="https://linkedin.com/in/sdenaveenkumar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-black/[0.04] hover:bg-black/[0.08] border border-black/[0.04] text-gray-700 hover:text-black flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer touch-manipulation"
+                  title="LinkedIn Profile"
+                  aria-label="LinkedIn Profile"
+                >
+                  <LinkedinIcon />
+                </a>
+              </div>
+            </div>
+
           </div>
+
         </div>
 
       </div>
-
-    </div>
-
-  </div>
-</section>
-);
+    </section>
+  );
 };
 
 export default CallToAction;

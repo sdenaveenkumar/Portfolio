@@ -1,49 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import RabbitCompanion from './components/RabbitCompanion';
+import Navbar from './features/portfolio/Navbar';
+import RabbitCompanion from './components/3d/RabbitCompanion';
 import { AnimatePresence } from 'framer-motion';
-import Hero from './components/Hero';
-import Skills from './components/Skills';
-import Projects from './components/Projects';
-import Education from './components/Education';
-import Experience from './components/Experience';
-import CallToAction from './components/CallToAction';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
-import LinkTree from './components/LinkTree';
-import RabbitTreeModal from './components/RabbitTreeModal';
+import Hero from './features/portfolio/Hero';
+import Skills from './features/portfolio/Skills';
+import Projects from './features/portfolio/Projects';
+import Education from './features/portfolio/Education';
+import Experience from './features/portfolio/Experience';
+import CallToAction from './features/portfolio/CallToAction';
+import Contact from './features/portfolio/Contact';
+import Footer from './features/portfolio/Footer';
+import RabbitTreeModal from './features/rabbit-tree/RabbitTreeModal';
 import { Analytics } from '@vercel/analytics/react';
 import { ArrowUpRight } from 'lucide-react';
 import { updateSeoMeta, SECTION_SEO, scrollToHash } from './utils/seoRouter';
 
-const Resume = React.lazy(() => import('./components/Resume'));
+const Resume = React.lazy(() => import('./features/portfolio/Resume'));
+const RabbitStudioView = React.lazy(() => import('./routes/RabbitStudioView'));
+const LinkTreeView = React.lazy(() => import('./routes/LinkTreeView'));
+
+const checkCurrentRoute = () => {
+  if (typeof window === 'undefined') {
+    return { isLinkTree: false, isRabbitStudio: false, path: '' };
+  }
+  const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
+  const hash = window.location.hash.toLowerCase().replace(/\/$/, '');
+
+  const isRabbitStudio =
+    path === '/tool/rabbit_studio' ||
+    path === '/tool/rabbit-studio' ||
+    path === 'tool/rabbit_studio' ||
+    hash === '#/tool/rabbit_studio' ||
+    hash === '#tool/rabbit_studio' ||
+    hash === '#/tool/rabbit-studio' ||
+    hash === '#tool/rabbit-studio';
+
+  const isLinkTree =
+    path === '/link' ||
+    path === '/links' ||
+    path === '/linktree' ||
+    hash === '#/link' ||
+    hash === '#link';
+
+  return { isLinkTree, isRabbitStudio, path };
+};
 
 function App() {
   const [showResume, setShowResume] = useState(false);
   const [showRabbitTreeModal, setShowRabbitTreeModal] = useState(false);
-  const [isLinkTree, setIsLinkTree] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
-      const hash = window.location.hash.toLowerCase();
-      return path === '/link' || path === '/links' || path === '/linktree' || hash === '#/link' || hash === '#link';
-    }
-    return false;
-  });
+  const [routeState, setRouteState] = useState(() => checkCurrentRoute());
 
   // Synchronize SEO tags and handle route changes
   useEffect(() => {
     const handleLocationChange = (e) => {
-      const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
-      const hash = window.location.hash.toLowerCase();
-      const nextIsLinkTree = path === '/link' || path === '/links' || path === '/linktree' || hash === '#/link' || hash === '#link';
-      
-      setIsLinkTree(nextIsLinkTree);
+      const nextRoute = checkCurrentRoute();
+      setRouteState(nextRoute);
 
-      if (nextIsLinkTree) {
+      if (nextRoute.isRabbitStudio) {
+        updateSeoMeta(SECTION_SEO.rabbitStudio);
+      } else if (nextRoute.isLinkTree) {
         updateSeoMeta(SECTION_SEO.link);
       } else {
         // Unknown path redirect for clean SEO indexing
-        if (path && path !== '' && path !== '/') {
+        if (nextRoute.path && nextRoute.path !== '' && nextRoute.path !== '/') {
           window.history.replaceState(null, '', `/${window.location.hash}`);
         }
         updateSeoMeta(SECTION_SEO.home);
@@ -63,7 +82,10 @@ function App() {
     window.addEventListener('hashchange', handleLocationChange);
 
     // Initial SEO update & Deep-link anchor auto-scroll
-    if (isLinkTree) {
+    const initialRoute = checkCurrentRoute();
+    if (initialRoute.isRabbitStudio) {
+      updateSeoMeta(SECTION_SEO.rabbitStudio);
+    } else if (initialRoute.isLinkTree) {
       updateSeoMeta(SECTION_SEO.link);
     } else {
       updateSeoMeta(SECTION_SEO.home);
@@ -78,7 +100,7 @@ function App() {
       window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('hashchange', handleLocationChange);
     };
-  }, [isLinkTree]);
+  }, []);
 
   const toggleResume = () => {
     setShowResume(prev => {
@@ -105,14 +127,36 @@ function App() {
     });
   };
 
-  // Standalone /link Linktree View
-  if (isLinkTree) {
+  // Dedicated Rabbit Studio Tool View (/tool/rabbit_studio)
+  if (routeState.isRabbitStudio) {
     return (
-      <>
-        <LinkTree 
+      <React.Suspense fallback={<div className="min-h-screen bg-[#090a0f] flex items-center justify-center text-white font-mono text-xs">Loading Rabbit Studio...</div>}>
+        <RabbitStudioView
           onBackToPortfolio={(targetUrl = '/') => {
             window.history.pushState({}, '', targetUrl);
-            setIsLinkTree(false);
+            setRouteState(checkCurrentRoute());
+            updateSeoMeta(SECTION_SEO.home);
+            if (targetUrl.includes('#')) {
+              const hashId = targetUrl.split('#')[1];
+              setTimeout(() => {
+                scrollToHash(hashId);
+              }, 150);
+            }
+          }}
+        />
+        <Analytics />
+      </React.Suspense>
+    );
+  }
+
+  // Standalone /link Linktree View
+  if (routeState.isLinkTree) {
+    return (
+      <React.Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-mono text-xs">Loading Rabbit Tree...</div>}>
+        <LinkTreeView 
+          onBackToPortfolio={(targetUrl = '/') => {
+            window.history.pushState({}, '', targetUrl);
+            setRouteState(checkCurrentRoute());
             updateSeoMeta(SECTION_SEO.home);
             if (targetUrl.includes('#')) {
               const hashId = targetUrl.split('#')[1];
@@ -123,7 +167,7 @@ function App() {
           }} 
         />
         <Analytics />
-      </>
+      </React.Suspense>
     );
   }
 
@@ -159,6 +203,15 @@ function App() {
             setTimeout(() => {
               document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth' });
             }, 200);
+          } else if (targetUrl === '/tool/rabbit_studio' || targetUrl === '/link') {
+            window.history.pushState({}, '', targetUrl);
+            const nextRoute = checkCurrentRoute();
+            setRouteState(nextRoute);
+            if (nextRoute.isRabbitStudio) {
+              updateSeoMeta(SECTION_SEO.rabbitStudio);
+            } else if (nextRoute.isLinkTree) {
+              updateSeoMeta(SECTION_SEO.link);
+            }
           } else if (targetUrl !== '/') {
             window.location.href = targetUrl;
           }

@@ -16,6 +16,7 @@ import {
   FileText,
   ArrowLeft
 } from 'lucide-react';
+import RabbitStudio from '../rabbit-studio/RabbitStudio';
 
 /**
  * TABLET PREVIEW FRAME
@@ -144,10 +145,11 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
               {link.id === 'linkedin' && 'linkedin.com/in/sdenaveenkumar'}
               {link.id === 'whatsapp' && 'wa.me/sdenaveenkumar'}
               {link.id === 'instagram' && 'instagram.com/sdenaveenkumar'}
-              {link.id === 'email' && 'mailto:sdenaveenkumar@gmail.com'}
+              {link.id === 'email' && 'mailto:sde.naveenkumar@gmail.com'}
               {link.id === 'projects' && 'naveenkumar.dev/#projects'}
               {link.id === 'portfolio' && 'naveenkumar.dev/'}
               {link.id === 'live-api' && 'api.naveenkumar.dev (140.245.24.219)'}
+              {link.id === 'rabbit-studio' && 'naveenkumar.dev/tool/rabbit_studio'}
             </span>
           </div>
 
@@ -686,10 +688,10 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
                     <div className="flex items-center justify-between pb-3 border-b border-white/10">
                       <div>
                         <h3 className="font-bold text-base sm:text-lg">Direct Dispatch Email</h3>
-                        <p className="text-xs text-zinc-400">To: sdenaveenkumar@gmail.com</p>
+                        <p className="text-xs text-zinc-400">To: sde.naveenkumar@gmail.com</p>
                       </div>
                       <button
-                        onClick={() => handleCopy('sdenaveenkumar@gmail.com')}
+                        onClick={() => handleCopy('sde.naveenkumar@gmail.com')}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-mono text-zinc-300 transition-colors cursor-pointer"
                       >
                         {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -719,7 +721,7 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
                       </div>
 
                       <a
-                        href={`mailto:sdenaveenkumar@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`}
+                        href={`mailto:sde.naveenkumar@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`}
                         className="self-end px-5 py-2.5 rounded-full bg-white text-black text-xs sm:text-sm font-bold hover:bg-zinc-200 transition-all flex items-center gap-2 cursor-pointer shadow-md"
                       >
                         <Send className="w-3.5 h-3.5" />
@@ -737,7 +739,7 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Terminal className="w-5 h-5 text-emerald-400" />
-                        <h3 className="font-bold text-base sm:text-lg">Live VPS REST API</h3>
+                        <h3 className="font-bold text-base sm:text-lg">Personal REST API</h3>
                       </div>
                       <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -818,6 +820,32 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 8. RABBIT STUDIO INTERACTIVE TOOL PREVIEW */}
+              {link.id === 'rabbit-studio' && (
+                <div className="flex flex-col gap-4">
+                  <div className="p-5 rounded-2xl bg-[#141417] border border-white/10 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
+                        <h3 className="font-bold text-base sm:text-lg">Rabbit Studio</h3>
+                      </div>
+                      <p className="text-xs text-zinc-400 mt-1">Interactive Mindmapping, System Architecture & Brainstorming Canvas.</p>
+                    </div>
+                    <button
+                      onClick={() => onNavigate ? onNavigate(link.url) : window.location.href = link.url}
+                      className="px-4 py-2 rounded-full bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition-all cursor-pointer shadow-lg shadow-indigo-600/30"
+                    >
+                      Open Studio
+                    </button>
+                  </div>
+
+                  {/* Embedded Native Rabbit Studio Preview */}
+                  <div className="w-full h-[400px] rounded-2xl overflow-hidden border border-white/10 shadow-xl relative bg-slate-100">
+                    <RabbitStudio isEmbedded={true} onBackToPortfolio={onNavigate} />
                   </div>
                 </div>
               )}

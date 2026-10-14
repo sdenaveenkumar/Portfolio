@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { getModelInstance } from '../utils/modelLoader';
+import { getModelInstance } from '../../utils/modelLoader';
 
 /**
  * Animated 3D Rabbit Logo Component.
@@ -135,11 +135,11 @@ const Logo3D = ({
     resizeObserver.observe(container);
     window.addEventListener('resize', updateSize);
 
-    // Pause WebGL rendering entirely when logo is scrolled out of viewport
-    const intersectionObserver = new IntersectionObserver(([entry]) => {
-      isVisible = entry.isIntersecting;
-    });
-    intersectionObserver.observe(container);
+    // Pause WebGL rendering when user switches browser tabs or minimizes
+    const handleVisibilityChange = () => {
+      isVisible = document.visibilityState === 'visible';
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Global cursor tracking: Rabbit notices when user's cursor is nearby! (Optimized 80ms throttle)
     let lastRectTime = 0;
@@ -369,7 +369,7 @@ const Logo3D = ({
       window.removeEventListener('resize', updateSize);
       window.removeEventListener('pointermove', handleGlobalPointerMove);
       resizeObserver.disconnect();
-      intersectionObserver.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
 
       if (modelWrapper) {
         scene.remove(modelWrapper);
