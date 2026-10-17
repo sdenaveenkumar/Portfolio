@@ -187,10 +187,10 @@ const CallToAction = () => {
         {/* Top Pull Tab Indicator */}
         <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-1.5 rounded-full bg-black/10 z-30 pointer-events-none" />
 
-        {/* Ambient Glows from Contact Us Theme */}
+        {/* Ambient Glows (GPU radial gradients, zero blur filter lag) */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
-          <div className="absolute w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-gradient-to-br from-purple-200/40 via-pink-200/25 to-transparent rounded-full blur-[80px] md:blur-[120px] -translate-x-1/3 -translate-y-1/4 opacity-75" />
-          <div className="absolute w-[450px] md:w-[700px] h-[450px] md:h-[700px] bg-gradient-to-tl from-cyan-200/40 via-blue-100/25 to-transparent rounded-full blur-[80px] md:blur-[120px] translate-x-1/3 translate-y-1/4 opacity-75" />
+          <div className="absolute w-[500px] md:w-[800px] h-[500px] md:h-[800px] ambient-glow-purple rounded-full -translate-x-1/3 -translate-y-1/4 opacity-75" />
+          <div className="absolute w-[450px] md:w-[700px] h-[450px] md:h-[700px] ambient-glow-cyan rounded-full translate-x-1/3 translate-y-1/4 opacity-75" />
         </div>
 
         {/* Subtle Background Radial Pattern */}

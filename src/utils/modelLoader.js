@@ -129,6 +129,9 @@ export async function getModelInstance(modelKey) {
     rabbitGeom.scale(scaleFactor, scaleFactor, scaleFactor);
     rabbitGeom.rotateY(Math.PI / 2);
 
+    // Mark dynamic buffer usage to optimize GPU bandwidth and upload speed
+    rabbitGeom.attributes.position.setUsage(THREE.DynamicDrawUsage);
+
     const pos = rabbitGeom.attributes.position;
     const count = pos.count;
     const origPos = new Float32Array(pos.array); // Cache base positions
@@ -187,40 +190,42 @@ export async function getModelInstance(modelKey) {
     wrapper.userData = {
       material: rabbitMat,
       setRabbitFeature: ({ earWiggle = 0, earPerk = 0, earDepthTwitch = 0, tailWag = 0 } = {}) => {
-        // Skip if change is negligible
-        if (
-          Math.abs(earWiggle - lastWiggle) < 0.0005 &&
-          Math.abs(earPerk - lastPerk) < 0.0005 &&
-          Math.abs(earDepthTwitch - lastDepth) < 0.0005 &&
-          Math.abs(tailWag - lastTail) < 0.0005
-        ) {
-          return;
-        }
+        const earChanged =
+          Math.abs(earWiggle - lastWiggle) >= 0.0008 ||
+          Math.abs(earPerk - lastPerk) >= 0.0008 ||
+          Math.abs(earDepthTwitch - lastDepth) >= 0.0008;
 
-        lastWiggle = earWiggle;
-        lastPerk = earPerk;
-        lastDepth = earDepthTwitch;
-        lastTail = tailWag;
+        const tailChanged = Math.abs(tailWag - lastTail) >= 0.001;
+
+        if (!earChanged && !tailChanged) return;
 
         const arr = rabbitGeom.attributes.position.array;
 
-        // Animate ear vertices
-        const earLen = earIndices.length;
-        for (let k = 0; k < earLen; k++) {
-          const i3 = earIndices[k] * 3;
-          const w = earWeights[k];
-          arr[i3]     = origPos[i3]     + earWiggle * w;
-          arr[i3 + 1] = origPos[i3 + 1] + earPerk * w;
-          arr[i3 + 2] = origPos[i3 + 2] + earDepthTwitch * w;
+        if (earChanged) {
+          lastWiggle = earWiggle;
+          lastPerk = earPerk;
+          lastDepth = earDepthTwitch;
+
+          const earLen = earIndices.length;
+          for (let k = 0; k < earLen; k++) {
+            const i3 = earIndices[k] * 3;
+            const w = earWeights[k];
+            arr[i3]     = origPos[i3]     + earWiggle * w;
+            arr[i3 + 1] = origPos[i3 + 1] + earPerk * w;
+            arr[i3 + 2] = origPos[i3 + 2] + earDepthTwitch * w;
+          }
         }
 
-        // Animate tail vertices
-        const tailLen = tailIndices.length;
-        for (let k = 0; k < tailLen; k++) {
-          const i3 = tailIndices[k] * 3;
-          const w = tailWeights[k];
-          arr[i3 + 1] = origPos[i3 + 1] + tailWag * w;
-          arr[i3 + 2] = origPos[i3 + 2] + Math.sin(tailWag * 10.0) * 0.03 * w;
+        if (tailChanged) {
+          lastTail = tailWag;
+
+          const tailLen = tailIndices.length;
+          for (let k = 0; k < tailLen; k++) {
+            const i3 = tailIndices[k] * 3;
+            const w = tailWeights[k];
+            arr[i3 + 1] = origPos[i3 + 1] + tailWag * w;
+            arr[i3 + 2] = origPos[i3 + 2] + Math.sin(tailWag * 10.0) * 0.03 * w;
+          }
         }
 
         rabbitGeom.attributes.position.needsUpdate = true;

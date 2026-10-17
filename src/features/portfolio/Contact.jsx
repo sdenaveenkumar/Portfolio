@@ -123,8 +123,8 @@ const Contact = () => {
           style={{ scale: orbScale, opacity: orbOpacity }}
           className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden"
         >
-          <div className="absolute w-[500px] md:w-[700px] h-[500px] md:h-[700px] bg-gradient-to-br from-purple-200/70 via-pink-200/50 to-transparent rounded-full blur-[60px] md:blur-[80px] -translate-x-1/4 -translate-y-1/4" />
-          <div className="absolute w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-gradient-to-tl from-cyan-200/70 via-blue-100/50 to-transparent rounded-full blur-[60px] md:blur-[80px] translate-x-1/3 translate-y-1/4" />
+          <div className="absolute w-[500px] md:w-[700px] h-[500px] md:h-[700px] ambient-glow-purple rounded-full -translate-x-1/4 -translate-y-1/4" />
+          <div className="absolute w-[400px] md:w-[600px] h-[400px] md:h-[600px] ambient-glow-cyan rounded-full translate-x-1/3 translate-y-1/4" />
         </motion.div>
 
         {/* Central Interactive Glass Form Card with 3D Elevation */}
@@ -181,6 +181,7 @@ const Contact = () => {
               </h2>
 
               <motion.div 
+                data-rabbit-target="contact-input"
                 className="relative mt-3 sm:mt-6 md:mt-8"
                 animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
                 transition={{ duration: 0.4 }}

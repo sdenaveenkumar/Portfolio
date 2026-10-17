@@ -81,7 +81,10 @@ export const ProjectCardFace = ({ repo, meta, className = '' }) => {
       {/* MIDDLE: PROJECT DETAILS */}
       <div className="my-auto py-2 flex flex-col justify-center">
         <div className="flex items-center justify-between gap-2 mb-1">
-          <h3 className="text-base sm:text-lg md:text-[22px] font-black tracking-tight text-[#111827] group-hover:text-black transition-colors line-clamp-1">
+          <h3
+            data-rabbit-target="project-name"
+            className="text-base sm:text-lg md:text-[22px] font-black tracking-tight text-[#111827] group-hover:text-black transition-colors line-clamp-1"
+          >
             {formattedTitle}
           </h3>
           {repo.stargazers_count > 0 && (

@@ -10,7 +10,12 @@ export default function Minimap({
   viewportHeight = 600,
   onPanTo
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
 
   if (nodes.length === 0) return null;
 
@@ -67,7 +72,7 @@ export default function Minimap({
   };
 
   return (
-    <div className="absolute bottom-16 right-4 z-30 select-none flex flex-col items-end gap-1 pointer-events-auto">
+    <div className="hidden sm:flex absolute bottom-20 md:bottom-16 right-3 sm:right-4 z-20 select-none flex-col items-end gap-1 pointer-events-auto">
       <div className="flex items-center gap-1">
         <button
           onClick={() => setCollapsed(!collapsed)}

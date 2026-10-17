@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /image.webp
+Allow: /projects/RabbitTreeProfile.webp
+Allow: /reference-portrait.png
+Allow: /logo.png
+
 Sitemap: https://www.rabbitfolio.me/sitemap.xml

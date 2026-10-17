@@ -30,12 +30,10 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   const [isHopping, setIsHopping] = useState(false);
   const [hopDirection, setHopDirection] = useState(1);
   const [hopProgress, setHopProgress] = useState(0);
-  const [isDarkBg, setIsDarkBg] = useState(false);
 
   const currentPosRef = useRef({ x: -999, y: -999 });
   const isRoamingRef = useRef(false);
   const isHoppingRef = useRef(false);
-  const isDarkBgRef = useRef(false);
   const hopAnimRef = useRef(null);
   const idleTimerRef = useRef(null);
   const roamStepTimerRef = useRef(null);
@@ -50,57 +48,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   const RABBIT_WIDTH = 40;
   const RABBIT_HEIGHT = 40;
 
-  // Detect whether an element or coordinate is situated over a dark background
-  const checkIsDarkBackground = useCallback((el, x, y) => {
-    if (el) {
-      if (el.closest('footer') || el.closest('#footer')) return true;
-      if (el.closest('#contact') && (el.classList?.contains?.('bg-black') || el.classList?.contains?.('bg-[#111111]'))) return true;
-    }
 
-    let cur = el;
-    if (!cur && x !== undefined && y !== undefined) {
-      try {
-        cur = document.elementFromPoint(x + RABBIT_WIDTH / 2, y + RABBIT_HEIGHT - 4);
-      } catch {}
-    }
-
-    while (cur && cur !== document.documentElement && cur !== document.body) {
-      const classList = cur.className || '';
-      if (typeof classList === 'string' && (
-        classList.includes('bg-black') ||
-        classList.includes('bg-[#111111]') ||
-        classList.includes('bg-[#0a0a0a]') ||
-        classList.includes('bg-[#050505]') ||
-        classList.includes('bg-gray-900') ||
-        classList.includes('bg-slate-900') ||
-        classList.includes('bg-zinc-900') ||
-        classList.includes('bg-zinc-950')
-      )) {
-        return true;
-      }
-
-      if (cur.tagName === 'FOOTER') return true;
-
-      try {
-        const bg = window.getComputedStyle(cur).backgroundColor;
-        const match = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-        if (match) {
-          const r = parseInt(match[1], 10);
-          const g = parseInt(match[2], 10);
-          const b = parseInt(match[3], 10);
-          const a = match[4] !== undefined ? parseFloat(match[4]) : 1;
-          if (a > 0.45) {
-            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-            return lum < 95; // Dark surface detected
-          }
-        }
-      } catch {}
-
-      cur = cur.parentElement;
-    }
-
-    return false;
-  }, []);
 
   // 1. Measure Navbar Target Position:
   // - On desktop: Perfectly centered in the circular home dock, or perches atop active section tab.
@@ -137,8 +85,8 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
     const effectiveKey = (sectionKey === 'contact' || sectionKey === 'cta') ? 'experience' : sectionKey;
     const itemEl = navEl.querySelector(`[data-nav-item="${effectiveKey}"]`) ||
-                   navEl.querySelector('[data-nav-item="home"]') ||
-                   navEl;
+      navEl.querySelector('[data-nav-item="home"]') ||
+      navEl;
 
     const navItemRect = itemEl.getBoundingClientRect();
     const isHome = effectiveKey === 'home';
@@ -175,11 +123,11 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   }, []);
 
   // 2. Spawn subtle dust puff particles under rabbit paws on landing
-  const spawnLandingPuff = (x, y, isWhite = false) => {
+  const spawnLandingPuff = (x, y) => {
     try {
       [-6, 6].forEach((xOffset) => {
         const puff = document.createElement('div');
-        puff.className = `fixed pointer-events-none rounded-full ${isWhite ? 'bg-white/45' : 'bg-black/15'} rabbit-dust-particle z-40`;
+        puff.className = 'fixed pointer-events-none rounded-full bg-black/15 rabbit-dust-particle z-40';
         puff.style.left = `${x + RABBIT_WIDTH / 2 + xOffset - 6}px`;
         puff.style.top = `${y + RABBIT_HEIGHT - 6}px`;
         puff.style.width = '14px';
@@ -187,7 +135,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
         document.body.appendChild(puff);
         setTimeout(() => puff.remove(), 550);
       });
-    } catch {}
+    } catch { }
   };
 
   // 2b. Trigger physics-based squash & spring bounce on landed elements
@@ -197,7 +145,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
     // Target the dedicated bounce layer if present (avoids conflicts with GSAP positioning)
     const bounceNode = el.querySelector?.('[data-skill-bounce]') ||
-                       (el.hasAttribute?.('data-skill-bounce') ? el : null);
+      (el.hasAttribute?.('data-skill-bounce') ? el : null);
 
     if (bounceNode) {
       bounceNode.classList.remove('rabbit-bounce-active');
@@ -317,7 +265,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
         setHopProgress(0);
         hopAnimRef.current = null;
 
-        spawnLandingPuff(finalTarget.x, finalTarget.y, isDarkBgRef.current);
+        spawnLandingPuff(finalTarget.x, finalTarget.y);
         if (onLanding) onLanding();
       }
     };
@@ -355,8 +303,6 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
     setIsRoaming(false);
     isRoamingRef.current = false;
-    setIsDarkBg(false);
-    isDarkBgRef.current = false;
 
     // Clear any active skill tooltip
     window.dispatchEvent(new CustomEvent('rabbit-skill-hover', { detail: { skillName: null } }));
@@ -378,47 +324,47 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     });
   }, [getNavbarTarget, leapTo, triggerHomeLanding]);
 
-  // 5. Discover Genuine High-Value UI Landmarks Across Current Section & Skills
+  // 5. Discover Genuine High-Value UI Landmarks Across Designated Section Targets
   const findScreenTargets = () => {
     const viewportH = window.innerHeight;
     const viewportW = window.innerWidth;
 
-    // Focused selectors: ALL skill items, badges, headings, cards, and interactive landmarks
+    // Strict designated target selectors as requested:
+    // 1. Hero: only See my works button
+    // 2. Skills: only all tech stack icons
+    // 3. Projects: only projects name (h3)
+    // 4. Academic: only Distinction Honors
+    // 5. Call to action: only Idea! ('I', 'd', 'e', 'a', '!')
+    // 6. Contact us: only input section
     const selectors = [
-      // Skill Section specific targets
-      '[data-skill-card]', '[data-skill-target]', '.skill-icon',
-      // Tech stack badges, skill pills & 3D model icons
-      '[data-model-icon]', 'button', 'a[href]',
-      '[class*="badge"]', '[class*="tag"]', '[class*="pill"]',
-      // Section headings, stack items & cards
-      'h2', 'h3', 'article',
-      // Call to Action section: all letters of Idea! ('I', 'd', 'e', 'a', '!')
-      '[data-cta-idea-letter]'
+      '[data-rabbit-target="hero-see-works"]',
+      '[data-skill-card]',
+      '.skill-icon',
+      '[data-rabbit-target="skill-tech"]',
+      '[data-rabbit-target="project-name"]',
+      '[data-rabbit-target="academic-distinction"]',
+      '[data-cta-idea-letter]',
+      '[data-rabbit-target="contact-input"]'
     ].join(', ');
 
     const currentSecKey = activeSectionRef.current;
     const currentSecId = currentSecKey === 'home' ? 'hero' : currentSecKey;
     const currentSecEl = document.getElementById(currentSecId) || document.getElementById('hero');
 
-    let candidates = currentSecEl ? Array.from(currentSecEl.querySelectorAll(selectors)) : [];
-
-    // Always include navbar items as natural stepping stones
-    const navItems = Array.from(document.querySelectorAll('[data-nav-item]'));
-    candidates.push(...navItems);
-
-    if (candidates.length < 4) {
-      candidates.push(...Array.from(document.querySelectorAll(selectors)));
+    const candidates = [];
+    if (currentSecEl) {
+      candidates.push(...Array.from(currentSecEl.querySelectorAll(selectors)));
     }
+
+    // Also check visible designated targets on screen
+    candidates.push(...Array.from(document.querySelectorAll(selectors)));
 
     const validTargets = [];
     const seenPositions = new Set();
 
     for (const el of candidates) {
-      const isNavItem = el.hasAttribute('data-nav-item') || el.closest('[data-nav-item]');
-
-      // Skip internal rabbit parts or modals
-      if (el.closest('[data-rabbit-root]') || el.closest('#resume-modal')) continue;
-      if (el.closest('nav') && !isNavItem) continue;
+      // Skip internal rabbit parts, modals, or navbars
+      if (el.closest('[data-rabbit-root]') || el.closest('#resume-modal') || el.closest('nav')) continue;
 
       // DO NOT INTERACT WITH RABBIT TREE:
       if (
@@ -432,177 +378,74 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
         continue;
       }
 
-      // CALL TO ACTION SECTION CONSTRAINT:
-      // The rabbit should ONLY interact with the letters of "Idea!" on the call to action section.
-      if (el.closest('#cta') && !el.closest('[data-cta-idea-letter]')) continue;
-
-      // Discard invisible or zero-size elements
-      if (!isNavItem && el.offsetParent === null) continue;
-
-      // Check Call to Action: letters of "Idea!" ('I', 'd', 'e', 'a', '!')
-      const ideaLetterEl = el.hasAttribute('data-cta-idea-letter') ? el : el.closest('[data-cta-idea-letter]');
-      if (ideaLetterEl) {
-        const style = window.getComputedStyle(ideaLetterEl);
-        if (parseFloat(style.opacity || '1') < 0.15) continue;
-        const rect = ideaLetterEl.getBoundingClientRect();
-        if (rect.bottom < 50 || rect.top > viewportH - 30) continue;
-        if (rect.right < 10 || rect.left > viewportW - 10) continue;
-
-        const letterIndex = ideaLetterEl.getAttribute('data-cta-idea-index') || '0';
-        const letterChar = ideaLetterEl.getAttribute('data-cta-idea-letter') || '';
-        const gridKey = `cta_idea_${letterIndex}`;
-        if (seenPositions.has(gridKey)) continue;
-        seenPositions.add(gridKey);
-
-        // Perch directly on top of this letter
-        let landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
-        let landY = rect.top - RABBIT_HEIGHT + 14;
-
-        landX = Math.max(10, Math.min(viewportW - RABBIT_WIDTH - 10, landX));
-        landY = Math.max(40, Math.min(viewportH - RABBIT_HEIGHT - 20, landY));
-
-        const col = landX < viewportW / 3 ? 0 : landX < (2 * viewportW) / 3 ? 1 : 2;
-        const row = landY < viewportH / 2 ? 0 : 1;
-        const sector = row * 3 + col;
-
-        validTargets.push({
-          el: ideaLetterEl,
-          rect,
-          landX,
-          landY,
-          sector,
-          isCard: false,
-          isInteractive: true,
-          inCurrentSection: true,
-          isIdeaLetter: true,
-          letterChar,
-          letterIndex: parseInt(letterIndex, 10),
-        });
-        continue;
-      }
-
-      // Check skill cards specifically
-      const skillCardEl = el.hasAttribute('data-skill-card') ? el : el.closest('[data-skill-card]');
-      if (skillCardEl) {
-        const style = window.getComputedStyle(skillCardEl);
-        if (parseFloat(style.opacity || '1') < 0.15) continue;
-        const rect = skillCardEl.getBoundingClientRect();
-        if (rect.bottom < 80 || rect.top > viewportH - 60) continue;
-        if (rect.right < 24 || rect.left > viewportW - 24) continue;
-        if (rect.width < 16 || rect.height < 14) continue;
-
-        const skillName = skillCardEl.getAttribute('data-skill-card');
-        const gridKey = `skill_${skillName}`;
-        if (seenPositions.has(gridKey)) continue;
-        seenPositions.add(gridKey);
-
-        let landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
-        let landY = rect.top - RABBIT_HEIGHT + 14;
-
-        landX = Math.max(20, Math.min(viewportW - RABBIT_WIDTH - 20, landX));
-        landY = Math.max(64, Math.min(viewportH - RABBIT_HEIGHT - 30, landY));
-
-        const col = landX < viewportW / 3 ? 0 : landX < (2 * viewportW) / 3 ? 1 : 2;
-        const row = landY < viewportH / 2 ? 0 : 1;
-        const sector = row * 3 + col;
-
-        validTargets.push({
-          el: skillCardEl,
-          rect,
-          landX,
-          landY,
-          sector,
-          isCard: false,
-          isInteractive: true,
-          inCurrentSection: true,
-          skillName,
-        });
-        continue;
-      }
-
-      // Check skill landmarks (category pill, main title, text stack lines)
-      const skillTargetEl = el.hasAttribute('data-skill-target') ? el : el.closest('[data-skill-target]');
-      if (skillTargetEl) {
-        const style = window.getComputedStyle(skillTargetEl);
-        if (parseFloat(style.opacity || '1') < 0.15) continue;
-        const rect = skillTargetEl.getBoundingClientRect();
-        if (rect.bottom < 80 || rect.top > viewportH - 60) continue;
-        if (rect.right < 24 || rect.left > viewportW - 24) continue;
-        if (rect.width < 16 || rect.height < 14) continue;
-
-        const targetType = skillTargetEl.getAttribute('data-skill-target');
-        const gridKey = `target_${targetType}`;
-        if (seenPositions.has(gridKey)) continue;
-        seenPositions.add(gridKey);
-
-        let landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
-        let landY = rect.top - RABBIT_HEIGHT + 10;
-
-        landX = Math.max(20, Math.min(viewportW - RABBIT_WIDTH - 20, landX));
-        landY = Math.max(64, Math.min(viewportH - RABBIT_HEIGHT - 30, landY));
-
-        const col = landX < viewportW / 3 ? 0 : landX < (2 * viewportW) / 3 ? 1 : 2;
-        const row = landY < viewportH / 2 ? 0 : 1;
-        const sector = row * 3 + col;
-
-        validTargets.push({
-          el: skillTargetEl,
-          rect,
-          landX,
-          landY,
-          sector,
-          isCard: false,
-          isInteractive: true,
-          inCurrentSection: true,
-        });
-        continue;
-      }
-
+      // Check visibility
+      if (el.offsetParent === null) continue;
+      const style = window.getComputedStyle(el);
+      if (parseFloat(style.opacity || '1') < 0.15) continue;
       const rect = el.getBoundingClientRect();
 
-      // Must be visible within current viewport with safe margins
-      if (rect.bottom < 80 || rect.top > viewportH - 60) continue;
-      if (rect.right < 24 || rect.left > viewportW - 24) continue;
+      // Must be visible within viewport margins
+      if (rect.bottom < 50 || rect.top > viewportH - 30) continue;
+      if (rect.right < 15 || rect.left > viewportW - 15) continue;
 
-      // Discard giant containers or tiny fragments
-      if (rect.width > viewportW * 0.85 && rect.height > viewportH * 0.7) continue;
-      if (rect.width < 16 || rect.height < 14) continue;
+      // Section Target Categorization:
+      const isHeroButton = Boolean(el.hasAttribute('data-rabbit-target') && el.getAttribute('data-rabbit-target') === 'hero-see-works') || Boolean(el.closest('[data-rabbit-target="hero-see-works"]'));
+      const isSkillCard = Boolean(el.hasAttribute('data-skill-card')) || Boolean(el.closest('[data-skill-card]')) || el.classList?.contains?.('skill-icon') || Boolean(el.closest('.skill-icon'));
+      const isProjectName = Boolean(el.hasAttribute('data-rabbit-target') && el.getAttribute('data-rabbit-target') === 'project-name') || Boolean(el.closest('[data-rabbit-target="project-name"]'));
+      const isAcademicDistinction = Boolean(el.hasAttribute('data-rabbit-target') && el.getAttribute('data-rabbit-target') === 'academic-distinction') || Boolean(el.closest('[data-rabbit-target="academic-distinction"]'));
+      const isIdeaLetter = Boolean(el.hasAttribute('data-cta-idea-letter')) || Boolean(el.closest('[data-cta-idea-letter]'));
+      const isContactInput = Boolean(el.hasAttribute('data-rabbit-target') && el.getAttribute('data-rabbit-target') === 'contact-input') || Boolean(el.closest('[data-rabbit-target="contact-input"]'));
 
-      const isCard = el.tagName === 'ARTICLE' || el.className?.includes?.('card');
+      // STRICT USER CONSTRAINT: Discard any element that is NOT one of the 6 section targets
+      if (!isHeroButton && !isSkillCard && !isProjectName && !isAcademicDistinction && !isIdeaLetter && !isContactInput) {
+        continue;
+      }
 
-      let landX, landY;
-      if (isNavItem) {
-        const navParent = el.closest('nav');
-        const navRect = navParent ? navParent.getBoundingClientRect() : rect;
-        const navKey = el.getAttribute('data-nav-item') || el.closest('[data-nav-item]')?.getAttribute('data-nav-item');
-        const isHome = navKey === 'home';
+      let landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
+      let landY = rect.top - RABBIT_HEIGHT + 10;
+      let skillName = null;
+      let letterChar = null;
+      let letterIndex = 0;
 
-        if (isHome) {
-          const dockEl = el.querySelector('.rounded-full') || el;
-          const itemRect = dockEl.getBoundingClientRect();
-          landX = itemRect.left + (itemRect.width - RABBIT_WIDTH) / 2;
-          landY = navRect.top + (navRect.height - RABBIT_HEIGHT) / 2;
-        } else {
-          const itemRect = el.getBoundingClientRect();
-          landX = itemRect.left + (itemRect.width - RABBIT_WIDTH) / 2;
-          landY = Math.max(10, navRect.top - RABBIT_HEIGHT + 18);
-        }
-      } else if (isCard) {
-        // Perch cleanly on the top-left edge of the card
-        landX = rect.left + Math.min(60, rect.width * 0.25) - RABBIT_WIDTH / 2;
-        landY = rect.top - RABBIT_HEIGHT + 12;
-      } else {
-        // Perch centered atop badge, button, icon, or heading
+      if (isHeroButton) {
+        // Hero: See my works button
         landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
         landY = rect.top - RABBIT_HEIGHT + 10;
+      } else if (isSkillCard) {
+        // Skills: All tech stack icons
+        const skillEl = el.hasAttribute('data-skill-card') ? el : el.closest('[data-skill-card]');
+        skillName = skillEl?.getAttribute('data-skill-card') || null;
+        landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
+        landY = rect.top - RABBIT_HEIGHT + 14;
+      } else if (isProjectName) {
+        // Projects: Project name
+        landX = rect.left + Math.min(rect.width / 2, 70) - RABBIT_WIDTH / 2;
+        landY = rect.top - RABBIT_HEIGHT + 8;
+      } else if (isAcademicDistinction) {
+        // Academics: Distinction Honors
+        landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
+        landY = rect.top - RABBIT_HEIGHT + 8;
+      } else if (isIdeaLetter) {
+        // Call To Action: letters of "Idea!"
+        const letterEl = el.hasAttribute('data-cta-idea-letter') ? el : el.closest('[data-cta-idea-letter]');
+        letterChar = letterEl?.getAttribute('data-cta-idea-letter') || '!';
+        letterIndex = parseInt(letterEl?.getAttribute('data-cta-idea-index') || '0', 10);
+        landX = rect.left + (rect.width - RABBIT_WIDTH) / 2;
+        landY = rect.top - RABBIT_HEIGHT + 14;
+      } else if (isContactInput) {
+        // Contact: Input section
+        landX = rect.left + Math.min(80, rect.width * 0.25) - RABBIT_WIDTH / 2;
+        landY = rect.top - RABBIT_HEIGHT + 8;
       }
 
       // Constrain inside viewport safe margins
-      landX = Math.max(20, Math.min(viewportW - RABBIT_WIDTH - 20, landX));
-      landY = Math.max(64, Math.min(viewportH - RABBIT_HEIGHT - 30, landY));
+      landX = Math.max(15, Math.min(viewportW - RABBIT_WIDTH - 15, landX));
+      landY = Math.max(50, Math.min(viewportH - RABBIT_HEIGHT - 25, landY));
 
       // Grid deduplication
-      const gridKey = `${Math.round(landX / 36)}_${Math.round(landY / 36)}`;
+      const gridKey = isIdeaLetter
+        ? `cta_${letterIndex}`
+        : `${Math.round(landX / 30)}_${Math.round(landY / 30)}`;
       if (seenPositions.has(gridKey)) continue;
       seenPositions.add(gridKey);
 
@@ -611,17 +454,23 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       const row = landY < viewportH / 2 ? 0 : 1;
       const sector = row * 3 + col;
 
-      const inCurrentSection = currentSecEl ? currentSecEl.contains(el) : true;
-      const isInteractive = isNavItem || el.tagName === 'BUTTON' || el.tagName === 'A' || el.hasAttribute('data-model-icon');
+      const inCurrentSection = currentSecEl ? currentSecEl.contains(el) : false;
 
       validTargets.push({
-        el: isNavItem ? (el.hasAttribute('data-nav-item') ? el : el.closest('[data-nav-item]')) : el,
+        el,
         rect,
         landX,
         landY,
         sector,
-        isCard,
-        isInteractive,
+        isHeroButton,
+        isSkillCard,
+        isProjectName,
+        isAcademicDistinction,
+        isIdeaLetter,
+        isContactInput,
+        skillName,
+        letterChar,
+        letterIndex,
         inCurrentSection,
       });
     }
@@ -663,11 +512,15 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       const isGoodDistance = t.isIdeaLetter ? (dist >= 14 && dist <= 380) : (dist >= 70 && dist <= viewportW * 0.75);
 
       let score = 0;
-      if (t.inCurrentSection) score += 50;
-      if (t.isIdeaLetter) score += 65; // High priority for hopping across letters of Idea!
-      if (t.skillName) score += 20; // Extra priority for skill icons!
-      if (isFreshSector) score += 25;
-      if (isGoodDistance) score += 20;
+      if (t.inCurrentSection) score += 60;
+      if (t.isIdeaLetter) score += 50;
+      if (t.skillName) score += 45;
+      if (t.isHeroButton) score += 50;
+      if (t.isProjectName) score += 45;
+      if (t.isAcademicDistinction) score += 45;
+      if (t.isContactInput) score += 45;
+      if (isFreshSector) score += 20;
+      if (isGoodDistance) score += 15;
 
       return { target: t, dist, score };
     });
@@ -687,11 +540,6 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
       visitedSectorsRef.current.shift();
     }
 
-    // Dynamic color morph based on target background
-    const isTargetDark = checkIsDarkBackground(chosen.el, chosen.landX, chosen.landY);
-    setIsDarkBg(isTargetDark);
-    isDarkBgRef.current = isTargetDark;
-
     leapTo({ x: chosen.landX, y: chosen.landY }, {
       duration: chosen.isIdeaLetter ? 380 : 460,
       arcHeight: chosen.isIdeaLetter ? 38 : 52,
@@ -706,21 +554,17 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
         // Adaptive perch duration based on element personality
         const perchDelay = chosen.isIdeaLetter
-          ? 1800 + Math.random() * 500
-          : chosen.skillName
-          ? 2200 + Math.random() * 400
-          : chosen.isInteractive
           ? 1800 + Math.random() * 400
-          : chosen.isCard
-          ? 2400 + Math.random() * 500
-          : 2100 + Math.random() * 450;
+          : chosen.skillName
+            ? 2200 + Math.random() * 400
+            : 2200 + Math.random() * 400;
 
         if (isRoamingRef.current) {
           roamStepTimerRef.current = setTimeout(performRoamStep, perchDelay);
         }
       }
     });
-  }, [leapTo, returnToNavbar, checkIsDarkBackground]);
+  }, [leapTo, returnToNavbar]);
 
   // Immediately dock rabbit safely whenever Rabbit Tree modal is open
   useEffect(() => {
@@ -750,11 +594,11 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   }, [performRoamStep, isRabbitTreeOpen]);
 
   // 8. Idle Monitor & Intentional Navigation Observer
-  // - 3.8s idle threshold for calm, unobtrusive presence
+  // - 15s idle threshold for calm, unobtrusive presence as requested
   // - Mouse movement does NOT spook the rabbit away; it can be approached and petted
   // - Returns to navbar only on genuine user navigation (scroll > 50px, keys, navbar hover)
   useEffect(() => {
-    const IDLE_TIME = 3800;
+    const IDLE_TIME = 15000;
 
     const handleUserActivity = (e) => {
       // 1. Mouse movements: Check if user is hovering the navbar or interacting
@@ -829,140 +673,101 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
   // 9. Scroll Section Tracking (tracks current section and keeps rabbit synced)
   useEffect(() => {
     let scrollDebounceTimer = null;
-    let ticking = false;
 
-    const checkScrollSection = () => {
-      ticking = false;
+    const transitionToSection = (currentSec) => {
       // If user recently clicked a nav item or a smooth scroll navigation is underway, ignore intermediate scroll frames
       if (window.__navTargetLock && performance.now() < window.__navTargetLock.expiryTime) {
         return;
       }
       if (performance.now() < navClickLockRef.current) return;
+      if (activeSectionRef.current === currentSec) return;
 
-      const scrollY = window.scrollY || 0;
-      const sections = [
-        { id: 'contact', offset: 280 },
-        { id: 'cta', offset: 280 },
-        { id: 'experience', offset: 280 },
-        { id: 'education', offset: 280 },
-        { id: 'projects', offset: 280 },
-        { id: 'skills', offset: 280 },
-      ];
+      activeSectionRef.current = currentSec;
+      setActiveSection(currentSec);
 
-      let currentSec = 'home';
-      if (scrollY >= 140) {
-        // Hysteresis preference: if currently on an active section and its container remains comfortably in view, stay on it!
-        const curEl = activeSectionRef.current !== 'home' ? document.getElementById(activeSectionRef.current) : null;
-        if (curEl) {
-          const cRect = curEl.getBoundingClientRect();
-          if (cRect.top <= 280 && cRect.bottom > 150) {
-            currentSec = activeSectionRef.current;
-          }
-        }
-
-        if (currentSec === 'home') {
-          for (const sec of sections) {
-            const el = document.getElementById(sec.id);
-            if (el) {
-              const rect = el.getBoundingClientRect();
-              if (rect.top <= sec.offset && rect.bottom > 120) {
-                currentSec = sec.id;
-                break;
-              }
-            }
-          }
-          if (currentSec === 'home') currentSec = 'skills';
+      // If returning home, cleanly disengage roaming
+      if (currentSec === 'home' && isRoamingRef.current) {
+        setIsRoaming(false);
+        isRoamingRef.current = false;
+        window.dispatchEvent(new CustomEvent('rabbit-skill-hover', { detail: { skillName: null } }));
+        if (roamStepTimerRef.current) {
+          clearTimeout(roamStepTimerRef.current);
+          roamStepTimerRef.current = null;
         }
       }
 
-      if (activeSectionRef.current !== currentSec) {
-        activeSectionRef.current = currentSec;
-        setActiveSection(currentSec);
-
-        // If returning home, cleanly disengage roaming
-        if (currentSec === 'home' && isRoamingRef.current) {
-          setIsRoaming(false);
-          isRoamingRef.current = false;
-          window.dispatchEvent(new CustomEvent('rabbit-skill-hover', { detail: { skillName: null } }));
-          if (roamStepTimerRef.current) {
-            clearTimeout(roamStepTimerRef.current);
-            roamStepTimerRef.current = null;
-          }
-        }
-
-        if (isRoamingRef.current) {
-          if (scrollDebounceTimer) clearTimeout(scrollDebounceTimer);
-          if (roamStepTimerRef.current) clearTimeout(roamStepTimerRef.current);
-          scrollDebounceTimer = setTimeout(() => {
-            if (isRoamingRef.current) performRoamStep();
-          }, 120);
-        } else if (currentSec === 'cta') {
-          // In Call to Action section: rabbit targets letters of "Idea!"
-          const ideaLetters = Array.from(document.querySelectorAll('[data-cta-idea-letter]'));
-          const visibleLetter = ideaLetters.find(el => {
-            const rect = el.getBoundingClientRect();
-            return rect.top > 60 && rect.bottom < window.innerHeight - 30;
-          });
-          if (visibleLetter) {
-            const rect = visibleLetter.getBoundingClientRect();
-            const landX = Math.max(10, Math.min(window.innerWidth - RABBIT_WIDTH - 10, rect.left + (rect.width - RABBIT_WIDTH) / 2));
-            const landY = Math.max(40, Math.min(window.innerHeight - RABBIT_HEIGHT - 20, rect.top - RABBIT_HEIGHT + 14));
-            setIsRoaming(true);
-            isRoamingRef.current = true;
-            leapTo({ x: landX, y: landY }, {
-              duration: 450,
-              arcHeight: 46,
-              onLanding: () => {
-                triggerElementBounce(visibleLetter);
-                if (isRoamingRef.current) {
-                  roamStepTimerRef.current = setTimeout(performRoamStep, 2000);
-                }
-              }
-            });
-            return;
-          }
-          const newTarget = getNavbarTarget(currentSec);
-          leapTo(newTarget, {
-            duration: 380,
-            arcHeight: 26,
+      if (isRoamingRef.current) {
+        if (scrollDebounceTimer) clearTimeout(scrollDebounceTimer);
+        if (roamStepTimerRef.current) clearTimeout(roamStepTimerRef.current);
+        scrollDebounceTimer = setTimeout(() => {
+          if (isRoamingRef.current) performRoamStep();
+        }, 120);
+      } else if (currentSec === 'cta') {
+        // In Call to Action section: rabbit targets letters of "Idea!"
+        const ideaLetters = Array.from(document.querySelectorAll('[data-cta-idea-letter]'));
+        const visibleLetter = ideaLetters.find(el => {
+          const rect = el.getBoundingClientRect();
+          return rect.top > 60 && rect.bottom < window.innerHeight - 30;
+        });
+        if (visibleLetter) {
+          const rect = visibleLetter.getBoundingClientRect();
+          const landX = Math.max(10, Math.min(window.innerWidth - RABBIT_WIDTH - 10, rect.left + (rect.width - RABBIT_WIDTH) / 2));
+          const landY = Math.max(40, Math.min(window.innerHeight - RABBIT_HEIGHT - 20, rect.top - RABBIT_HEIGHT + 14));
+          setIsRoaming(true);
+          isRoamingRef.current = true;
+          leapTo({ x: landX, y: landY }, {
+            duration: 450,
+            arcHeight: 46,
             onLanding: () => {
-              const effectiveKey = (currentSec === 'contact' || currentSec === 'cta') ? 'experience' : currentSec;
-              const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
-              if (currentSec === 'home') {
-                triggerHomeLanding(navItemEl);
-              } else {
-                triggerElementBounce(navItemEl);
+              triggerElementBounce(visibleLetter);
+              if (isRoamingRef.current) {
+                roamStepTimerRef.current = setTimeout(performRoamStep, 2000);
               }
             }
           });
-        } else {
-          // Hop along to the newly active navbar tab!
-          const newTarget = getNavbarTarget(currentSec);
-          leapTo(newTarget, {
-            duration: currentSec === 'home' ? 420 : 380,
-            arcHeight: currentSec === 'home' ? 32 : 26,
-            onLanding: () => {
-              const effectiveKey = (currentSec === 'contact' || currentSec === 'cta') ? 'experience' : currentSec;
-              const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
-              if (currentSec === 'home') {
-                triggerHomeLanding(navItemEl);
-              } else {
-                triggerElementBounce(navItemEl);
-              }
-            }
-          });
+          return;
         }
+        const newTarget = getNavbarTarget(currentSec);
+        leapTo(newTarget, {
+          duration: 380,
+          arcHeight: 26,
+          onLanding: () => {
+            const effectiveKey = (currentSec === 'contact' || currentSec === 'cta') ? 'experience' : currentSec;
+            const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
+            if (currentSec === 'home') {
+              triggerHomeLanding(navItemEl);
+            } else {
+              triggerElementBounce(navItemEl);
+            }
+          }
+        });
+      } else {
+        // Hop along to the newly active navbar tab!
+        const newTarget = getNavbarTarget(currentSec);
+        leapTo(newTarget, {
+          duration: currentSec === 'home' ? 420 : 380,
+          arcHeight: currentSec === 'home' ? 32 : 26,
+          onLanding: () => {
+            const effectiveKey = (currentSec === 'contact' || currentSec === 'cta') ? 'experience' : currentSec;
+            const navItemEl = document.querySelector(`[data-nav-item="${effectiveKey}"]`);
+            if (currentSec === 'home') {
+              triggerHomeLanding(navItemEl);
+            } else {
+              triggerElementBounce(navItemEl);
+            }
+          }
+        });
       }
     };
 
-    const handleScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(checkScrollSection);
+    const handleNavSectionChange = (e) => {
+      const sec = e?.detail?.section;
+      if (sec) {
+        transitionToSection(sec);
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('nav-section-change', handleNavSectionChange);
 
     // Helper to determine initial section on mount based on hash or restored scroll
     const getInitialActiveSection = () => {
@@ -1076,7 +881,7 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('nav-section-change', handleNavSectionChange);
       window.removeEventListener('resize', handleResize);
       if (syncAnimId) cancelAnimationFrame(syncAnimId);
       if (pollInterval) clearInterval(pollInterval);
@@ -1175,9 +980,9 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
     const handleLeapToLetter = (e) => {
       const { index, char } = e?.detail || {};
       const el = (index !== undefined ? document.getElementById(`cta-idea-letter-${index}`) : null) ||
-                 (char ? document.querySelector(`[data-cta-idea-letter="${char}"]`) : null) ||
-                 document.getElementById('cta-idea-letter-0') ||
-                 document.querySelector('[data-cta-idea-letter]');
+        (char ? document.querySelector(`[data-cta-idea-letter="${char}"]`) : null) ||
+        document.getElementById('cta-idea-letter-0') ||
+        document.querySelector('[data-cta-idea-letter]');
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const landX = Math.max(10, Math.min(window.innerWidth - RABBIT_WIDTH - 10, rect.left + (rect.width - RABBIT_WIDTH) / 2));
@@ -1242,8 +1047,6 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
 
     setIsRoaming(false);
     isRoamingRef.current = false;
-    setIsDarkBg(false);
-    isDarkBgRef.current = false;
     window.dispatchEvent(new CustomEvent('rabbit-skill-hover', { detail: { skillName: null } }));
 
     // Lock scroll tracking for 2000ms during smooth scroll back to home
@@ -1284,14 +1087,10 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
           opacity: isReady ? 1 : 0,
           transition: isReady ? 'opacity 0.3s ease-out' : 'none',
           filter: isRoaming
-            ? isDarkBg
-              ? 'drop-shadow(0 8px 24px rgba(255,255,255,0.5)) drop-shadow(0 3px 8px rgba(0,0,0,0.65))'
-              : 'drop-shadow(0 10px 24px rgba(0,0,0,0.25))'
+            ? 'drop-shadow(0 10px 24px rgba(0,0,0,0.25))'
             : activeSection !== 'home'
-            ? isDarkBg
-              ? 'drop-shadow(0 4px 14px rgba(255,255,255,0.36))'
-              : 'drop-shadow(0 4px 10px rgba(0,0,0,0.18))'
-            : 'none',
+              ? 'drop-shadow(0 4px 10px rgba(0,0,0,0.18))'
+              : 'none',
         }}
       >
         <div
@@ -1306,7 +1105,6 @@ const RabbitCompanion = ({ isRabbitTreeOpen = false }) => {
             isHopping={isHopping}
             hopDirection={hopDirection}
             hopProgress={hopProgress}
-            isWhite={isDarkBg}
             onClick={handleRabbitClick}
           />
         </div>

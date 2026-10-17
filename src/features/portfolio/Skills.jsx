@@ -57,63 +57,48 @@ const Skills = () => {
   useGSAP(() => {
     const isMobile = window.innerWidth < 768;
 
-    // We create a timeline mapped strictly to scroll progress (0 to 1)
+    // We create a timeline mapped strictly to scroll progress (0 to 1) with snappy touch response on mobile
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
         end: "bottom bottom",
-        scrub: 1.2
+        scrub: isMobile ? 0.25 : 1.0,
       }
     });
 
-    // 1. Icons Entry Animation (Original Explosion from center tied to scroll)
+    // 1. Icons Entry Animation (Pure GPU Transform Explosion from center tied to scroll)
     const icons = gsap.utils.toArray(".skill-icon");
     icons.forEach((icon, i) => {
       const targetTop = isMobile && skills[i].mTop ? skills[i].mTop : skills[i].top;
       const targetLeft = isMobile && skills[i].mLeft ? skills[i].mLeft : skills[i].left;
 
-      tl.fromTo(icon, {
-        top: '50%',
-        left: '50%',
+      // Set target position once to completely avoid layout reflow during scroll
+      gsap.set(icon, {
+        top: targetTop,
+        left: targetLeft,
         xPercent: -50,
         yPercent: -50,
+        force3D: true,
+      });
+
+      tl.fromTo(icon, {
+        x: () => (window.innerWidth * 0.5) - (parseFloat(targetLeft) / 100 * window.innerWidth),
+        y: () => (window.innerHeight * 0.5) - (parseFloat(targetTop) / 100 * window.innerHeight),
         scale: 0,
         opacity: 0,
       }, {
-        top: targetTop,
-        left: targetLeft,
+        x: 0,
+        y: 0,
         scale: 1,
         opacity: 1,
         ease: "power2.out",
-        duration: 0.15,
-      }, skills[i].delay * 0.15); // Uses original staggered timing, scaled to timeline
+        duration: isMobile ? 0.18 : 0.15,
+        force3D: true,
+      }, skills[i].delay * (isMobile ? 0.16 : 0.15));
     });
 
-    // 2. Icons Float Animation (Paused when out of viewport to eliminate idle GPU load)
-    const floatTweens = gsap.utils.toArray(".skill-float").map((el, i) => {
-      return gsap.to(el, {
-        y: -10,
-        duration: skills[i].floatDuration / 2,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        delay: Math.random() * 1.5,
-        paused: true
-      });
-    });
-
-    ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: "top bottom",
-      end: "bottom top",
-      onEnter: () => floatTweens.forEach(t => t.play()),
-      onLeave: () => floatTweens.forEach(t => t.pause()),
-      onEnterBack: () => floatTweens.forEach(t => t.play()),
-      onLeaveBack: () => floatTweens.forEach(t => t.pause()),
-    });
-
-    // 3. Stack Items Progression (Unified single tween - zero blinking)
+    // 2. Stack Items Progression (Unified single tween - zero blinking)
     textStackRef.current.forEach((item, index) => {
       if (!item) return;
 
@@ -122,14 +107,16 @@ const Skills = () => {
 
       tl.fromTo(item, 
         { 
-          y: 70, 
-          opacity: 0 
+          y: isMobile ? 24 : 70, 
+          opacity: 0,
+          force3D: true,
         }, 
         { 
           y: 0, 
           opacity: 1, 
           duration: yEnd - yStart, 
-          ease: "power2.out" 
+          ease: "power2.out",
+          force3D: true,
         }, 
         yStart
       );
@@ -141,14 +128,14 @@ const Skills = () => {
     <div 
       id="skills" 
       ref={containerRef} 
-      className="relative w-full h-[500vh] bg-[#fafafc] text-gray-900 selection:bg-black selection:text-white rounded-t-[44px] md:rounded-t-[64px] border-t border-black/[0.08] shadow-[0_-20px_50px_rgba(0,0,0,0.05)] z-20"
+      className="relative w-full h-[320vh] md:h-[500vh] bg-[#fafafc] text-gray-900 selection:bg-black selection:text-white rounded-t-[44px] md:rounded-t-[64px] border-t border-black/[0.08] shadow-[0_-20px_50px_rgba(0,0,0,0.05)] z-20"
     >
-      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex items-center justify-center bg-[#fafafc] rounded-t-[44px] md:rounded-t-[64px]">
+      <div className="sticky top-0 left-0 w-full h-[100dvh] min-h-[100dvh] overflow-hidden flex items-center justify-center bg-[#fafafc] rounded-t-[44px] md:rounded-t-[64px]">
         
-        {/* Ambient Glows from Contact Us Theme */}
+        {/* Ambient Glows (GPU radial gradients, zero blur filter lag) */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
-          <div className="absolute w-[500px] md:w-[700px] h-[500px] md:h-[700px] bg-gradient-to-br from-purple-200/50 via-pink-200/30 to-transparent rounded-full blur-[70px] md:blur-[100px] -translate-x-1/4 -translate-y-1/4 opacity-70" />
-          <div className="absolute w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-gradient-to-tl from-cyan-200/50 via-blue-100/30 to-transparent rounded-full blur-[70px] md:blur-[100px] translate-x-1/3 translate-y-1/4 opacity-70" />
+          <div className="absolute w-[340px] md:w-[700px] h-[340px] md:h-[700px] ambient-glow-purple rounded-full -translate-x-1/4 -translate-y-1/4 opacity-75" />
+          <div className="absolute w-[280px] md:w-[600px] h-[280px] md:h-[600px] ambient-glow-cyan rounded-full translate-x-1/3 translate-y-1/4 opacity-75" />
         </div>
 
         {/* Ambient Subtle Background Grid Pattern */}
@@ -187,6 +174,7 @@ const Skills = () => {
           <div
             key={skill.name}
             data-skill-card={skill.name}
+            data-rabbit-target="skill-tech"
             className={`absolute ${skill.size} z-20 skill-icon`}
             style={{ opacity: 0 }}
           >
@@ -198,9 +186,14 @@ const Skills = () => {
             >
               <div
                 data-skill-interactive={skill.name}
-                className="relative w-full h-full rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center cursor-pointer skill-float group transition-transform duration-200 hover:scale-110"
+                className="relative w-full h-full rounded-[24px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] md:shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center cursor-pointer skill-float animate-skill-ambient group transition-transform duration-200 hover:scale-110"
+                style={{
+                  animationDuration: `${skill.floatDuration}s`,
+                  animationDelay: `${skill.delay * 1.2}s`,
+                }}
                 onMouseEnter={() => setHoveredSkill(skill.name)}
                 onMouseLeave={() => setHoveredSkill(null)}
+                onClick={() => setHoveredSkill(prev => prev === skill.name ? null : skill.name)}
               >
                 <img 
                   src={skill.icon} 
@@ -213,7 +206,7 @@ const Skills = () => {
                       e.currentTarget.nextElementSibling.style.display = 'flex';
                     }
                   }}
-                  className="w-full h-full object-contain drop-shadow-md rounded-[22px] transition-transform duration-200" 
+                  className="w-full h-full object-contain drop-shadow-none md:drop-shadow-md rounded-[22px] transition-transform duration-200" 
                 />
                 
                 {/* Fallback Badge */}

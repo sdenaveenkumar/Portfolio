@@ -19,11 +19,11 @@ export function useCanvasTransform() {
     setZoom(1);
   }, []);
 
-  const centerOnNode = useCallback((x, y, targetZoom = 1.05) => {
+  const centerOnNode = useCallback((x, y, targetZoom = 1.05, offsetY = 0) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const newPanX = rect.width / 2 - (x + 90) * targetZoom;
-    const newPanY = rect.height / 2 - (y + 24) * targetZoom;
+    const newPanY = (rect.height / 2 + offsetY) - (y + 24) * targetZoom;
     setZoom(targetZoom);
     setPan({ x: Math.round(newPanX), y: Math.round(newPanY) });
   }, []);

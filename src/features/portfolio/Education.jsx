@@ -205,37 +205,19 @@ const CustomTooltip = ({ active, payload, label }) => {
 const Education = () => {
   const [activeSemIndex, setActiveSemIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [autoProgress, setAutoProgress] = useState(0);
 
   useEffect(() => {
-    if (!isPlaying) {
-      setAutoProgress(100);
-      return;
-    }
+    if (!isPlaying) return;
 
-    const duration = 3500; // 3.5s cycle per semester
-    const intervalTime = 35;
-    const step = (intervalTime / duration) * 100;
+    const timer = setTimeout(() => {
+      setActiveSemIndex((curr) => (curr + 1) % transcriptData.length);
+    }, 3500);
 
-    let currentProgress = 0;
-    setAutoProgress(0);
-
-    const timer = setInterval(() => {
-      currentProgress += step;
-      if (currentProgress >= 100) {
-        clearInterval(timer);
-        setActiveSemIndex(curr => (curr + 1) % transcriptData.length);
-      } else {
-        setAutoProgress(currentProgress);
-      }
-    }, intervalTime);
-
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, [isPlaying, activeSemIndex]);
 
   const handleSelectSemester = (index) => {
     setActiveSemIndex(index);
-    setAutoProgress(0);
   };
 
   const containerRef = useRef(null);
@@ -576,6 +558,7 @@ const Education = () => {
     // 2. MOBILE ANIMATION (max-width: 767px) - FAN MODE
     // ==============================================================
     mm.add("(max-width: 767px)", () => {
+      let lastMobileIdx = -1;
       ScrollTrigger.create({
         trigger: containerRef.current,
         start: "top top",
@@ -583,18 +566,23 @@ const Education = () => {
         scrub: 0.6,
         onUpdate: (self) => {
           const p = self.progress;
+          let targetIdx = 0;
           if (p < 0.30) {
-            setActiveSemIndex(0);
+            targetIdx = 0;
           } else if (p < 0.44) {
-            setActiveSemIndex(1);
+            targetIdx = 1;
           } else if (p < 0.58) {
-            setActiveSemIndex(2);
+            targetIdx = 2;
           } else if (p < 0.72) {
-            setActiveSemIndex(3);
+            targetIdx = 3;
           } else if (p < 0.86) {
-            setActiveSemIndex(4);
+            targetIdx = 4;
           } else {
-            setActiveSemIndex(5);
+            targetIdx = 5;
+          }
+          if (targetIdx !== lastMobileIdx) {
+            lastMobileIdx = targetIdx;
+            setActiveSemIndex(targetIdx);
           }
         }
       });
@@ -1041,10 +1029,10 @@ const Education = () => {
       {/* Sticky Fullscreen Stage (Vertically centered in viewport) */}
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col justify-center items-center pt-14 sm:pt-16 md:pt-14 pb-8 sm:pb-10 md:pb-12 px-3.5 sm:px-6 md:px-8 lg:px-12 xl:px-16 select-none bg-[#fafafc]">
 
-        {/* Dynamic Ambient Background Glow from Contact Us Theme */}
+        {/* Dynamic Ambient Background Glow (GPU radial gradients, 0 blur filter lag) */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
-          <div className="absolute w-[600px] md:w-[900px] h-[600px] md:h-[900px] bg-gradient-to-br from-purple-200/35 via-pink-200/20 to-transparent rounded-full blur-[90px] md:blur-[130px] -translate-x-1/4 -translate-y-1/4 opacity-60" />
-          <div className="absolute w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-gradient-to-tl from-cyan-200/35 via-blue-100/20 to-transparent rounded-full blur-[90px] md:blur-[130px] translate-x-1/3 translate-y-1/4 opacity-60" />
+          <div className="absolute w-[600px] md:w-[900px] h-[600px] md:h-[900px] ambient-glow-purple rounded-full -translate-x-1/4 -translate-y-1/4 opacity-70" />
+          <div className="absolute w-[500px] md:w-[800px] h-[500px] md:h-[800px] ambient-glow-cyan rounded-full translate-x-1/3 translate-y-1/4 opacity-70" />
         </div>
 
         {/* 3D Spotlight Carousel Styles (Active across Desktop, Tablet & Mobile) */}
@@ -1205,7 +1193,7 @@ const Education = () => {
             <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-3 text-xs sm:text-sm md:text-base font-mono text-neutral-600 uppercase tracking-widest">
               <span>Cumulative GPA</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-neutral-900 font-bold">Distinction Honors</span>
+              <span data-rabbit-target="academic-distinction" className="text-neutral-900 font-bold">Distinction Honors</span>
             </div>
           </div>
 
@@ -1234,7 +1222,7 @@ const Education = () => {
                 <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-neutral-500 font-medium">
                   Cumulative GPA
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-black text-white text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1">
+                <span data-rabbit-target="academic-distinction" className="px-2.5 py-0.5 rounded-full bg-black text-white text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1">
                   <span>Distinction Honors</span>
                   <span className="text-emerald-400">✦</span>
                 </span>
@@ -1516,8 +1504,8 @@ const Education = () => {
                       aria-label={`Semester ${i + 1} (active)`}
                     >
                       <div
-                        style={{ width: isPlaying ? `${autoProgress}%` : '100%' }}
-                        className="h-full bg-[#1c1c1e] rounded-full transition-all duration-75"
+                        key={`pill-${activeSemIndex}-${isPlaying}`}
+                        className={`h-full bg-[#1c1c1e] rounded-full ${isPlaying ? 'animate-pill-progress' : 'w-full'}`}
                       />
                     </div>
                   ) : (
@@ -1538,7 +1526,6 @@ const Education = () => {
                 type="button"
                 onClick={() => {
                   setIsPlaying(prev => !prev);
-                  setAutoProgress(0);
                 }}
                 className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#eceef1] border border-black/[0.04] shadow-xs hover:bg-[#e2e5e9] active:scale-95 flex items-center justify-center text-[#1c1c1e] transition-all cursor-pointer"
                 title={isPlaying ? "Pause autoplay" : "Play autoplay"}

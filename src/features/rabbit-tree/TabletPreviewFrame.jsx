@@ -105,10 +105,12 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
           opacity: { duration: 0.42, delay: 0.18, ease: 'easeInOut' }
         }
       }}
+      data-tablet-frame="true"
+      data-lenis-prevent="true"
       className="pointer-events-auto relative flex-1 min-w-0 h-[94vh] max-h-[840px] rounded-[38px] sm:rounded-[44px] p-[10px] sm:p-[12px] bg-gradient-to-b from-[#3c3c3e] via-[#1a1a1c] to-[#2a2a2c] shadow-[0_30px_90px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.18)] flex flex-col select-none cursor-default"
     >
       {/* Tablet Screen Container */}
-      <div className="relative w-full h-full rounded-[28px] sm:rounded-[34px] overflow-hidden bg-[#0c0c0e] border border-white/[0.08] flex flex-col shadow-inner">
+      <div data-lenis-prevent="true" className="relative w-full h-full rounded-[28px] sm:rounded-[34px] overflow-hidden bg-[#0c0c0e] border border-white/[0.08] flex flex-col shadow-inner">
 
         {/* ─────────────────────────────────────────────────────────────
             TABLET TOP BROWSER / SYSTEM HEADER
@@ -186,7 +188,7 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
         {/* ─────────────────────────────────────────────────────────────
             TABLET VIEWPORT CONTENT (Specialized by link type)
            ───────────────────────────────────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 bg-[#0e0e11] text-white">
+        <div data-lenis-prevent="true" className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 bg-[#0e0e11] text-white">
           <AnimatePresence mode="wait">
             <motion.div
               key={link.id}
@@ -226,7 +228,8 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
                   <div className="flex-1 min-h-[460px] rounded-2xl overflow-hidden border border-white/10 bg-[#141418] flex flex-col relative">
                     <iframe
                       src="/resume.pdf#view=FitH&toolbar=0"
-                      title="Naveen Kumar Resume"
+                      title="Naveen Kumar Resume Preview"
+                      loading="lazy"
                       className="w-full h-full min-h-[460px] border-none bg-[#141418]"
                     />
                   </div>
@@ -249,7 +252,7 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
                           <h3 className="font-bold text-lg sm:text-xl text-white">Naveen Kumar</h3>
                           <span className="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-mono text-zinc-300">@sdenaveenkumar</span>
                         </div>
-                        <p className="text-xs text-zinc-400 mt-0.5">Full Stack Software Engineer // Cloud Systems &amp; Modern UI</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">Full Stack Software Engineer // Cloud Systems & Modern UI</p>
                       </div>
                     </div>
 
@@ -429,14 +432,14 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
                       <p className="text-xs text-zinc-400 mt-1 leading-relaxed">React 19, TypeScript, Node.js, Express, Next.js</p>
                     </div>
                     <div className="p-4 rounded-xl bg-[#141417] border border-white/[0.08]">
-                      <span className="text-[10px] uppercase font-mono text-zinc-400">Cloud &amp; DevOps</span>
-                      <p className="font-bold text-sm text-white mt-1">Infrastructure &amp; CI/CD</p>
+                      <span className="text-[10px] uppercase font-mono text-zinc-400">Cloud & DevOps</span>
+                      <p className="font-bold text-sm text-white mt-1">Infrastructure & CI/CD</p>
                       <p className="text-xs text-zinc-400 mt-1 leading-relaxed">Docker, Linux VPS, Nginx, CI/CD, REST APIs</p>
                     </div>
                     <div className="p-4 rounded-xl bg-[#141417] border border-white/[0.08] sm:col-span-2 lg:col-span-1">
-                      <span className="text-[10px] uppercase font-mono text-zinc-400">Location &amp; Work</span>
+                      <span className="text-[10px] uppercase font-mono text-zinc-400">Location & Work</span>
                       <p className="font-bold text-sm text-white mt-1">Open to Roles</p>
-                      <p className="text-xs text-zinc-400 mt-1 leading-relaxed">Global Remote &amp; On-site Opportunities</p>
+                      <p className="text-xs text-zinc-400 mt-1 leading-relaxed">Global Remote & On-site Opportunities</p>
                     </div>
                   </div>
 
@@ -799,6 +802,7 @@ const TabletPreviewFrame = ({ link, onClose, onNavigate }) => {
                   {/* Interactive Section Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
+                      { name: 'Home / Hero', anchor: '/#home', desc: 'Main landing hero with 3D companion & interactive typography.' },
                       { name: 'Projects / Case Studies', anchor: '/#projects', desc: 'Dolphin AI, Lofi CLI, Personal API with live demos.' },
                       { name: 'Core Skills', anchor: '/#skills', desc: 'Interactive 3D orbital tech stack with Three.js & Lucide.' },
                       { name: 'Academics & Education', anchor: '/#education', desc: 'Degree credentials, coursework & computer science foundation.' },

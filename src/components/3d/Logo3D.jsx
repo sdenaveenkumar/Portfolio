@@ -11,15 +11,11 @@ import { getModelInstance } from '../../utils/modelLoader';
  * - Dynamic Hopping: Responds to navbar travel with parabolic arc pitch, squash & stretch, and aerodynamic ear trail
  * - Celebratory Bunny Leap on click
  */
-const targetBlackColor = new THREE.Color(0x080808);
-const targetWhiteColor = new THREE.Color(0xf8fafc);
-
 const Logo3D = ({
   className = 'w-9 h-9 sm:w-10 sm:h-10',
   isHopping = false,
   hopDirection = 1,
   hopProgress = 0,
-  isWhite = false,
   onClick,
 }) => {
   const containerRef = useRef(null);
@@ -57,10 +53,10 @@ const Logo3D = ({
   });
 
   // Track props for animate loop
-  const propsRef = useRef({ isHopping, hopDirection, hopProgress, isWhite });
+  const propsRef = useRef({ isHopping, hopDirection, hopProgress });
   useEffect(() => {
-    propsRef.current = { isHopping, hopDirection, hopProgress, isWhite };
-  }, [isHopping, hopDirection, hopProgress, isWhite]);
+    propsRef.current = { isHopping, hopDirection, hopProgress };
+  }, [isHopping, hopDirection, hopProgress]);
 
   useEffect(() => {
     let isMounted = true;
@@ -79,6 +75,8 @@ const Logo3D = ({
         antialias: true,
         powerPreference: 'low-power',
         precision: 'mediump',
+        stencil: false,
+        depth: true,
       });
     } catch {
       setLoadError(true);
@@ -109,7 +107,7 @@ const Logo3D = ({
     rimLight.position.set(-2, 3, -2.5);
     scene.add(rimLight);
 
-    // Sizing & Crisp Retina Buffer (Capped at 128px max buffer to eliminate 23x fillrate waste)
+    // Sizing & Crisp Retina Buffer (Capped at 128px max buffer to eliminate fillrate waste)
     const updateSize = () => {
       if (!container || !renderer || !canvas) return;
       const rect = container.getBoundingClientRect();
@@ -141,16 +139,18 @@ const Logo3D = ({
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Global cursor tracking: Rabbit notices when user's cursor is nearby! (Optimized 80ms throttle)
-    let lastRectTime = 0;
+    // Global cursor tracking with cached container rect (invalidated on resize & scroll to prevent forced layout thrashing)
     let cachedRect = null;
+    const invalidateRect = () => {
+      cachedRect = null;
+    };
+    window.addEventListener('resize', invalidateRect);
+    window.addEventListener('scroll', invalidateRect, { passive: true });
 
     const handleGlobalPointerMove = (e) => {
       if (!container || mouseRef.current.isHovered) return;
-      const now = performance.now();
-      if (now - lastRectTime > 60 || !cachedRect) {
+      if (!cachedRect) {
         cachedRect = container.getBoundingClientRect();
-        lastRectTime = now;
       }
       const cx = cachedRect.left + cachedRect.width / 2;
       const cy = cachedRect.top + cachedRect.height / 2;
@@ -329,15 +329,6 @@ const Logo3D = ({
         });
       }
 
-      // Dynamic Theme Color Morph (Black on light screens, White on dark screens)
-      if (modelWrapper.userData.material) {
-        const mat = modelWrapper.userData.material;
-        const targetColor = propsRef.current.isWhite ? targetWhiteColor : targetBlackColor;
-        mat.color.lerp(targetColor, 0.12);
-        mat.sheen = THREE.MathUtils.lerp(mat.sheen, propsRef.current.isWhite ? 0.45 : 0.0, 0.12);
-        mat.roughness = THREE.MathUtils.lerp(mat.roughness, propsRef.current.isWhite ? 0.12 : 0.18, 0.12);
-      }
-
       // Vertical position (breathing + jump)
       modelWrapper.position.y = breathFloatY + s.jumpY;
 
@@ -367,12 +358,24 @@ const Logo3D = ({
       isMounted = false;
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', updateSize);
+      window.removeEventListener('resize', invalidateRect);
+      window.removeEventListener('scroll', invalidateRect);
       window.removeEventListener('pointermove', handleGlobalPointerMove);
       resizeObserver.disconnect();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
 
       if (modelWrapper) {
         scene.remove(modelWrapper);
+        modelWrapper.traverse((child) => {
+          if (child.isMesh) {
+            child.geometry?.dispose();
+            if (Array.isArray(child.material)) {
+              child.material.forEach((m) => m.dispose());
+            } else {
+              child.material?.dispose();
+            }
+          }
+        });
       }
       renderer.dispose();
     };

@@ -1,26 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://www.rabbitfolio.me/</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.rabbitfolio.me/image.webp</image:loc>
+      <image:title>Naveen Kumar — Fullstack Software Engineer Portrait</image:title>
+      <image:caption>Official portrait of Naveen Kumar, Fullstack Software Engineer on RabbitFolio</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.rabbitfolio.me/projects/RabbitTreeProfile.webp</image:loc>
+      <image:title>Naveen Kumar — Profile Picture</image:title>
+      <image:caption>Official developer portrait of Naveen Kumar</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://www.rabbitfolio.me/link</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.rabbitfolio.me/projects/RabbitTreeProfile.webp</image:loc>
+      <image:title>Naveen Kumar — Rabbit Tree Profile Portrait</image:title>
+      <image:caption>Official Rabbit Tree profile portrait of Naveen Kumar</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.rabbitfolio.me/reference-portrait.png</image:loc>
+      <image:title>Naveen Kumar — Developer Profile Portrait</image:title>
+      <image:caption>High-resolution developer portrait of Naveen Kumar</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://www.rabbitfolio.me/tool/rabbit_studio</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.rabbitfolio.me/resume.pdf</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

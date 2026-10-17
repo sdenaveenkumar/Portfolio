@@ -308,7 +308,6 @@ const Projects = () => {
     const isMobile = window.innerWidth < 640;
     const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
     const isSmallMobile = window.innerWidth < 380;
-    const isMobileDevice = window.innerWidth < 768;
     const totalCards = displayRepos.length;
     const centerIndex = (totalCards - 1) / 2;
 
@@ -389,10 +388,10 @@ const Projects = () => {
       ease: "power1.inOut"
     }, "-=0.4");
 
-    // BUFFER 5: Dedicated exit cushion zone before unpinning to Education/next section.
-    // On mobile (< 768px), provides a generous dwell period (3.4s) so the entire camera pan
-    // across all cards 100% finishes and rests in place before the sticky stage unpins.
-    const exitBuffer = isMobileDevice ? 3.4 : 0.8;
+    // BUFFER 5: Snappy exit cushion zone before smoothly unpinning to Education/next section.
+    // Kept brisk (0.4s) across both mobile and desktop so unpinning flows effortlessly into Education
+    // without stalling or freezing the scroll track.
+    const exitBuffer = 0.4;
     tl.to({}, { duration: exitBuffer });
 
     return () => {
@@ -402,20 +401,20 @@ const Projects = () => {
   }, { scope: containerRef, dependencies: [displayRepos, isMobileScreen] });
 
   const containerHeight = isMobileScreen
-    ? `${Math.max(460, displayRepos.length * 68)}vh`
-    : `${Math.max(340, displayRepos.length * 52)}vh`;
+    ? `${Math.max(340, displayRepos.length * 48)}vh`
+    : `${Math.max(280, displayRepos.length * 42)}vh`;
 
   return (
-    <div id="projects" ref={containerRef} className="relative w-full bg-[#fafafc]" style={{ height: containerHeight }}>
+    <div id="projects" ref={containerRef} className="relative w-full bg-[#fafafc] z-20" style={{ height: containerHeight }}>
       <div className="absolute inset-0 bg-[#fafafc] -z-10" />
 
       {/* Sticky Fullscreen Presentation Stage */}
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col items-center justify-center pt-14 sm:pt-20 bg-[#fafafc]">
         
-        {/* Ambient Glows from Contact Us Theme */}
+        {/* Ambient Glows (GPU radial gradients, zero blur filter lag) */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
-          <div className="absolute w-[600px] md:w-[800px] h-[600px] md:h-[800px] bg-gradient-to-br from-purple-200/40 via-pink-200/25 to-transparent rounded-full blur-[80px] md:blur-[120px] -translate-x-1/3 -translate-y-1/4 opacity-60" />
-          <div className="absolute w-[500px] md:w-[700px] h-[500px] md:h-[700px] bg-gradient-to-tl from-cyan-200/40 via-blue-100/25 to-transparent rounded-full blur-[80px] md:blur-[120px] translate-x-1/3 translate-y-1/4 opacity-60" />
+          <div className="absolute w-[600px] md:w-[800px] h-[600px] md:h-[800px] ambient-glow-purple rounded-full -translate-x-1/3 -translate-y-1/4 opacity-70" />
+          <div className="absolute w-[500px] md:w-[700px] h-[500px] md:h-[700px] ambient-glow-cyan rounded-full translate-x-1/3 translate-y-1/4 opacity-70" />
         </div>
 
         {/* Section Header - positioned safely behind unstacking cards in the z-axis */}

@@ -93,6 +93,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
           data-rabbit-tree-modal="true"
           data-rabbit-tree="true"
           data-no-rabbit="true"
+          data-lenis-prevent="true"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -133,6 +134,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
           {/* Floating Dual Device Stage Container: Tablet on Left + Phone on Right */}
           <div
             data-device-stage="true"
+            data-lenis-prevent="true"
             onClick={(e) => {
               if (e.target.closest('[data-device-chassis]')) return;
               handleCloseAll();
@@ -219,6 +221,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
                   opacity: { duration: 0.42, delay: 0.18, ease: 'easeInOut' }
                 }
               }}
+              data-lenis-prevent="true"
               className={`pointer-events-auto relative w-[calc(100vw-16px)] sm:w-[480px] md:w-[390px] max-w-[calc(100vw-16px)] md:max-w-[390px] h-[94vh] max-h-[820px] rounded-[38px] sm:rounded-[48px] md:rounded-[54px] p-[10px] sm:p-[12px] bg-gradient-to-b from-[#38383a] via-[#1a1a1c] to-[#2c2c2e] shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.18),inset_0_1px_2px_rgba(255,255,255,0.25)] flex flex-col select-none shrink-0 cursor-default ${activePreviewLink ? 'hidden lg:flex' : 'flex'
                 }`}
             >
@@ -229,7 +232,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
               <div className="absolute -right-[3px] top-[125px] w-[3px] h-14 bg-zinc-700/80 rounded-r-sm" /> {/* Power Button */}
 
               {/* Screen Bezel Frame */}
-              <div className="relative w-full h-full rounded-[28px] sm:rounded-[38px] md:rounded-[44px] overflow-hidden bg-black border border-white/[0.08] shadow-inner flex flex-col">
+              <div data-lenis-prevent="true" className="relative w-full h-full rounded-[28px] sm:rounded-[38px] md:rounded-[44px] overflow-hidden bg-black border border-white/[0.08] shadow-inner flex flex-col">
 
                 {/* ─────────────────────────────────────────────────────────────
                     TOP: Dynamic Island & iOS Status Bar
@@ -266,7 +269,7 @@ const RabbitTreeModal = ({ isOpen, onClose, onNavigate }) => {
                 {/* ─────────────────────────────────────────────────────────────
                     MIDDLE: Scrollable Rabbit Tree Content
                    ───────────────────────────────────────────────────────────── */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div data-lenis-prevent="true" className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <LinkTree
                     isEmbedded={true}
                     onBackToPortfolio={handleLinkNavigation}

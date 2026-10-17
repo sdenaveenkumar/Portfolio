@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Link as LinkIcon, Plus, Minus } from 'lucide-react';
+import { FileText, Link as LinkIcon, Plus, Minus, Edit2, Check } from 'lucide-react';
 import { PALETTE } from '../../constants';
 
 export default function NodeCard({
@@ -12,6 +12,7 @@ export default function NodeCard({
   setEditText,
   commitEdit,
   onNodeMouseDown,
+  onNodeTouchStart,
   onStartEdit,
   onCancelEdit,
   onToggleCollapse,
@@ -22,13 +23,15 @@ export default function NodeCard({
 
   return (
     <div
-      onMouseDown={(e) => onNodeMouseDown(e, node)}
+      data-node="true"
+      onMouseDown={(e) => onNodeMouseDown?.(e, node)}
+      onTouchStart={(e) => onNodeTouchStart?.(e, node)}
       onDoubleClick={onStartEdit}
       style={{
         transform: `translate(${node.x}px, ${node.y}px)`,
         width: '180px'
       }}
-      className={`absolute top-0 left-0 pointer-events-auto rounded-xl p-3 cursor-pointer transition-all border-2 select-none ${
+      className={`absolute top-0 left-0 pointer-events-auto rounded-xl p-3 cursor-pointer transition-all border-2 select-none touch-manipulation ${
         palette.bg
       } ${
         isReparentTarget
@@ -45,7 +48,7 @@ export default function NodeCard({
         </span>
       )}
 
-      {/* Badges: Priority, Status, Notes, Links */}
+      {/* Badges: Priority, Status, Notes, Links, Mobile Edit */}
       <div className="flex items-center gap-1 mb-1">
         {node.status && node.status !== 'none' && (
           <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700 uppercase">
@@ -65,7 +68,22 @@ export default function NodeCard({
             {node.priority}
           </span>
         )}
+
         <div className="flex items-center gap-1 ml-auto">
+          {/* Quick Edit Icon Button when selected */}
+          {isSelected && !isEditing && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartEdit?.();
+              }}
+              title="Edit / Rename node"
+              className="p-1 rounded-md bg-white/80 hover:bg-white text-indigo-600 shadow-2xs border border-indigo-200 transition cursor-pointer"
+            >
+              <Edit2 className="w-2.5 h-2.5" />
+            </button>
+          )}
+
           {node.linkUrl && (
             <a
               href={node.linkUrl}
@@ -88,31 +106,49 @@ export default function NodeCard({
 
       {/* Editable or Displayed Title */}
       {isEditing ? (
-        <input
-          autoFocus
-          value={editText}
-          placeholder="Node concept..."
-          onChange={(e) => setEditText(e.target.value)}
-          onBlur={commitEdit}
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.key === 'Enter' && !e.shiftKey) {
+        <div className="flex items-center gap-1 w-full" onClick={(e) => e.stopPropagation()}>
+          <input
+            autoFocus
+            value={editText}
+            placeholder="Node concept..."
+            onChange={(e) => setEditText(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                commitEdit();
+              } else if (e.key === 'Tab') {
+                e.preventDefault();
+                commitEdit();
+                setTimeout(() => {
+                  onAddChild?.(node.id);
+                }, 30);
+              } else if (e.key === 'Escape') {
+                e.preventDefault();
+                onCancelEdit?.();
+              }
+            }}
+            className="flex-1 bg-white text-slate-900 text-base sm:text-xs font-semibold p-1 rounded-lg outline-none border border-indigo-400 shadow-inner"
+          />
+          {/* Touch-Friendly Commit Checkmark Button */}
+          <button
+            onMouseDown={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               commitEdit();
-            } else if (e.key === 'Tab') {
+            }}
+            onTouchStart={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               commitEdit();
-              setTimeout(() => {
-                onAddChild?.(node.id);
-              }, 30);
-            } else if (e.key === 'Escape') {
-              e.preventDefault();
-              onCancelEdit?.();
-            }
-          }}
-          className="w-full bg-white text-slate-900 text-xs font-semibold p-1 rounded-lg outline-none border border-indigo-400 shadow-inner"
-        />
+            }}
+            className="p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs shrink-0 cursor-pointer transition active:scale-95"
+            title="Save (Enter)"
+          >
+            <Check className="w-3.5 h-3.5" />
+          </button>
+        </div>
       ) : (
         <div className="flex items-center justify-between gap-1">
           <span className={`text-xs font-semibold ${palette.text} break-words leading-snug`}>
@@ -125,8 +161,12 @@ export default function NodeCard({
       {childrenCount > 0 && (
         <button
           onClick={(e) => onToggleCollapse(node.id, e)}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            onToggleCollapse(node.id, e);
+          }}
           title={node.isCollapsed ? `Expand ${childrenCount} hidden nodes` : 'Collapse branch'}
-          className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-white border border-slate-300 text-[9px] font-mono font-bold text-slate-600 hover:bg-slate-100 shadow-xs flex items-center gap-0.5 cursor-pointer transition hover:scale-105"
+          className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-white border border-slate-300 text-[9px] font-mono font-bold text-slate-600 hover:bg-slate-100 shadow-xs flex items-center justify-center gap-0.5 cursor-pointer transition active:scale-110 min-w-[28px]"
         >
           {node.isCollapsed ? (
             <>

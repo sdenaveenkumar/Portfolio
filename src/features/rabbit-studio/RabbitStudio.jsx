@@ -62,6 +62,7 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
     pan,
     setPan,
     zoom,
+    setZoom,
     isPanning,
     setIsPanning,
     panStart,
@@ -107,8 +108,14 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
     setPan
   });
 
-  // UI Panels & Modals State
-  const [sidebarOpen, setSidebarOpen] = useState(!isEmbedded);
+  // UI Panels & Modals State (Responsive default: collapsed on mobile screens < 768px)
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (isEmbedded) return false;
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return true;
+  });
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isPresentationOpen, setIsPresentationOpen] = useState(false);
@@ -118,7 +125,7 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
 
   // Identify current folder
   const currentFolder = useMemo(() => {
-    return folders.find((f) => f.maps.some((m) => m.id === activeMapId)) || folders[0];
+    return (folders || []).find((f) => (f.maps || []).some((m) => m.id === activeMapId)) || (folders?.[0] || null);
   }, [folders, activeMapId]);
 
   // When active map changes, reset selection to root node of the new map
@@ -126,8 +133,8 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
   useEffect(() => {
     if (prevMapIdRef.current !== activeMapId) {
       prevMapIdRef.current = activeMapId;
-      const rootNode = (currentMap.nodes || []).find((n) => n.parentId === null);
-      const newId = rootNode ? rootNode.id : (currentMap.nodes?.[0]?.id || 'root');
+      const rootNode = (currentMap?.nodes || []).find((n) => n.parentId === null);
+      const newId = rootNode ? rootNode.id : (currentMap?.nodes?.[0]?.id || 'root');
       setSelectedIds(new Set([newId]));
       setEditingId(null);
     }
@@ -168,6 +175,22 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') {
         e.preventDefault();
         handleRedo();
+        return;
+      }
+
+      // Presentation Mode hotkey (F5)
+      if (e.key === 'F5') {
+        e.preventDefault();
+        setIsPresentationOpen((prev) => !prev);
+        return;
+      }
+
+      // If in Presentation Mode, defer all navigation to PresentationMode component
+      if (isPresentationOpen) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setIsPresentationOpen(false);
+        }
         return;
       }
 
@@ -214,6 +237,7 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
+    isPresentationOpen,
     editingId,
     primarySelectedId,
     commitEdit,
@@ -273,6 +297,44 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
     e.target.value = '';
   };
 
+  // Open presentation mode cleanly
+  const handleOpenPresentation = useCallback(() => {
+    setIsPresentationOpen(true);
+    setIsDetailDrawerOpen(false);
+    setIsSearchOpen(false);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  }, []);
+
+  // Presentation Mode focus callback with auto-unfolding and active highlight
+  const handleFocusPresentationNode = useCallback((node) => {
+    if (!node) return;
+
+    // 1. Auto-uncollapse ancestors so this node is guaranteed visible on canvas
+    setNodes((prevNodes) => {
+      const nMap = Object.fromEntries(prevNodes.map((n) => [n.id, n]));
+      const toUncollapse = new Set();
+      let curr = node.parentId ? nMap[node.parentId] : null;
+      while (curr) {
+        if (curr.isCollapsed) {
+          toUncollapse.add(curr.id);
+        }
+        curr = curr.parentId ? nMap[curr.parentId] : null;
+      }
+      if (toUncollapse.size > 0) {
+        return prevNodes.map((n) => (toUncollapse.has(n.id) ? { ...n, isCollapsed: false } : n));
+      }
+      return prevNodes;
+    }, false);
+
+    // 2. Select this node on canvas so it has the active highlight ring
+    setSelectedIds(new Set([node.id]));
+
+    // 3. Smoothly center camera with -50px offset so the node is centered above bottom presentation card
+    centerOnNode(node.x, node.y, 1.25, -50);
+  }, [centerOnNode, setSelectedIds, setNodes]);
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans text-slate-800 antialiased">
       {/* Hidden File Input for JSON import */}
@@ -297,11 +359,13 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
           onUndo={handleUndo}
           onRedo={handleRedo}
           onOpenSearch={() => setIsSearchOpen(true)}
-          onOpenPresentation={() => setIsPresentationOpen(true)}
+          onOpenPresentation={handleOpenPresentation}
           onExport={handleExport}
           onImportClick={() => fileInputRef.current?.click()}
           isFocusMode={isFocusMode}
           onToggleFocusMode={() => setIsFocusMode(true)}
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          isSidebarOpen={sidebarOpen}
         />
       )}
 
@@ -404,9 +468,11 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
           onApplyLayout={handleApplyLayout}
           isDetailDrawerOpen={isDetailDrawerOpen}
           onToggleDetailDrawer={() => setIsDetailDrawerOpen((prev) => !prev)}
+          isPresentationOpen={isPresentationOpen}
           pan={pan}
           setPan={setPan}
           zoom={zoom}
+          setZoom={setZoom}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           onResetZoom={resetZoom}
@@ -455,7 +521,7 @@ export default function RabbitStudio({ onBackToPortfolio, isEmbedded = false }) 
         onClose={() => setIsPresentationOpen(false)}
         nodes={nodes}
         currentMap={currentMap}
-        onFocusNode={(node) => centerOnNode(node.x, node.y, 1.2)}
+        onFocusNode={handleFocusPresentationNode}
       />
     </div>
   );

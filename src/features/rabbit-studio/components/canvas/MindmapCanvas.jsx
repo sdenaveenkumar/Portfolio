@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { PALETTE } from '../../constants';
 import NodeCard from './NodeCard';
@@ -28,9 +28,11 @@ export default function MindmapCanvas({
   onApplyLayout,
   isDetailDrawerOpen,
   onToggleDetailDrawer,
+  isPresentationOpen = false,
   pan,
   setPan,
   zoom,
+  setZoom,
   onZoomIn,
   onZoomOut,
   onResetZoom,
@@ -49,6 +51,13 @@ export default function MindmapCanvas({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [reparentTargetId, setReparentTargetId] = useState(null);
   const [marqueeBox, setMarqueeBox] = useState(null);
+
+  // Mobile Touch Gestures State & Refs
+  const touchStartRef = useRef(null);
+  const pinchDistRef = useRef(null);
+  const pinchStartZoomRef = useRef(1);
+  const pinchMidpointRef = useRef({ x: 0, y: 0 });
+  const touchDragNodeRef = useRef(null);
 
   // Compute hidden nodes due to collapsed ancestors
   const collapsedHiddenIds = useMemo(() => {
@@ -100,33 +109,37 @@ export default function MindmapCanvas({
           startY = parent.y + 48;
           endX = child.x + 90;
           endY = child.y;
-          const dy = Math.abs(endY - startY) * 0.55;
-          path = `M ${startX} ${startY} C ${startX} ${startY + dy}, ${endX} ${endY - dy}, ${endX} ${endY}`;
+          const midY = (startY + endY) / 2;
+          path = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
         } else if (isLeftBranch) {
           startX = parent.x;
           startY = parent.y + 24;
           endX = child.x + 180;
           endY = child.y + 24;
-          const dx = Math.abs(endX - startX) * 0.55;
-          path = `M ${startX} ${startY} C ${startX - dx} ${startY}, ${endX + dx} ${endY}, ${endX} ${endY}`;
+          const midX = (startX + endX) / 2;
+          path = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
         } else {
           startX = parent.x + 180;
           startY = parent.y + 24;
           endX = child.x;
           endY = child.y + 24;
-          const dx = Math.abs(endX - startX) * 0.55;
-          path = `M ${startX} ${startY} C ${startX + dx} ${startY}, ${endX - dx} ${endY}, ${endX} ${endY}`;
+          const midX = (startX + endX) / 2;
+          path = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
         }
 
         const color = PALETTE[child.colorIdx % PALETTE.length].stroke;
-        return { id: `${parent.id}-${child.id}`, path, color };
+        return {
+          id: `${child.parentId}->${child.id}`,
+          path,
+          color
+        };
       });
-  }, [visibleNodes, nodes, layoutMode, collapsedHiddenIds]);
+  }, [nodes, visibleNodes, layoutMode, collapsedHiddenIds]);
 
-  // Compute Cross-Link Connections
+  // Compute Cross-Links (Dashed SVG Paths)
   const crossLinkConnections = useMemo(() => {
     const nodeMap = Object.fromEntries(nodes.map((n) => [n.id, n]));
-    return crossLinks
+    return (crossLinks || [])
       .filter(
         (cl) =>
           nodeMap[cl.sourceId] &&
@@ -135,16 +148,26 @@ export default function MindmapCanvas({
           !collapsedHiddenIds.has(cl.targetId)
       )
       .map((cl) => {
-        const s = nodeMap[cl.sourceId];
-        const t = nodeMap[cl.targetId];
-        const startX = s.x + 90;
-        const startY = s.y + 24;
-        const endX = t.x + 90;
-        const endY = t.y + 24;
-        const dx = (endX - startX) * 0.3;
-        const dy = (endY - startY) * 0.3;
-        const path = `M ${startX} ${startY} Q ${startX + dx} ${startY + dy - 40}, ${endX} ${endY}`;
-        return { ...cl, path, midX: startX + dx, midY: startY + dy - 40 };
+        const src = nodeMap[cl.sourceId];
+        const tgt = nodeMap[cl.targetId];
+
+        const startX = src.x + 90;
+        const startY = src.y + 24;
+        const endX = tgt.x + 90;
+        const endY = tgt.y + 24;
+
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const cx1 = startX + dx * 0.25 - dy * 0.2;
+        const cy1 = startY + dy * 0.25 + dx * 0.2;
+
+        return {
+          id: cl.id,
+          path: `M ${startX} ${startY} Q ${cx1} ${cy1} ${endX} ${endY}`,
+          midX: (startX + endX) / 2 - dy * 0.1,
+          midY: (startY + endY) / 2 + dx * 0.1,
+          label: cl.label
+        };
       });
   }, [crossLinks, nodes, collapsedHiddenIds]);
 
@@ -188,6 +211,31 @@ export default function MindmapCanvas({
     const worldX = (e.clientX - pan.x) / zoom;
     const worldY = (e.clientY - pan.y) / zoom;
     setDragOffset({ x: worldX - node.x, y: worldY - node.y });
+  };
+
+  // Mobile Node Touch Start
+  const handleNodeTouchStart = (e, node) => {
+    e.stopPropagation();
+    if (editingId && editingId !== node.id) commitEdit();
+    if (!selectedIds.has(node.id)) {
+      setSelectedIds(new Set([node.id]));
+    }
+
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      const worldX = (touch.clientX - pan.x) / zoom;
+      const worldY = (touch.clientY - pan.y) / zoom;
+      touchDragNodeRef.current = {
+        node,
+        startTouchX: touch.clientX,
+        startTouchY: touch.clientY,
+        startNodeX: node.x,
+        startNodeY: node.y,
+        offsetWorldX: worldX - node.x,
+        offsetWorldY: worldY - node.y,
+        isDragging: false
+      };
+    }
   };
 
   // Mouse Move
@@ -284,6 +332,148 @@ export default function MindmapCanvas({
     setReparentTargetId(null);
   }, [draggingNodeId, reparentTargetId, reparentNode, showToast, setIsPanning]);
 
+  // Mobile Touch Gestures (Pinch to Zoom, 1-finger Pan, Node Touch Drag)
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      const target = e.target;
+      const isCanvasBg = Boolean(
+        target.dataset?.canvas ||
+        (target.closest('[data-canvas="true"]') && !target.closest('[data-node="true"]'))
+      );
+
+      if (isCanvasBg) {
+        if (editingId) commitEdit();
+        touchStartRef.current = {
+          x: touch.clientX,
+          y: touch.clientY,
+          panX: pan.x,
+          panY: pan.y,
+          isPanning: true
+        };
+        setIsPanning(true);
+      }
+    } else if (e.touches.length === 2) {
+      // 2 fingers pinch zoom and pan
+      setIsPanning(false);
+      touchStartRef.current = null;
+      touchDragNodeRef.current = null;
+      setDraggingNodeId(null);
+
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      pinchDistRef.current = dist;
+      pinchStartZoomRef.current = zoom;
+      pinchMidpointRef.current = {
+        midX: (t1.clientX + t2.clientX) / 2,
+        midY: (t1.clientY + t2.clientY) / 2,
+        panX: pan.x,
+        panY: pan.y
+      };
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+
+      // Node touch drag
+      if (touchDragNodeRef.current) {
+        const { node, startTouchX, startTouchY, startNodeX, startNodeY } = touchDragNodeRef.current;
+        const deltaWorldX = (touch.clientX - startTouchX) / zoom;
+        const deltaWorldY = (touch.clientY - startTouchY) / zoom;
+
+        // If moved more than 6px, treat as an intentional drag
+        if (Math.hypot(touch.clientX - startTouchX, touch.clientY - startTouchY) > 6) {
+          touchDragNodeRef.current.isDragging = true;
+          setDraggingNodeId(node.id);
+
+          setNodes((prev) =>
+            prev.map((n) =>
+              selectedIds.has(n.id)
+                ? { ...n, x: Math.round(startNodeX + deltaWorldX), y: Math.round(startNodeY + deltaWorldY) }
+                : n
+            ),
+            false
+          );
+
+          const worldX = (touch.clientX - pan.x) / zoom;
+          const worldY = (touch.clientY - pan.y) / zoom;
+          const dropTarget = visibleNodes.find(
+            (n) =>
+              !selectedIds.has(n.id) &&
+              Math.abs(n.x + 90 - worldX) < 90 &&
+              Math.abs(n.y + 24 - worldY) < 40
+          );
+          setReparentTargetId(dropTarget ? dropTarget.id : null);
+        }
+        return;
+      }
+
+      // Canvas single-finger pan
+      if (touchStartRef.current?.isPanning) {
+        const deltaX = touch.clientX - touchStartRef.current.x;
+        const deltaY = touch.clientY - touchStartRef.current.y;
+        setPan({
+          x: touchStartRef.current.panX + deltaX,
+          y: touchStartRef.current.panY + deltaY
+        });
+      }
+    } else if (e.touches.length === 2 && pinchDistRef.current) {
+      // 2 fingers pinch zoom
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const ratio = currentDist / pinchDistRef.current;
+      const newZoom = Math.min(2.4, Math.max(0.3, +(pinchStartZoomRef.current * ratio).toFixed(2)));
+
+      if (setZoom) {
+        setZoom(newZoom);
+      }
+
+      // Two finger pan along with zoom
+      const currentMidX = (t1.clientX + t2.clientX) / 2;
+      const currentMidY = (t1.clientY + t2.clientY) / 2;
+      const deltaMidX = currentMidX - pinchMidpointRef.current.midX;
+      const deltaMidY = currentMidY - pinchMidpointRef.current.midY;
+
+      setPan({
+        x: Math.round(pinchMidpointRef.current.panX + deltaMidX),
+        y: Math.round(pinchMidpointRef.current.panY + deltaMidY)
+      });
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchDragNodeRef.current) {
+      if (touchDragNodeRef.current.isDragging && reparentTargetId && touchDragNodeRef.current.node.id !== 'root') {
+        reparentNode(touchDragNodeRef.current.node.id, reparentTargetId);
+        showToast?.('Reparented node successfully!');
+      }
+      touchDragNodeRef.current = null;
+      setDraggingNodeId(null);
+      setReparentTargetId(null);
+    }
+
+    if (e.touches.length === 0) {
+      setIsPanning(false);
+      touchStartRef.current = null;
+      pinchDistRef.current = null;
+    } else if (e.touches.length === 1) {
+      pinchDistRef.current = null;
+      const touch = e.touches[0];
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        panX: pan.x,
+        panY: pan.y,
+        isPanning: true
+      };
+      setIsPanning(true);
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -291,8 +481,12 @@ export default function MindmapCanvas({
       onMouseDown={handleCanvasMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
       onWheel={handleWheel}
-      className={`flex-1 relative overflow-hidden bg-slate-50/80 cursor-grab ${
+      className={`flex-1 relative overflow-hidden bg-slate-50/80 touch-none select-none cursor-grab ${
         isPanning ? 'cursor-grabbing' : ''
       }`}
       style={{
@@ -303,29 +497,37 @@ export default function MindmapCanvas({
     >
       {/* Toast Notification */}
       {notification && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-xl flex items-center gap-1.5 animate-bounce">
-          <Check className="w-3.5 h-3.5 text-emerald-400" />
-          <span>{notification}</span>
+        <div className="absolute top-4 sm:top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-xl flex items-center gap-1.5 animate-bounce max-w-[90vw] truncate">
+          <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span className="truncate">{notification}</span>
         </div>
       )}
 
-      {/* Floating Canvas Action Bar (Child, Sibling, Color, Delete, Zoom) */}
-      <CanvasActionBar
-        onAddChild={() => addChildNode(primarySelectedId)}
-        onAddSibling={addSiblingNode}
-        onApplyLayout={onApplyLayout}
-        selectedNode={selectedNode}
-        selectedIds={selectedIds}
-        onUpdateColor={updateNodeColor}
-        isDetailDrawerOpen={isDetailDrawerOpen}
-        onToggleDetailDrawer={onToggleDetailDrawer}
-        onDeleteSelected={deleteSelectedNodes}
-        zoom={zoom}
-        onZoomIn={onZoomIn}
-        onZoomOut={onZoomOut}
-        onResetZoom={onResetZoom}
-        onFitView={() => onFitView(nodes)}
-      />
+      {/* Floating Canvas Action Bar (Child, Sibling, Edit, Color, Delete, Zoom) */}
+      {!isPresentationOpen && (
+        <CanvasActionBar
+          onAddChild={() => addChildNode(primarySelectedId)}
+          onAddSibling={addSiblingNode}
+          onApplyLayout={onApplyLayout}
+          selectedNode={selectedNode}
+          selectedIds={selectedIds}
+          onUpdateColor={updateNodeColor}
+          isDetailDrawerOpen={isDetailDrawerOpen}
+          onToggleDetailDrawer={onToggleDetailDrawer}
+          onDeleteSelected={deleteSelectedNodes}
+          onStartEdit={() => {
+            if (selectedNode) {
+              setEditingId(selectedNode.id);
+              setEditText(selectedNode.text || '');
+            }
+          }}
+          zoom={zoom}
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
+          onResetZoom={onResetZoom}
+          onFitView={() => onFitView(nodes)}
+        />
+      )}
 
       {/* Marquee Selection Rectangle */}
       {marqueeBox && (
@@ -345,7 +547,8 @@ export default function MindmapCanvas({
         data-canvas="true"
         style={{
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-          transformOrigin: '0 0'
+          transformOrigin: '0 0',
+          transition: isPanning || draggingNodeId ? 'none' : 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
         className="w-full h-full relative pointer-events-none"
       >
@@ -411,6 +614,7 @@ export default function MindmapCanvas({
               setEditText={setEditText}
               commitEdit={commitEdit}
               onNodeMouseDown={handleNodeMouseDown}
+              onNodeTouchStart={handleNodeTouchStart}
               onStartEdit={() => {
                 setEditingId(node.id);
                 setEditText(node.text || '');
@@ -424,14 +628,16 @@ export default function MindmapCanvas({
       </div>
 
       {/* Minimap in Bottom Right */}
-      <Minimap
-        nodes={nodes}
-        pan={pan}
-        zoom={zoom}
-        viewportWidth={containerRef.current?.clientWidth || 800}
-        viewportHeight={containerRef.current?.clientHeight || 600}
-        onPanTo={(targetPan) => setPan(targetPan)}
-      />
+      {!isPresentationOpen && (
+        <Minimap
+          nodes={nodes}
+          pan={pan}
+          zoom={zoom}
+          viewportWidth={containerRef.current?.clientWidth || 800}
+          viewportHeight={containerRef.current?.clientHeight || 600}
+          onPanTo={(targetPan) => setPan(targetPan)}
+        />
+      )}
     </div>
   );
 }

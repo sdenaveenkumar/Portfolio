@@ -13,7 +13,19 @@ import Footer from './features/portfolio/Footer';
 import RabbitTreeModal from './features/rabbit-tree/RabbitTreeModal';
 import { Analytics } from '@vercel/analytics/react';
 import { ArrowUpRight } from 'lucide-react';
-import { updateSeoMeta, SECTION_SEO, scrollToHash } from './utils/seoRouter';
+import { updateSeoMeta, SECTION_SEO, scrollToHash, syncUrlHash } from './utils/seoRouter';
+import Lenis from 'lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Configure ScrollTrigger for 120Hz high refresh rate and eliminate mobile resize jank
+ScrollTrigger.config({
+  limitCallbacks: true,
+  syncInterval: 16,
+  ignoreMobileResize: true,
+});
 
 const Resume = React.lazy(() => import('./features/portfolio/Resume'));
 const RabbitStudioView = React.lazy(() => import('./routes/RabbitStudioView'));
@@ -89,10 +101,14 @@ function App() {
       updateSeoMeta(SECTION_SEO.link);
     } else {
       updateSeoMeta(SECTION_SEO.home);
-      if (window.location.hash) {
+      if (window.location.hash && window.location.hash !== '#' && window.location.hash !== '#home' && window.location.hash !== '#hero') {
         setTimeout(() => {
           scrollToHash(window.location.hash);
         }, 120);
+      } else {
+        setTimeout(() => {
+          scrollToHash('home');
+        }, 50);
       }
     }
 
@@ -101,6 +117,72 @@ function App() {
       window.removeEventListener('hashchange', handleLocationChange);
     };
   }, []);
+
+  // Initialize Lenis 120 FPS Smooth Scroller for main page
+  useEffect(() => {
+    if (routeState.isRabbitStudio || routeState.isLinkTree) return;
+
+    const isHome =
+      !window.location.hash ||
+      window.location.hash === '#home' ||
+      window.location.hash === '#' ||
+      window.location.hash === '#hero';
+
+    if (isHome) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+
+    const lenis = new Lenis({
+      duration: 1.15,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      touchMultiplier: 1.6,
+      infinite: false,
+      prevent: (node) => {
+        return (
+          node.hasAttribute?.('data-lenis-prevent') ||
+          Boolean(node.closest?.('[data-lenis-prevent="true"]')) ||
+          Boolean(node.closest?.('[data-rabbit-tree-modal="true"]')) ||
+          Boolean(node.closest?.('[data-project-modal="true"]')) ||
+          Boolean(node.closest?.('[data-resume-modal="true"]')) ||
+          Boolean(node.closest?.('.lenis-prevent'))
+        );
+      },
+    });
+
+    if (isHome) {
+      lenis.scrollTo(0, { immediate: true });
+    }
+
+    window.__lenis = lenis;
+
+    // Connect Lenis to ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
+
+    // Sync Lenis with GSAP's 120 FPS internal ticker
+    const tickerCallback = (time) => {
+      lenis.raf(time * 1000);
+    };
+    gsap.ticker.add(tickerCallback);
+    gsap.ticker.lagSmoothing(500, 16);
+
+    return () => {
+      gsap.ticker.remove(tickerCallback);
+      lenis.destroy();
+      window.__lenis = null;
+    };
+  }, [routeState.isRabbitStudio, routeState.isLinkTree]);
+
+  // Pause Lenis when modal drawers are open
+  useEffect(() => {
+    if (showResume || showRabbitTreeModal) {
+      window.__lenis?.stop();
+    } else {
+      window.__lenis?.start();
+    }
+  }, [showResume, showRabbitTreeModal]);
 
   const toggleResume = () => {
     setShowResume(prev => {
@@ -133,14 +215,39 @@ function App() {
       <React.Suspense fallback={<div className="min-h-screen bg-[#090a0f] flex items-center justify-center text-white font-mono text-xs">Loading Rabbit Studio...</div>}>
         <RabbitStudioView
           onBackToPortfolio={(targetUrl = '/') => {
-            window.history.pushState({}, '', targetUrl);
+            const cleanTarget = targetUrl || '/';
+            const isGoingHome =
+              cleanTarget === '/' ||
+              cleanTarget === '/#home' ||
+              cleanTarget === '#home' ||
+              cleanTarget === '/#hero' ||
+              cleanTarget === '#hero';
+
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+
+            window.history.pushState({}, '', isGoingHome ? '/' : cleanTarget);
             setRouteState(checkCurrentRoute());
             updateSeoMeta(SECTION_SEO.home);
-            if (targetUrl.includes('#')) {
-              const hashId = targetUrl.split('#')[1];
+
+            if (isGoingHome) {
+              syncUrlHash('home', false);
+              window.dispatchEvent(new CustomEvent('rabbit-nav-leap', { detail: { target: 'home' } }));
+              scrollToHash('home', { immediate: true });
+              setTimeout(() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                scrollToHash('home', { immediate: true });
+              }, 40);
+              setTimeout(() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                scrollToHash('home', { immediate: true });
+              }, 120);
+            } else if (cleanTarget.includes('#')) {
+              const hashId = cleanTarget.split('#')[1];
               setTimeout(() => {
                 scrollToHash(hashId);
-              }, 150);
+              }, 120);
             }
           }}
         />
@@ -155,14 +262,39 @@ function App() {
       <React.Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-mono text-xs">Loading Rabbit Tree...</div>}>
         <LinkTreeView 
           onBackToPortfolio={(targetUrl = '/') => {
-            window.history.pushState({}, '', targetUrl);
+            const cleanTarget = targetUrl || '/';
+            const isGoingHome =
+              cleanTarget === '/' ||
+              cleanTarget === '/#home' ||
+              cleanTarget === '#home' ||
+              cleanTarget === '/#hero' ||
+              cleanTarget === '#hero';
+
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+
+            window.history.pushState({}, '', isGoingHome ? '/' : cleanTarget);
             setRouteState(checkCurrentRoute());
             updateSeoMeta(SECTION_SEO.home);
-            if (targetUrl.includes('#')) {
-              const hashId = targetUrl.split('#')[1];
+
+            if (isGoingHome) {
+              syncUrlHash('home', false);
+              window.dispatchEvent(new CustomEvent('rabbit-nav-leap', { detail: { target: 'home' } }));
+              scrollToHash('home', { immediate: true });
+              setTimeout(() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                scrollToHash('home', { immediate: true });
+              }, 40);
+              setTimeout(() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                scrollToHash('home', { immediate: true });
+              }, 120);
+            } else if (cleanTarget.includes('#')) {
+              const hashId = cleanTarget.split('#')[1];
               setTimeout(() => {
                 scrollToHash(hashId);
-              }, 150);
+              }, 120);
             }
           }} 
         />
@@ -198,13 +330,23 @@ function App() {
         isOpen={showRabbitTreeModal}
         onClose={() => setShowRabbitTreeModal(false)}
         onNavigate={(targetUrl) => {
-          if (targetUrl.includes('#')) {
-            const hashId = targetUrl.split('#')[1];
+          setShowRabbitTreeModal(false);
+          const cleanTarget = targetUrl || '/';
+          if (cleanTarget === '/' || cleanTarget === '/#home' || cleanTarget === '#home' || cleanTarget === '/#hero' || cleanTarget === '#hero') {
+            window.history.pushState({}, '', '/');
+            updateSeoMeta(SECTION_SEO.home);
+            syncUrlHash('home', false);
+            window.dispatchEvent(new CustomEvent('rabbit-nav-leap', { detail: { target: 'home' } }));
             setTimeout(() => {
-              document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth' });
-            }, 200);
-          } else if (targetUrl === '/tool/rabbit_studio' || targetUrl === '/link') {
-            window.history.pushState({}, '', targetUrl);
+              scrollToHash('home');
+            }, 80);
+          } else if (cleanTarget.includes('#')) {
+            const hashId = cleanTarget.split('#')[1];
+            setTimeout(() => {
+              scrollToHash(hashId);
+            }, 120);
+          } else if (cleanTarget === '/tool/rabbit_studio' || cleanTarget === '/link') {
+            window.history.pushState({}, '', cleanTarget);
             const nextRoute = checkCurrentRoute();
             setRouteState(nextRoute);
             if (nextRoute.isRabbitStudio) {
@@ -212,8 +354,8 @@ function App() {
             } else if (nextRoute.isLinkTree) {
               updateSeoMeta(SECTION_SEO.link);
             }
-          } else if (targetUrl !== '/') {
-            window.location.href = targetUrl;
+          } else {
+            window.location.href = cleanTarget;
           }
         }}
       />

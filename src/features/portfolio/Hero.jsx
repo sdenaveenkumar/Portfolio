@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { syncUrlHash, updateSeoMeta, SECTION_SEO } from '../../utils/seoRouter';
 
 const Hero = () => {
@@ -10,8 +10,7 @@ const Hero = () => {
 
   // Smooth downward scroll translation exclusively for background Naveen typography
   const { scrollY } = useScroll();
-  const rawNaveenY = useTransform(scrollY, [0, 750], [0, 240]);
-  const naveenScrollY = useSpring(rawNaveenY, { damping: 25, stiffness: 100 });
+  const naveenScrollY = useTransform(scrollY, [0, 750], [0, 220]);
 
   const floatingBadge = (
     text,
@@ -26,6 +25,7 @@ const Hero = () => {
   ) => {
     const hasDesktopOverride = Boolean(desktopText);
     const resolvedDesktopColor = desktopColor || color;
+    const floatClass = delayOffset % 2 === 0 ? "animate-badge-float-1" : "animate-badge-float-2";
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -33,16 +33,9 @@ const Hero = () => {
         transition={{ delay: 0.2 + delayOffset * 0.08, type: "spring" }}
         className={`absolute z-20 ${top} ${left} ${right} ${bottom}`}
       >
-        <motion.div
-          animate={{
-            y: [0, delayOffset % 2 === 0 ? -6 : 6, 0],
-          }}
-          transition={{
-            repeat: Infinity,
-            duration: 4.8 + delayOffset * 0.6,
-            ease: "easeInOut",
-          }}
-          className="flex items-center gap-1.5 sm:gap-2 bg-white/95 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.06)] lg:shadow-[0_12px_28px_rgba(0,0,0,0.08),0_2px_6px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md lg:hover:shadow-[0_18px_36px_rgba(0,0,0,0.14)] lg:hover:scale-105 transition-all duration-300 cursor-default"
+        <div
+          style={{ animationDelay: `${delayOffset * 0.5}s` }}
+          className={`flex items-center gap-1.5 sm:gap-2 bg-white/95 md:backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.06)] lg:shadow-[0_12px_28px_rgba(0,0,0,0.08),0_2px_6px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md lg:hover:shadow-[0_18px_36px_rgba(0,0,0,0.14)] lg:hover:scale-105 transition-all duration-300 cursor-default transform-gpu ${floatClass}`}
         >
           {hasDesktopOverride ? (
             <>
@@ -63,26 +56,36 @@ const Hero = () => {
               text
             )}
           </span>
-        </motion.div>
+        </div>
       </motion.div>
     );
   };
 
-  // Fast, crisp entrance for Fullstack Software Engineer
+  // Fast, crisp entrance for Fullstack Software Engineer (Safari & WebKit hardware-accelerated)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.02, delayChildren: 0.04 },
+      transition: {
+        staggerChildren: 0.024,
+        delayChildren: 0.05,
+      },
     },
   };
 
   const childVariants = {
-    hidden: { opacity: 0, y: 18 },
+    hidden: {
+      opacity: 0,
+      y: 16,
+    },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: "spring", damping: 14, stiffness: 140 },
+      transition: {
+        type: "spring",
+        damping: 15,
+        stiffness: 150,
+      },
     },
   };
 
@@ -118,14 +121,17 @@ const Hero = () => {
 
   return (
     <motion.section
-      id="hero"
+      id="home"
+      data-section="hero"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="relative w-full min-h-[100vh] lg:h-screen lg:min-h-screen bg-white flex flex-col justify-between overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20 md:pb-6 lg:pb-0"
+      className="relative w-full min-h-[100dvh] lg:h-screen lg:min-h-screen bg-white flex flex-col justify-between overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20 md:pb-6 lg:pb-0"
     >
+      {/* Anchor for backward compatibility with id="hero" */}
+      <div id="hero" className="absolute top-0 left-0 pointer-events-none" />
       {/* SEMANTIC ACCESSIBLE HEADING FOR SEARCH ENGINES */}
-      <h1 className="sr-only">Naveen Kumar — Fullstack Software Engineer &amp; Creative Technologist (RabbitFolio)</h1>
+      <h1 className="sr-only">Naveen Kumar — Fullstack Software Engineer & Creative Technologist (RabbitFolio)</h1>
 
       {/* Dynamic Profile Blend Styling: Blended on Mobile/Tablet, Removed on Laptop */}
       <style>{`
@@ -147,46 +153,29 @@ const Hero = () => {
         style={{ y: naveenScrollY }}
         className="absolute inset-0 flex items-start md:items-center justify-center overflow-hidden z-0 pointer-events-none select-none pt-[18vh] sm:pt-[22vh] md:pt-[44vh] will-change-transform"
       >
-        <motion.div 
-          initial="hidden"
-          animate="visible"
+        <div 
           className="text-[26vw] md:text-[28vw] font-black leading-none tracking-tighter flex select-none will-change-transform"
         >
           {"Naveen".split("").map((letter, idx) => (
             <motion.span
               key={`hero-char-${idx}`}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{
-                opacity: 1,
-                y: [0, -10, 0],
-                backgroundPosition: ["0% 50%", "200% 50%"],
-              }}
-              transition={{
-                opacity: { duration: 0.8, delay: 0.08 + idx * 0.07, ease: "easeOut" },
-                y: {
-                  repeat: Infinity,
-                  duration: 4.8,
-                  delay: 0.2 + idx * 0.25,
-                  ease: "easeInOut",
-                },
-                backgroundPosition: {
-                  repeat: Infinity,
-                  duration: 12,
-                  ease: "linear",
-                },
-              }}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.05 + idx * 0.06, ease: "easeOut" }}
               style={{
-                backgroundImage: "linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 25%, #F3F4F6 50%, #D1D5DB 75%, #E5E7EB 100%)",
-                backgroundSize: "200% 100%",
+                backgroundImage: "linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 45%, #E5E7EB 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
+                WebkitBackfaceVisibility: "hidden",
+                backfaceVisibility: "hidden",
+                animationDelay: `${0.2 + idx * 0.22}s`,
               }}
-              className="inline-block drop-shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
+              className="inline-block transform-gpu animate-hero-char-wave"
             >
               {letter}
             </motion.span>
           ))}
-        </motion.div>
+        </div>
       </motion.div>
 
       {/* THREE COLUMN FOREGROUND */}
@@ -194,94 +183,100 @@ const Hero = () => {
 
         {/* LEFT COLUMN: Fullstack Software Engineer (Order 2 on mobile, Order 1 on desktop) */}
         <div className="order-2 md:order-1 flex flex-col justify-center items-center md:items-start text-center md:text-left pt-0 sm:pt-3 md:pt-0 -mt-2.5 sm:mt-0 z-20 pointer-events-auto">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ type: "spring", stiffness: 120, damping: 16 }}
+          <motion.h2
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="text-[1.85rem] sm:text-[2.6rem] md:text-[2.6rem] lg:text-[3.5rem] xl:text-[4rem] font-black leading-[0.96] md:leading-[0.92] text-gray-900 tracking-tighter lg:drop-shadow-[0_12px_24px_rgba(0,0,0,0.06)]"
           >
-            <motion.h2
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="text-[1.85rem] sm:text-[2.6rem] md:text-[2.6rem] lg:text-[3.5rem] xl:text-[4rem] font-black leading-[0.96] md:leading-[0.92] text-gray-900 tracking-tighter lg:drop-shadow-[0_12px_24px_rgba(0,0,0,0.06)]"
-            >
-              {/* Mobile device (< md): 2 lines */}
-              <span className="block md:hidden">
-                <span className="block">
-                  {"Fullstack".split("").map((char, index) => (
-                    <motion.span key={`m-char-1-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
-                  ))}
-                </span>
-                <span className="block">
-                  {"Software Engineer".split("").map((char, index) => (
-                    <motion.span key={`m-char-2-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
-                  ))}
-                </span>
-              </span>
+            {/* Word 1: Fullstack */}
+            <span className="inline-block whitespace-nowrap">
+              {"Fullstack".split("").map((char, index) => (
+                <motion.span
+                  key={`char-fullstack-${index}`}
+                  variants={childVariants}
+                  className="inline-block transform-gpu"
+                  style={{
+                    WebkitBackfaceVisibility: "hidden",
+                    backfaceVisibility: "hidden",
+                  }}
+                >
+                  {char}
+                </motion.span>
+              ))}
+            </span>
 
-              {/* Laptop / Desktop device (>= md): 3 lines */}
-              <span className="hidden md:block">
-                {"Fullstack".split("").map((char, index) => (
-                  <motion.span key={`d-char-1-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
-                ))}
-                <br />
-                <span>
-                  {"Software".split("").map((char, index) => (
-                    <motion.span key={`d-char-2-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
-                  ))}
-                </span>
-                <br />
-                {"Engineer".split("").map((char, index) => (
-                  <motion.span key={`d-char-3-${index}`} variants={childVariants} className="inline-block">{char}</motion.span>
-                ))}
-              </span>
-            </motion.h2>
-          </motion.div>
+            {/* Line break after Fullstack for both mobile & desktop */}
+            <br />
+
+            {/* Word 2: Software */}
+            <span className="inline-block whitespace-nowrap">
+              {"Software".split("").map((char, index) => (
+                <motion.span
+                  key={`char-software-${index}`}
+                  variants={childVariants}
+                  className="inline-block transform-gpu"
+                  style={{
+                    WebkitBackfaceVisibility: "hidden",
+                    backfaceVisibility: "hidden",
+                  }}
+                >
+                  {char}
+                </motion.span>
+              ))}
+            </span>
+
+            {/* Space on mobile (single line with Engineer), break on desktop (separate line) */}
+            <span className="inline md:hidden">&nbsp;</span>
+            <br className="hidden md:inline" />
+
+            {/* Word 3: Engineer */}
+            <span className="inline-block whitespace-nowrap">
+              {"Engineer".split("").map((char, index) => (
+                <motion.span
+                  key={`char-engineer-${index}`}
+                  variants={childVariants}
+                  className="inline-block transform-gpu"
+                  style={{
+                    WebkitBackfaceVisibility: "hidden",
+                    backfaceVisibility: "hidden",
+                  }}
+                >
+                  {char}
+                </motion.span>
+              ))}
+            </span>
+          </motion.h2>
         </div>
 
         {/* CENTER COLUMN: IMAGE & BADGES (Order 1 on mobile, Order 2 on desktop) */}
         <div className="order-1 md:order-2 relative flex justify-center items-end h-[39vh] sm:h-[46vh] md:h-[56vh] lg:h-[74vh] xl:h-[82vh] w-full max-w-[285px] sm:max-w-[340px] md:max-w-none md:w-[300px] lg:w-[400px] xl:w-[480px] mx-auto mt-2 sm:mt-4 md:mt-0">
-          {/* Ambient Radiant Glow behind Portrait */}
-          <motion.div
-            animate={{
-              scale: [1, 1.08, 1],
-              opacity: [0.35, 0.55, 0.35],
-            }}
-            transition={{
-              repeat: Infinity,
-              duration: 6,
-              ease: "easeInOut",
-            }}
-            className="absolute bottom-6 sm:bottom-8 w-[240px] sm:w-[320px] md:w-[380px] h-[240px] sm:h-[320px] md:h-[380px] bg-gradient-to-tr from-blue-200/40 via-purple-100/30 to-amber-100/40 rounded-full blur-3xl pointer-events-none -z-0"
+          {/* Ambient Radiant Glow behind Portrait (GPU radial gradient, zero blur lag) */}
+          <div
+            className="absolute bottom-6 sm:bottom-8 w-[240px] sm:w-[320px] md:w-[380px] h-[240px] sm:h-[320px] md:h-[380px] ambient-glow-cyan rounded-full pointer-events-none -z-0 opacity-60"
           />
 
           {/* Profile Picture with Ambient Floating Levitation & Bottom Blend Mask */}
           <motion.div
-            initial={{ opacity: 0, y: 35 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
+            transition={{ duration: 0.7, type: "spring", bounce: 0.2 }}
             className="w-full h-full flex items-end justify-center relative z-10 pointer-events-none"
           >
-            <motion.div
-              animate={{
-                y: [0, -9, 0],
-                rotate: [0, 0.4, 0, -0.4, 0],
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 5.8,
-                ease: "easeInOut",
-              }}
-              className="w-full h-full flex items-end justify-center pointer-events-none select-none"
+            <div
+              className="w-full h-full flex items-end justify-center pointer-events-none select-none transform-gpu animate-portrait-levitate"
             >
               <img
                 src="/image.webp"
                 alt="Naveen Kumar — Fullstack Software Engineer Portrait"
+                width="1336"
+                height="1340"
+                itemProp="image"
                 loading="eager"
                 fetchPriority="high"
-                className="w-full h-full object-contain object-bottom relative z-10 filter contrast-[1.05] drop-shadow-2xl rounded-b-none scale-[1.18] sm:scale-[1.28] md:scale-[1.38] lg:scale-[1.62] xl:scale-[1.78] origin-bottom -translate-y-2 sm:translate-y-6 md:translate-y-12 lg:translate-y-20 md:-translate-x-4 lg:-translate-x-8 transition-transform duration-300 hero-profile-blend pointer-events-none select-none"
+                className="w-full h-full object-contain object-bottom relative z-10 filter contrast-[1.05] drop-shadow-lg md:drop-shadow-2xl rounded-b-none scale-[1.18] sm:scale-[1.28] md:scale-[1.38] lg:scale-[1.62] xl:scale-[1.78] origin-bottom -translate-y-2 sm:translate-y-6 md:translate-y-12 lg:translate-y-20 md:-translate-x-4 lg:-translate-x-8 transition-transform duration-300 hero-profile-blend pointer-events-none select-none"
               />
-            </motion.div>
+            </div>
           </motion.div>
 
           {/* Floating Badges */}
@@ -303,6 +298,7 @@ const Hero = () => {
             </motion.p>
 
             <motion.button
+              data-rabbit-target="hero-see-works"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
@@ -322,35 +318,25 @@ const Hero = () => {
 
       </div>
 
-      {/* BOTTOM MARQUEE / TECH STACK BANNER (Stuck to bottom on laptop) */}
+      {/* BOTTOM MARQUEE / TECH STACK BANNER (Pure CSS Compositor Animation) */}
       <div className="relative z-20 w-full mt-auto shrink-0 border-t border-b border-gray-200/80 bg-[#F9FAFB] py-3.5 sm:py-4 overflow-hidden lg:absolute lg:bottom-0 lg:left-0 lg:w-full lg:z-30 lg:mt-0 lg:border-b-0">
-        <div className="flex whitespace-nowrap">
-          <motion.div
-            animate={{ x: ["0%", "-100%"] }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
-            style={{ willChange: "transform" }}
-            className="flex items-center space-x-12 px-6 shrink-0"
-          >
+        <div className="flex whitespace-nowrap overflow-hidden">
+          <div className="flex items-center space-x-12 px-6 shrink-0 animate-marquee">
             {marqueeItems.map((item, idx) => (
               <div key={`m1-${idx}`} className="flex items-center space-x-12">
                 <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                 <span className="text-[11px] font-black tracking-[0.2em] text-gray-800">{item}</span>
               </div>
             ))}
-          </motion.div>
-          <motion.div
-            animate={{ x: ["0%", "-100%"] }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
-            style={{ willChange: "transform" }}
-            className="flex items-center space-x-12 px-6 shrink-0"
-          >
+          </div>
+          <div className="flex items-center space-x-12 px-6 shrink-0 animate-marquee" aria-hidden="true">
             {marqueeItems.map((item, idx) => (
               <div key={`m2-${idx}`} className="flex items-center space-x-12">
                 <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                 <span className="text-[11px] font-black tracking-[0.2em] text-gray-800">{item}</span>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
 

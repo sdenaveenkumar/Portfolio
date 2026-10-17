@@ -12,37 +12,44 @@ export const SECTION_SEO = {
   home: {
     title: 'Naveen Kumar | Fullstack Software Engineer & Portfolio',
     description: 'Official portfolio of Naveen Kumar, a Fullstack Software Engineer specializing in React, Node.js, distributed backend systems, and interactive UI engineering.',
-    canonical: 'https://www.rabbitfolio.me/'
+    canonical: 'https://www.rabbitfolio.me/',
+    ogImage: 'https://www.rabbitfolio.me/image.webp'
   },
   skills: {
     title: 'Skills & Tech Stack | Naveen Kumar — Fullstack Software Engineer',
     description: 'Core technical proficiencies of Naveen Kumar: React, Node.js, TypeScript, Next.js, Python, PostgreSQL, Three.js, GSAP, and scalable cloud systems.',
-    canonical: 'https://www.rabbitfolio.me/#skills'
+    canonical: 'https://www.rabbitfolio.me/',
+    ogImage: 'https://www.rabbitfolio.me/image.webp'
   },
   projects: {
     title: 'Featured Projects & Open Source | Naveen Kumar',
     description: 'Discover featured projects by Naveen Kumar, including Dolphin AI local LLM, Lofi Radio VS Code extension, and fullstack cloud applications.',
-    canonical: 'https://www.rabbitfolio.me/#projects'
+    canonical: 'https://www.rabbitfolio.me/',
+    ogImage: 'https://www.rabbitfolio.me/image.webp'
   },
   education: {
     title: 'Education & Academic Background | Naveen Kumar',
     description: 'Academic background and computer science foundations of Naveen Kumar, Fullstack Software Engineer.',
-    canonical: 'https://www.rabbitfolio.me/#education'
+    canonical: 'https://www.rabbitfolio.me/',
+    ogImage: 'https://www.rabbitfolio.me/image.webp'
   },
   experience: {
     title: 'Experience & Engineering Journey | Naveen Kumar',
     description: 'Professional experience, development milestones, and engineering journey of Naveen Kumar.',
-    canonical: 'https://www.rabbitfolio.me/#experience'
+    canonical: 'https://www.rabbitfolio.me/',
+    ogImage: 'https://www.rabbitfolio.me/image.webp'
   },
   contact: {
     title: 'Contact & Inquiries | Naveen Kumar — Fullstack Software Engineer',
     description: 'Connect with Naveen Kumar for fullstack software engineering roles, technical inquiries, or open-source collaborations.',
-    canonical: 'https://www.rabbitfolio.me/#contact'
+    canonical: 'https://www.rabbitfolio.me/',
+    ogImage: 'https://www.rabbitfolio.me/image.webp'
   },
   link: {
     title: 'Rabbit Tree | Official Links & Profiles — Naveen Kumar',
     description: 'All official developer links, GitHub repositories, LinkedIn, Personal API, and direct contacts for Naveen Kumar.',
-    canonical: 'https://www.rabbitfolio.me/link'
+    canonical: 'https://www.rabbitfolio.me/link',
+    ogImage: 'https://www.rabbitfolio.me/projects/RabbitTreeProfile.webp'
   },
   rabbitStudio: {
     title: 'Rabbit Studio — Interactive Mindmap & Visual Ideation | Naveen Kumar',
@@ -104,19 +111,27 @@ export function updateSeoMeta({ title, description, canonical, ogImage }) {
 /**
  * Smoothly scroll to an element by ID with retry attempts for asynchronous/GSAP DOM mounts
  */
-export function scrollToHash(hashId, { behavior = 'smooth', retries = 3, interval = 150 } = {}) {
+export function scrollToHash(hashId, { behavior = 'smooth', retries = 3, interval = 150, immediate = false } = {}) {
   if (typeof window === 'undefined' || !hashId) return;
 
   const targetId = hashId.replace(/^#/, '');
-  if (!targetId || targetId === 'home') {
-    window.scrollTo({ top: 0, behavior });
+  const isInstant = immediate || behavior === 'instant' || behavior === 'auto';
+  if (!targetId || targetId === 'home' || targetId === 'hero') {
+    window.scrollTo({ top: 0, left: 0, behavior: isInstant ? 'instant' : behavior });
+    if (window.__lenis) {
+      window.__lenis.scrollTo(0, { immediate: isInstant, duration: isInstant ? 0 : 1.2 });
+    }
     return;
   }
 
   const attemptScroll = (attemptsLeft) => {
     const el = document.getElementById(targetId);
     if (el) {
-      el.scrollIntoView({ behavior });
+      if (window.__lenis) {
+        window.__lenis.scrollTo(el, { offset: 0, duration: 1.2 });
+      } else {
+        el.scrollIntoView({ behavior });
+      }
     } else if (attemptsLeft > 0) {
       setTimeout(() => attemptScroll(attemptsLeft - 1), interval);
     }

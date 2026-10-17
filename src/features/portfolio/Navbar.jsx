@@ -142,6 +142,8 @@ const Navbar = ({ onResumeClick }) => {
         if (SECTION_SEO[newSection]) {
           updateSeoMeta(SECTION_SEO[newSection]);
         }
+        window.__currentSection = newSection;
+        window.dispatchEvent(new CustomEvent('nav-section-change', { detail: { section: newSection } }));
       }
     };
 

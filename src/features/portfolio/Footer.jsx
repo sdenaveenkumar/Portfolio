@@ -5,10 +5,10 @@ const Footer = () => {
   return (
     <footer className="relative md:fixed bottom-0 left-0 w-full min-h-[50vh] md:h-[80vh] h-auto bg-black text-white pt-8 sm:pt-10 pb-6 md:pb-0 px-4 sm:px-8 md:px-16 overflow-hidden flex flex-col justify-between z-0">
       
-      {/* Ambient glowing orbs in the background */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-blue-900/30 to-transparent blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-purple-900/30 to-transparent blur-[120px]" />
+      {/* Ambient glowing orbs in the background (GPU radial gradients) */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-60">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-footer-blue" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full ambient-glow-footer-purple" />
       </div>
 
       <div className="w-full max-w-7xl mx-auto flex flex-col h-full relative z-10 justify-between">
@@ -19,7 +19,13 @@ const Footer = () => {
             Let's build<br />something <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-500">amazing.</span>
           </h2>
           <button
-            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => {
+              if (window.__lenis) {
+                window.__lenis.scrollTo('#contact', { duration: 1.2 });
+              } else {
+                document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
             className="group relative px-7 sm:px-10 py-3.5 sm:py-4 bg-white text-black rounded-full text-sm sm:text-base md:text-lg font-bold uppercase tracking-wider hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] cursor-pointer"
           >
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-100 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

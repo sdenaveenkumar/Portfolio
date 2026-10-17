@@ -44,7 +44,14 @@ export default function NodeDetailDrawer({
   };
 
   return (
-    <aside className="w-80 sm:w-96 bg-white border-l border-slate-200 h-full flex flex-col z-40 shadow-2xl shrink-0 overflow-hidden select-text animate-in slide-in-from-right duration-200">
+    <>
+      {/* Mobile Dim Backdrop */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 sm:hidden animate-in fade-in duration-200 cursor-pointer"
+      />
+
+      <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-[94vw] sm:max-w-none sm:w-96 sm:relative bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl shrink-0 overflow-hidden select-text animate-in slide-in-from-right duration-200">
       {/* Drawer Header */}
       <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
         <div className="flex items-center gap-2">
@@ -284,5 +291,6 @@ export default function NodeDetailDrawer({
         </button>
       </div>
     </aside>
+  </>
   );
 }

@@ -124,14 +124,21 @@ export default function WorkspaceSidebar({
     return null;
   }).filter(Boolean);
 
-  const totalMapsCount = folders.reduce((acc, f) => acc + f.maps.length, 0);
+  const totalMapsCount = (folders || []).reduce((acc, f) => acc + (f.maps?.length || 0), 0);
+
+  const handleSelectMap = (mapId) => {
+    onSelectMap(mapId);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      onToggleOpen();
+    }
+  };
 
   if (!isOpen) {
     return (
       <button
         onClick={onToggleOpen}
         title="Open Workspace Sidebar"
-        className="absolute left-3 top-3 z-30 p-2.5 rounded-xl bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-md hover:bg-slate-50 text-slate-700 transition"
+        className="hidden md:flex absolute left-3 top-3 z-20 p-2.5 rounded-xl bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-md hover:bg-slate-50 text-slate-700 transition cursor-pointer"
       >
         <Folder className="w-4 h-4 text-amber-500 fill-amber-500/20" />
       </button>
@@ -139,37 +146,45 @@ export default function WorkspaceSidebar({
   }
 
   return (
-    <aside className="w-72 bg-white/95 backdrop-blur-md border-r border-slate-200/90 flex flex-col h-full shadow-lg z-20 shrink-0 select-none">
-      {/* Header */}
-      <div className="p-3.5 border-b border-slate-100 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center">
-            <Folder className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+    <>
+      {/* Mobile Dim Backdrop */}
+      <div
+        onClick={onToggleOpen}
+        className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-200 cursor-pointer"
+      />
+
+      <aside className="fixed inset-y-0 left-0 z-50 w-[85vw] max-w-[320px] md:relative md:w-72 md:z-20 bg-white/98 backdrop-blur-md border-r border-slate-200/90 flex flex-col h-full shadow-2xl md:shadow-lg shrink-0 select-none animate-in slide-in-from-left duration-200">
+        {/* Header */}
+        <div className="p-3.5 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center">
+              <Folder className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+            </div>
+            <div>
+              <h2 className="text-xs font-bold text-slate-800 tracking-wide uppercase">Workspaces</h2>
+              <p className="text-[10px] text-slate-400 font-medium">
+                {folders.length} {folders.length === 1 ? 'folder' : 'folders'} • {totalMapsCount} maps
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xs font-bold text-slate-800 tracking-wide uppercase">Workspaces</h2>
-            <p className="text-[10px] text-slate-400 font-medium">
-              {folders.length} {folders.length === 1 ? 'folder' : 'folders'} • {totalMapsCount} maps
-            </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleCreateFolder}
+              title="Create New Folder"
+              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition flex items-center gap-1 text-xs font-semibold cursor-pointer"
+            >
+              <FolderPlus className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onToggleOpen}
+              title="Collapse Sidebar"
+              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition cursor-pointer"
+            >
+              <X className="w-4 h-4 md:hidden text-slate-600" />
+              <ChevronRight className="hidden md:block w-4 h-4 rotate-180" />
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={handleCreateFolder}
-            title="Create New Folder"
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition flex items-center gap-1 text-xs font-semibold"
-          >
-            <FolderPlus className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onToggleOpen}
-            title="Collapse Sidebar"
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition"
-          >
-            <ChevronRight className="w-4 h-4 rotate-180" />
-          </button>
-        </div>
-      </div>
 
       {/* Search Input */}
       <div className="px-3 py-2 border-b border-slate-100">
@@ -333,7 +348,7 @@ export default function WorkspaceSidebar({
                         return (
                           <div
                             key={map.id}
-                            onClick={() => onSelectMap(map.id)}
+                            onClick={() => handleSelectMap(map.id)}
                             className={`group relative flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-xs font-medium transition ${
                               isActive
                                 ? 'bg-indigo-600 text-white shadow-sm'
@@ -507,5 +522,6 @@ export default function WorkspaceSidebar({
         <span className="text-[10px] text-slate-400 font-mono">Rabbit Studio</span>
       </div>
     </aside>
+  </>
   );
 }

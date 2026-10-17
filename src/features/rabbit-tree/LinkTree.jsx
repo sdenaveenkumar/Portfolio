@@ -27,7 +27,7 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
       id: 'portfolio',
       title: 'Portfolio',
       subtitle: 'Interactive 3D Portfolio & Creative Engineering',
-      url: '/',
+      url: '/#home',
       isInternal: true,
       badge: 'MAIN'
     },
@@ -137,6 +137,9 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
     }
     if (link.isInternal && onBackToPortfolio) {
       e.preventDefault();
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
       onBackToPortfolio(link.url);
     }
   };
@@ -152,7 +155,16 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
            ───────────────────────────────────────────────────────────── */}
         <header className="flex items-center justify-between px-1 py-1 text-xs text-zinc-400">
           <button
-            onClick={() => onBackToPortfolio ? onBackToPortfolio('/') : window.location.href = '/'}
+            onClick={() => {
+              window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+              document.documentElement.scrollTop = 0;
+              document.body.scrollTop = 0;
+              if (onBackToPortfolio) {
+                onBackToPortfolio('/#home');
+              } else {
+                window.location.href = '/#home';
+              }
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-white/[0.08] transition-all active:scale-95 cursor-pointer"
             title={isEmbedded ? "Close Drawer" : "Return to Main Portfolio"}
           >
@@ -194,7 +206,12 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
           <img
             src={imgError ? "/reference-portrait.png" : "/projects/RabbitTreeProfile.webp"}
             alt="Naveen Kumar — Fullstack Software Engineer Portrait (Rabbit Tree Profile)"
+            width="648"
+            height="486"
+            loading="eager"
+            fetchPriority="high"
             decoding="async"
+            itemProp="image"
             className="w-full h-full object-cover object-center filter contrast-[1.04] brightness-[1.0] select-none transition-transform duration-700 group-hover:scale-105"
             onError={() => setImgError(true)}
           />
@@ -286,7 +303,16 @@ const LinkTree = ({ onBackToPortfolio, isEmbedded = false, onSelectLink, activeL
             <span>© 2026 NAVEEN KUMAR</span>
             <span>•</span>
             <button
-              onClick={() => onBackToPortfolio ? onBackToPortfolio('/') : window.location.href = '/'}
+              onClick={() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+                if (onBackToPortfolio) {
+                  onBackToPortfolio('/#home');
+                } else {
+                  window.location.href = '/#home';
+                }
+              }}
               className="text-zinc-400 hover:text-white underline underline-offset-4 cursor-pointer"
             >
               VISIT FULL PORTFOLIO

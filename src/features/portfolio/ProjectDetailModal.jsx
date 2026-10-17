@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
@@ -157,6 +157,84 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
   );
 };
 
+const markdownComponents = {
+  code: CodeBlock,
+  h1: ({ children }) => (
+    <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight pt-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight pt-5 pb-1.5 border-b border-gray-100 flex items-center gap-2">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-lg font-bold text-gray-900 pt-3 pb-1">
+      {children}
+    </h3>
+  ),
+  p: ({ children }) => (
+    <p className="my-2 text-gray-700 leading-relaxed">
+      {children}
+    </p>
+  ),
+  a: ({ href, children }) => (
+    <a 
+      href={href} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className="font-semibold text-blue-600 hover:text-blue-800 underline underline-offset-3 inline-flex items-center gap-0.5"
+    >
+      {children}
+      <ExternalLink className="w-3 h-3 inline ml-0.5 opacity-70" />
+    </a>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="my-3 pl-4 border-l-4 border-blue-500 bg-blue-50/50 py-2 pr-3 rounded-r-xl italic text-gray-700">
+      {children}
+    </blockquote>
+  ),
+  ul: ({ children }) => (
+    <ul className="my-2.5 list-disc pl-5 space-y-1 text-gray-700">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="my-2.5 list-decimal pl-5 space-y-1 text-gray-700">
+      {children}
+    </ol>
+  ),
+  table: ({ children }) => (
+    <div className="my-4 overflow-x-auto rounded-xl border border-gray-200">
+      <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
+        {children}
+      </table>
+    </div>
+  ),
+  th: ({ children }) => (
+    <th className="px-4 py-2.5 bg-gray-100 font-bold text-gray-900 text-left">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="px-4 py-2 border-t border-gray-100 text-gray-700">
+      {children}
+    </td>
+  ),
+  img: ({ src, alt }) => (
+    <span className="block my-4">
+      <img 
+        src={src} 
+        alt={alt || ''} 
+        loading="lazy" 
+        className="rounded-2xl border border-gray-200 shadow-md max-w-full mx-auto" 
+      />
+    </span>
+  ),
+  hr: () => <hr className="my-6 border-gray-200" />
+};
+
 const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExitComplete }) => {
   const [activeProject, setActiveProject] = useState(project);
   const [activeMeta, setActiveMeta] = useState(meta);
@@ -172,6 +250,7 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
   const [deviceMode, setDeviceMode] = useState('desktop'); // 'desktop' | 'tablet' | 'mobile'
   const [iframeKey, setIframeKey] = useState(0);
   const [iframeLoading, setIframeLoading] = useState(true);
+  const dragControls = useDragControls();
 
   // Track viewport dimensions for responsive target sizing
   const [windowSize, setWindowSize] = useState(() => ({
@@ -216,9 +295,11 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
     const prevHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
+    window.__lenis?.stop();
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      window.__lenis?.start();
       document.body.style.overflow = prevOverflow;
       document.documentElement.style.overflow = prevHtmlOverflow;
       window.removeEventListener('keydown', handleKeyDown);
@@ -297,7 +378,7 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
   return createPortal(
     <AnimatePresence onExitComplete={onExitComplete}>
       {isOpen && activeProject && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+        <div data-project-modal="true" data-lenis-prevent="true" className="fixed inset-0 z-[100] flex items-center justify-center">
           
           {/* Backdrop with frosted dark blur covering entire viewport */}
           <motion.div
@@ -311,12 +392,15 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
 
           {/* 3D Perspective Staging Container */}
           <div
+            data-lenis-prevent="true"
             className="fixed inset-0 z-[101] pointer-events-none"
             style={{ perspective: 1800, WebkitPerspective: 1800 }}
           >
             {/* 3D Morphing Card / Modal Flipper (Acts as Native Bottom Sheet on Mobile) */}
             <motion.div
               drag={isMobile ? "y" : false}
+              dragControls={dragControls}
+              dragListener={false}
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0.05, bottom: 0.5 }}
               onDragEnd={(e, info) => {
@@ -324,6 +408,8 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                   onClose();
                 }
               }}
+              data-project-modal="true"
+              data-lenis-prevent="true"
               initial={{
                 top: startTop,
                 left: startLeft,
@@ -386,10 +472,16 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                   WebkitBackfaceVisibility: "hidden",
                   transform: "rotateY(180deg) translateZ(1px)",
                 }}
+                data-lenis-prevent="true"
                 className="absolute inset-0 w-full h-full bg-white rounded-t-[32px] sm:rounded-[36px] rounded-b-none sm:rounded-b-[36px] shadow-[0_-15px_50px_rgba(0,0,0,0.35)] sm:shadow-[0_25px_80px_rgba(0,0,0,0.4)] border-t sm:border border-gray-200/80 flex flex-col overflow-hidden pointer-events-auto select-auto"
               >
                 {/* iOS Mobile App Sheet Pull Handle */}
-                <div className="w-full flex sm:hidden justify-center pt-2 pb-1 bg-white/95 backdrop-blur-md shrink-0 cursor-grab active:cursor-grabbing">
+                <div
+                  onPointerDown={(e) => {
+                    if (isMobile) dragControls.start(e);
+                  }}
+                  className="w-full flex sm:hidden justify-center pt-2 pb-1 bg-white/95 backdrop-blur-md shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
+                >
                   <div className="w-10 h-1 rounded-full bg-gray-300" />
                 </div>
 
@@ -537,7 +629,7 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                 </div>
 
                 {/* SCROLLABLE MODAL CONTENT BODY */}
-                <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6 space-y-6 pb-[calc(env(safe-area-inset-bottom,16px)+24px)]">
+                <div data-lenis-prevent="true" className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6 space-y-6 pb-[calc(env(safe-area-inset-bottom,16px)+24px)]">
 
                   {activeTab === 'live' ? (
                     /* ======================================================= */
@@ -829,83 +921,7 @@ const ProjectDetailModal = ({ project, meta, originRect, isOpen, onClose, onExit
                           <div className="markdown-prose space-y-4 text-gray-800 text-[14px] sm:text-[15px] leading-relaxed">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
-                          components={{
-                            code: CodeBlock,
-                            h1: ({ children }) => (
-                              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight pt-4 pb-2 border-b border-gray-200 flex items-center gap-2">
-                                {children}
-                              </h1>
-                            ),
-                            h2: ({ children }) => (
-                              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight pt-5 pb-1.5 border-b border-gray-100 flex items-center gap-2">
-                                {children}
-                              </h2>
-                            ),
-                            h3: ({ children }) => (
-                              <h3 className="text-lg font-bold text-gray-900 pt-3 pb-1">
-                                {children}
-                              </h3>
-                            ),
-                            p: ({ children }) => (
-                              <p className="my-2 text-gray-700 leading-relaxed">
-                                {children}
-                              </p>
-                            ),
-                            a: ({ href, children }) => (
-                              <a 
-                                href={href} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="font-semibold text-blue-600 hover:text-blue-800 underline underline-offset-3 inline-flex items-center gap-0.5"
-                              >
-                                {children}
-                                <ExternalLink className="w-3 h-3 inline ml-0.5 opacity-70" />
-                              </a>
-                            ),
-                            blockquote: ({ children }) => (
-                              <blockquote className="my-3 pl-4 border-l-4 border-blue-500 bg-blue-50/50 py-2 pr-3 rounded-r-xl italic text-gray-700">
-                                {children}
-                              </blockquote>
-                            ),
-                            ul: ({ children }) => (
-                              <ul className="my-2.5 list-disc pl-5 space-y-1 text-gray-700">
-                                {children}
-                              </ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="my-2.5 list-decimal pl-5 space-y-1 text-gray-700">
-                                {children}
-                              </ol>
-                            ),
-                            table: ({ children }) => (
-                              <div className="my-4 overflow-x-auto rounded-xl border border-gray-200">
-                                <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
-                                  {children}
-                                </table>
-                              </div>
-                            ),
-                            th: ({ children }) => (
-                              <th className="px-4 py-2.5 bg-gray-100 font-bold text-gray-900 text-left">
-                                {children}
-                              </th>
-                            ),
-                            td: ({ children }) => (
-                              <td className="px-4 py-2 border-t border-gray-100 text-gray-700">
-                                {children}
-                              </td>
-                            ),
-                            img: ({ src, alt }) => (
-                              <span className="block my-4">
-                                <img 
-                                  src={src} 
-                                  alt={alt || ''} 
-                                  loading="lazy" 
-                                  className="rounded-2xl border border-gray-200 shadow-md max-w-full mx-auto" 
-                                />
-                              </span>
-                            ),
-                            hr: () => <hr className="my-6 border-gray-200" />
-                          }}
+                          components={markdownComponents}
                         >
                           {markdown}
                         </ReactMarkdown>

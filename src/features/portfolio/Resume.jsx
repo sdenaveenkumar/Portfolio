@@ -63,6 +63,8 @@ const Resume = ({ onClose }) => {
 
       {/* Slide-in drawer (The Resume Viewer itself) */}
       <motion.section
+        data-resume-modal="true"
+        data-lenis-prevent="true"
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
@@ -128,6 +130,7 @@ const Resume = ({ onClose }) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.6, ease: "easeOut" }}
+          data-lenis-prevent="true"
           className="w-full flex-1 bg-[#141418] relative overflow-y-auto overscroll-contain scroll-smooth"
         >
           <div className="flex flex-col items-center gap-4 sm:gap-6 py-4 sm:py-6 px-2.5 sm:px-6 max-w-[840px] mx-auto">

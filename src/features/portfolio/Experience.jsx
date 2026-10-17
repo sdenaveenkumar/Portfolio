@@ -57,10 +57,10 @@ const Experience = () => {
     <div id="experience" ref={containerRef} className="relative z-40 w-full h-[400vh] -mt-[100vh] bg-[#fafafc] text-gray-900 rounded-t-[44px] sm:rounded-t-[60px] border-t border-black/[0.08] shadow-[0_-30px_70px_rgba(0,0,0,0.08)]">
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex flex-col pt-16 sm:pt-20 px-6 md:px-12 bg-[#fafafc] rounded-t-[44px] sm:rounded-t-[60px]">
 
-        {/* Ambient Glows from Contact Us Theme */}
+        {/* Ambient Glows (GPU radial gradients, zero blur filter lag) */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
-          <div className="absolute w-[600px] md:w-[800px] h-[600px] md:h-[800px] bg-gradient-to-br from-purple-200/35 via-pink-200/20 to-transparent rounded-full blur-[80px] md:blur-[120px] -translate-x-1/4 -translate-y-1/4 opacity-60" />
-          <div className="absolute w-[500px] md:w-[700px] h-[500px] md:h-[700px] bg-gradient-to-tl from-cyan-200/35 via-blue-100/20 to-transparent rounded-full blur-[80px] md:blur-[120px] translate-x-1/3 translate-y-1/4 opacity-60" />
+          <div className="absolute w-[600px] md:w-[800px] h-[600px] md:h-[800px] ambient-glow-purple rounded-full -translate-x-1/4 -translate-y-1/4 opacity-70" />
+          <div className="absolute w-[500px] md:w-[700px] h-[500px] md:h-[700px] ambient-glow-cyan rounded-full translate-x-1/3 translate-y-1/4 opacity-70" />
         </div>
 
         {/* Pull tab indicator */}
